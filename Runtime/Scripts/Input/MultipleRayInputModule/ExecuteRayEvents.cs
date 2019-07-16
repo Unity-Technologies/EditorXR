@@ -22,6 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public static ExecuteEvents.EventFunction<IRayHoverHandler> rayHoverHandler { get { return s_RayHoverHandler; } }
         private static readonly ExecuteEvents.EventFunction<IRayHoverHandler> s_RayHoverHandler = Execute;
 
+        //TODO: Can we get rid of this?
         public static ExecuteEvents.EventFunction<IRayClickHandler> rayClickHandler { get { return s_RayClickHandler; } }
         private static readonly ExecuteEvents.EventFunction<IRayClickHandler> s_RayClickHandler = Execute;
 

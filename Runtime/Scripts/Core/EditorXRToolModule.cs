@@ -21,17 +21,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public Sprite icon;
     }
 
-    class EditorXRToolModule : MonoBehaviour, IModuleDependency<LockModule>,
-        IModuleDependency<EditorXRMenuModule>, IModuleDependency<DeviceInputModule>,
+    class EditorXRToolModule : MonoBehaviour,
         IInterfaceConnector, IUsesConnectInterfaces, IDelayedInitializationModule,
         IUsesFunctionalityInjection, IProvidesSelectTool
     {
         static readonly List<Type> k_AllTools = new List<Type>();
 
         readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
-        LockModule m_LockModule;
-        EditorXRMenuModule m_MenuModule;
-        DeviceInputModule m_DeviceInputModule;
+//        LockModule m_LockModule;
+//        EditorXRMenuModule m_MenuModule;
+//        DeviceInputModule m_DeviceInputModule;
         EditorXRRayModule m_RayModule;
 
         internal readonly List<DeviceData> deviceData = new List<DeviceData>();
@@ -52,21 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             typeof(ITool).GetImplementationsOfInterface(k_AllTools);
         }
 
-        public void ConnectDependency(LockModule dependency)
-        {
-            m_LockModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRMenuModule dependency)
-        {
-            m_MenuModule = dependency;
-        }
-
-        public void ConnectDependency(DeviceInputModule dependency)
-        {
-            m_DeviceInputModule = dependency;
-        }
-
         public void LoadModule()
         {
             ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
@@ -81,10 +65,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void Initialize()
         {
             deviceData.Clear();
-            m_MenuModule.mainMenuTools = allTools.Where(t =>
+            var menuModule = ModuleLoaderCore.instance.GetModule<EditorXRMenuModule>();
+            if (menuModule != null)
             {
-                return !IsDefaultTool(t) && !EditorVR.HiddenTypes.Contains(t);
-            }).ToList(); // Don't show tools that can't be selected/toggled
+                menuModule.mainMenuTools = allTools.Where(t =>
+                {
+                    return !IsDefaultTool(t) && !EditorVR.HiddenTypes.Contains(t);
+                }).ToList(); // Don't show tools that can't be selected/toggled
+            }
 
             m_LinkedObjects.Clear();
         }
@@ -205,7 +193,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal void SpawnDefaultTools(IProxy proxy)
         {
             var defaultTools = EditorVR.DefaultTools;
-            var vacuumablesModule = ModuleLoaderCore.instance.GetModule<EditorXRVacuumableModule>();
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            var menuModule = moduleLoaderCore.GetModule<EditorXRMenuModule>();
+            var lockModule = moduleLoaderCore.GetModule<LockModule>();
+            var deviceInputModule = moduleLoaderCore.GetModule<DeviceInputModule>();
+            var vacuumablesModule = moduleLoaderCore.GetModule<EditorXRVacuumableModule>();
             var vacuumables = vacuumablesModule != null ? vacuumablesModule.vacuumables : new List<IVacuumable>();
 
             foreach (var device in deviceData)
@@ -220,7 +212,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 foreach (var toolType in defaultTools)
                 {
                     HashSet<InputDevice> devices;
-                    var toolData = SpawnTool(toolType, out devices, inputDevice, rayOrigin);
+                    var toolData = SpawnTool(toolType, out devices, inputDevice, rayOrigin, deviceInputModule);
                     AddToolToDeviceData(toolData, devices);
 
                     var tool = toolData.tool;
@@ -228,7 +220,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (selectionTool)
                     {
                         selectionToolData = toolData;
-                        selectionTool.hovered += m_LockModule.OnHovered;
+                        if (lockModule != null)
+                            selectionTool.hovered += lockModule.OnHovered;
                     }
 
                     var vacuumTool = tool as VacuumTool;
@@ -244,21 +237,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var menuHideData = device.menuHideData;
                 if (EditorVR.DefaultMenu != null)
                 {
-                    mainMenu = (IMainMenu)m_MenuModule.SpawnMenu(EditorVR.DefaultMenu, rayOrigin);
+                    mainMenu = (IMainMenu)menuModule.SpawnMenu(EditorVR.DefaultMenu, rayOrigin);
                     device.mainMenu = mainMenu;
                     menuHideData[mainMenu] = new MenuHideData();
                 }
 
                 if (EditorVR.DefaultAlternateMenu != null)
                 {
-                    var alternateMenu = (IAlternateMenu)m_MenuModule.SpawnMenu(EditorVR.DefaultAlternateMenu, rayOrigin);
+                    var alternateMenu = (IAlternateMenu)menuModule.SpawnMenu(EditorVR.DefaultAlternateMenu, rayOrigin);
                     menuHideData[alternateMenu] = new MenuHideData();
                     var radialMenu = alternateMenu as RadialMenu;
                     if (radialMenu)
-                        radialMenu.itemWasSelected += m_MenuModule.UpdateAlternateMenuOnSelectionChanged;
+                        radialMenu.itemWasSelected += menuModule.UpdateAlternateMenuOnSelectionChanged;
                 }
 
-                var undoMenu = m_MenuModule.SpawnMenu<UndoMenu>(rayOrigin);
+                var undoMenu = menuModule.SpawnMenu<UndoMenu>(rayOrigin);
                 var hideData = new MenuHideData();
                 menuHideData[undoMenu] = hideData;
                 hideData.hideFlags = 0;
@@ -293,7 +286,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 device.spatialMenu = spatialMenu;
             }
 
-            m_DeviceInputModule.UpdatePlayerHandleMaps();
+            if (deviceInputModule != null)
+                deviceInputModule.UpdatePlayerHandleMaps();
         }
 
         /// <summary>
@@ -303,8 +297,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
         /// <param name="usedDevices">A list of the used devices coming from the action map</param>
         /// <param name="device">The input device whose tool stack the tool should be spawned on (optional). If not
         /// specified, then it uses the action map to determine which devices the tool should be spawned on.</param>
+        /// <param name="rayOrigin">The ray origin on which to spawn th tool</param>
+        /// <param name="deviceInputModule">The device input module, if it exists</param>
         /// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
-        ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device, Transform rayOrigin)
+        ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device, Transform rayOrigin,
+            DeviceInputModule deviceInputModule)
         {
             usedDevices = new HashSet<InputDevice>();
             if (!typeof(ITool).IsAssignableFrom(toolType))
@@ -312,13 +309,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             var deviceSlots = new HashSet<DeviceSlot>();
             var tool = EditorXRUtils.AddComponent(toolType, gameObject) as ITool;
-            var actionMapInput = m_DeviceInputModule.CreateActionMapInputForObject(tool, device);
-            if (actionMapInput != null)
+            ActionMapInput actionMapInput = null;
+            if (deviceInputModule != null)
             {
-                usedDevices.UnionWith(actionMapInput.GetCurrentlyUsedDevices());
-                InputUtils.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
+                actionMapInput = deviceInputModule.CreateActionMapInputForObject(tool, device);
+                if (actionMapInput != null)
+                {
+                    usedDevices.UnionWith(actionMapInput.GetCurrentlyUsedDevices());
+                    InputUtils.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
 
-                actionMapInput.Reset(false);
+                    actionMapInput.Reset(false);
+                }
             }
 
             if (usedDevices.Count == 0)
@@ -353,6 +354,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public bool SelectTool(Transform rayOrigin, Type toolType, bool despawnOnReselect = true, bool hideMenu = false)
         {
+            var deviceInputModule = ModuleLoaderCore.instance.GetModule<DeviceInputModule>();
             var result = false;
             m_RayModule.ForEachProxyDevice(device =>
             {
@@ -392,7 +394,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         // Spawn tool and collect all devices that this tool will need
                         HashSet<InputDevice> usedDevices;
                         var inputDevice = device.inputDevice;
-                        var newTool = SpawnTool(toolType, out usedDevices, inputDevice, rayOrigin);
+                        var newTool = SpawnTool(toolType, out usedDevices, inputDevice, rayOrigin, deviceInputModule);
                         var multiTool = newTool.tool as IMultiDeviceTool;
                         if (multiTool != null)
                         {
@@ -402,7 +404,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                 if (otherDeviceData != device)
                                 {
                                     HashSet<InputDevice> otherUsedDevices;
-                                    var otherToolData = SpawnTool(toolType, out otherUsedDevices, otherDeviceData.inputDevice, otherDeviceData.rayOrigin);
+                                    var otherToolData = SpawnTool(toolType, out otherUsedDevices, otherDeviceData.inputDevice, otherDeviceData.rayOrigin, deviceInputModule);
                                     foreach (var dd in deviceData)
                                     {
                                         if (!otherUsedDevices.Contains(dd.inputDevice))
@@ -441,7 +443,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         }
                     }
 
-                    m_DeviceInputModule.UpdatePlayerHandleMaps();
+                    deviceInputModule.UpdatePlayerHandleMaps();
                     result = spawnTool;
                 }
                 else if (hideMenu)

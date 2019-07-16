@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.UIModuleBehaviorOrder)]
     class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<FunctionalityInjectionModule>,
-        IModuleDependency<EditorXRDirectSelectionModule>,
+        IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<EditorXRViewerModule>,
         IInterfaceConnector, IUsesConnectInterfaces, IDelayedInitializationModule,IModuleBehaviorCallbacks,
         IUsesFunctionalityInjection, IProvidesSetManipulatorsVisible, IProvidesRequestStencilRef, IProvidesGetManipulatorDragState
     {
@@ -44,6 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         readonly List<IManipulatorController> m_ManipulatorControllers = new List<IManipulatorController>();
         readonly HashSet<IUsesSetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<IUsesSetManipulatorsVisible>();
         FunctionalityInjectionModule m_FIModule;
+        EditorXRViewerModule m_ViewerModule;
 
         KeyboardModule m_KeyboardModule;
 
@@ -65,6 +66,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
 
         public void ConnectDependency(FunctionalityInjectionModule dependency) { m_FIModule = dependency; }
+
+        public void ConnectDependency(EditorXRViewerModule dependency) { m_ViewerModule = dependency; }
 
         // Unused dependency to ensure IUsesPointer is satisfied
         public void ConnectDependency(EditorXRDirectSelectionModule dependency) { }
@@ -118,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void Initialize()
         {
             var eventSystem = FindObjectOfType<EventSystem>();
-            ScreenInputHelper inputHelper;
+            //ScreenInputHelper inputHelper;
             if (eventSystem)
             {
                 InputModule = eventSystem.GetComponent<MultipleRayInputModule>();
@@ -158,21 +161,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
             this.InjectFunctionalitySingle(InputModule);
             this.ConnectInterfaces(InputModule);
 
-            var viewerModule = ModuleLoaderCore.instance.GetModule<EditorXRViewerModule>();
-            if (viewerModule != null)
-            {
-                var customPreviewCamera = viewerModule.customPreviewCamera;
-                if (customPreviewCamera != null)
-                    InputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
-            }
+            var customPreviewCamera = m_ViewerModule.customPreviewCamera;
+            if (customPreviewCamera != null)
+                InputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
 
             var rayModule = ModuleLoaderCore.instance.GetModule<EditorXRRayModule>();
             if (rayModule != null)
                 InputModule.preProcessRaycastSource = rayModule.PreProcessRaycastSource;
 
-            m_EventCamera = EditorXRUtils.Instantiate(m_EventCameraPrefab.gameObject, m_ModuleParent).GetComponent<Camera>();
-            m_EventCamera.enabled = false;
-            InputModule.eventCamera = m_EventCamera;
+            // TODO: bring back event camera
+//            m_EventCamera = EditorXRUtils.Instantiate(m_EventCameraPrefab.gameObject, m_ModuleParent).GetComponent<Camera>();
+//            m_EventCamera.enabled = false;
+//            InputModule.eventCamera = m_EventCamera;
         }
 
         public void Shutdown()

@@ -228,6 +228,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 eventData.node = Node.None;
                 eventData.rayOrigin = rayOrigin;
                 eventData.pointerLength = m_Owner.GetPointerLength(eventData.rayOrigin);
+                eventData.useDragThreshold = true;
 
                 if (isValid != null && !isValid(this))
                 {
@@ -286,11 +287,116 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
+        public class MouseButtonRayEventData
+        {
+            /// <summary>
+            /// The state of the button this frame.
+            /// </summary>
+            public PointerEventData.FramePressState buttonState;
+
+            /// <summary>
+            /// Pointer data associated with the mouse event.
+            /// </summary>
+            public RayEventData buttonData;
+
+            /// <summary>
+            /// Was the button pressed this frame?
+            /// </summary>
+            public bool PressedThisFrame()
+            {
+                return buttonState == PointerEventData.FramePressState.Pressed || buttonState == PointerEventData.FramePressState.PressedAndReleased;
+            }
+
+            /// <summary>
+            /// Was the button released this frame?
+            /// </summary>
+            public bool ReleasedThisFrame()
+            {
+                return buttonState == PointerEventData.FramePressState.Released || buttonState == PointerEventData.FramePressState.PressedAndReleased;
+            }
+        }
+
+        protected class RayButtonState
+        {
+            private PointerEventData.InputButton m_Button = PointerEventData.InputButton.Left;
+
+            public MouseButtonRayEventData eventData
+            {
+                get { return m_EventData; }
+                set { m_EventData = value; }
+            }
+
+            public PointerEventData.InputButton button
+            {
+                get { return m_Button; }
+                set { m_Button = value; }
+            }
+
+            private MouseButtonRayEventData m_EventData;
+        }
+
+        class RayMouseState
+        {
+            List<RayButtonState> m_TrackedButtons = new List<RayButtonState>();
+
+            public bool AnyPressesThisFrame()
+            {
+                for (int i = 0; i < m_TrackedButtons.Count; i++)
+                {
+                    if (m_TrackedButtons[i].eventData.PressedThisFrame())
+                        return true;
+                }
+                return false;
+            }
+
+            public bool AnyReleasesThisFrame()
+            {
+                for (int i = 0; i < m_TrackedButtons.Count; i++)
+                {
+                    if (m_TrackedButtons[i].eventData.ReleasedThisFrame())
+                        return true;
+                }
+                return false;
+            }
+
+            public RayButtonState GetButtonState(PointerEventData.InputButton button)
+            {
+                RayButtonState tracked = null;
+                for (int i = 0; i < m_TrackedButtons.Count; i++)
+                {
+                    if (m_TrackedButtons[i].button == button)
+                    {
+                        tracked = m_TrackedButtons[i];
+                        break;
+                    }
+                }
+
+                if (tracked == null)
+                {
+                    tracked = new RayButtonState { button = button, eventData = new MouseButtonRayEventData() };
+                    m_TrackedButtons.Add(tracked);
+                }
+                return tracked;
+            }
+
+            public void SetButtonState(PointerEventData.InputButton button, PointerEventData.FramePressState stateForMouseButton, RayEventData data)
+            {
+                var toModify = GetButtonState(button);
+                toModify.eventData.buttonState = stateForMouseButton;
+                toModify.eventData.buttonData = data;
+            }
+        }
+
         static LayerMask s_LayerMask;
 
         readonly Dictionary<Transform, IRaycastSource> m_RaycastSources = new Dictionary<Transform, IRaycastSource>();
+        readonly Dictionary<int, RayEventData> m_PointerData = new Dictionary<int, RayEventData>();
 
         Camera m_EventCamera;
+
+        Vector2 m_RayMousePosition;
+        RayEventData m_InputRayEvent;
+        readonly RayMouseState m_RayMouseState = new RayMouseState();
 
         public Camera eventCamera
         {
@@ -358,9 +464,45 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return null;
         }
 
+        bool ShouldIgnoreEventsOnNoFocus()
+        {
+            switch (SystemInfo.operatingSystemFamily)
+            {
+                case OperatingSystemFamily.Windows:
+                case OperatingSystemFamily.Linux:
+                case OperatingSystemFamily.MacOSX:
+#if UNITY_EDITOR
+                    if (UnityEditor.EditorApplication.isRemoteConnected)
+                        return false;
+#endif
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         public override void Process()
         {
-            base.Process();
+            if (!eventSystem.isFocused && ShouldIgnoreEventsOnNoFocus())
+                return;
+
+            bool usedEvent = SendUpdateEventToSelectedObject();
+
+            // case 1004066 - touch / mouse events should be processed before navigation events in case
+            // they change the current selected gameobject and the submit button is a touch / mouse button.
+
+            // touch needs to take precedence because of the mouse emulation layer
+            if (!ProcessTouchEvents() && input.mousePresent)
+                ProcessMouseEvent();
+
+            if (eventSystem.sendNavigationEvents)
+            {
+                if (!usedEvent)
+                    usedEvent |= SendMoveEventToSelectedObject();
+
+                if (!usedEvent)
+                    SendSubmitEventToSelectedObject();
+            }
 
             if (m_EventCamera == null)
                 return;
@@ -369,6 +511,414 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var camera = CameraUtils.GetMainCamera();
             m_EventCamera.nearClipPlane = camera.nearClipPlane;
             m_EventCamera.farClipPlane = camera.farClipPlane;
+        }
+
+        bool ProcessTouchEvents()
+        {
+            for (var i = 0; i < input.touchCount; ++i)
+            {
+                var touch = input.GetTouch(i);
+
+                if (touch.type == TouchType.Indirect)
+                    continue;
+
+                bool released;
+                bool pressed;
+                var pointer = GetTouchPointerEventData(touch, out pressed, out released);
+
+                ProcessTouchPress(pointer, pressed, released);
+
+                if (!released)
+                {
+                    ProcessMove(pointer);
+                    ProcessDrag(pointer);
+                }
+                else
+                    RemovePointerData(pointer);
+            }
+            return input.touchCount > 0;
+        }
+
+        static bool ShouldStartDrag(Vector2 pressPos, Vector2 currentPos, float threshold, bool useDragThreshold)
+        {
+            if (!useDragThreshold)
+                return true;
+
+            return (pressPos - currentPos).sqrMagnitude >= threshold * threshold;
+        }
+
+        void ProcessDrag(RayEventData pointerEvent)
+        {
+            if (!pointerEvent.IsPointerMoving() ||
+                Cursor.lockState == CursorLockMode.Locked ||
+                pointerEvent.pointerDrag == null)
+                return;
+
+            if (!pointerEvent.dragging
+                && ShouldStartDrag(pointerEvent.pressPosition, pointerEvent.position, eventSystem.pixelDragThreshold, pointerEvent.useDragThreshold))
+            {
+                ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteEvents.beginDragHandler);
+                ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteRayEvents.beginDragHandler);
+                pointerEvent.dragging = true;
+            }
+
+            // Drag notification
+            if (pointerEvent.dragging)
+            {
+                // Before doing drag we should cancel any pointer down state
+                // And clear selection!
+                if (pointerEvent.pointerPress != pointerEvent.pointerDrag)
+                {
+                    ExecuteEvents.Execute(pointerEvent.pointerPress, pointerEvent, ExecuteEvents.pointerUpHandler);
+
+                    pointerEvent.eligibleForClick = false;
+                    pointerEvent.pointerPress = null;
+                    pointerEvent.rawPointerPress = null;
+                }
+
+                ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteEvents.dragHandler);
+                ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteRayEvents.dragHandler);
+            }
+        }
+
+        void ProcessTouchPress(RayEventData pointerEvent, bool pressed, bool released)
+        {
+            var currentOverGo = pointerEvent.pointerCurrentRaycast.gameObject;
+
+            // PointerDown notification
+            if (pressed)
+            {
+                pointerEvent.eligibleForClick = true;
+                pointerEvent.delta = Vector2.zero;
+                pointerEvent.dragging = false;
+                pointerEvent.useDragThreshold = true;
+                pointerEvent.pressPosition = pointerEvent.position;
+                pointerEvent.pointerPressRaycast = pointerEvent.pointerCurrentRaycast;
+
+                DeselectIfSelectionChanged(currentOverGo, pointerEvent);
+
+                if (pointerEvent.pointerEnter != currentOverGo)
+                {
+                    // send a pointer enter to the touched element if it isn't the one to select...
+                    HandlePointerExitAndEnter(pointerEvent, currentOverGo);
+                    pointerEvent.pointerEnter = currentOverGo;
+                }
+
+                // search for the control that will receive the press
+                // if we can't find a press handler set the press
+                // handler to be what would receive a click.
+                var newPressed = ExecuteEvents.ExecuteHierarchy(currentOverGo, pointerEvent, ExecuteEvents.pointerDownHandler);
+
+                // didnt find a press handler... search for a click handler
+                if (newPressed == null)
+                    newPressed = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
+
+                // Debug.Log("Pressed: " + newPressed);
+
+                var time = Time.unscaledTime;
+
+                if (newPressed == pointerEvent.lastPress)
+                {
+                    var diffTime = time - pointerEvent.clickTime;
+                    if (diffTime < 0.3f)
+                        ++pointerEvent.clickCount;
+                    else
+                        pointerEvent.clickCount = 1;
+
+                    pointerEvent.clickTime = time;
+                }
+                else
+                {
+                    pointerEvent.clickCount = 1;
+                }
+
+                pointerEvent.pointerPress = newPressed;
+                pointerEvent.rawPointerPress = currentOverGo;
+
+                pointerEvent.clickTime = time;
+
+                // Save the drag handler as well
+                var dragHandler = ExecuteEvents.GetEventHandler<IDragHandler>(currentOverGo);
+                if (dragHandler == null)
+                    dragHandler = ExecuteEvents.GetEventHandler<IRayDragHandler>(currentOverGo);
+
+                pointerEvent.pointerDrag = dragHandler;
+
+                if (dragHandler != null)
+                    ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteEvents.initializePotentialDrag);
+
+                m_InputRayEvent = pointerEvent;
+            }
+
+            // PointerUp notification
+            if (released)
+            {
+                // Debug.Log("Executing pressup on: " + pointer.pointerPress);
+                ExecuteEvents.Execute(pointerEvent.pointerPress, pointerEvent, ExecuteEvents.pointerUpHandler);
+
+                // Debug.Log("KeyCode: " + pointer.eventData.keyCode);
+
+                // see if we mouse up on the same element that we clicked on...
+                var pointerUpHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
+
+                // PointerClick and Drop events
+                if (pointerEvent.pointerPress == pointerUpHandler && pointerEvent.eligibleForClick)
+                {
+                    ExecuteEvents.Execute(pointerEvent.pointerPress, pointerEvent, ExecuteEvents.pointerClickHandler);
+                }
+                else if (pointerEvent.pointerDrag != null && pointerEvent.dragging)
+                {
+                    ExecuteEvents.ExecuteHierarchy(currentOverGo, pointerEvent, ExecuteEvents.dropHandler);
+                }
+
+                pointerEvent.eligibleForClick = false;
+                pointerEvent.pointerPress = null;
+                pointerEvent.rawPointerPress = null;
+
+                if (pointerEvent.pointerDrag != null && pointerEvent.dragging)
+                {
+                    ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteEvents.endDragHandler);
+                    ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteRayEvents.endDragHandler);
+                }
+
+                pointerEvent.dragging = false;
+                pointerEvent.pointerDrag = null;
+
+                // send exit events as we need to simulate this on touch up on touch device
+                ExecuteEvents.ExecuteHierarchy(pointerEvent.pointerEnter, pointerEvent, ExecuteEvents.pointerExitHandler);
+                pointerEvent.pointerEnter = null;
+
+                m_InputRayEvent = pointerEvent;
+            }
+        }
+
+        new void ProcessMouseEvent()
+        {
+            ProcessMouseEvent(0);
+        }
+
+        new void ProcessMouseEvent(int id)
+        {
+            var mouseData = GetMousePointerEventData(id);
+            var leftButtonData = mouseData.GetButtonState(PointerEventData.InputButton.Left).eventData;
+
+            //m_CurrentFocusedGameObject = leftButtonData.buttonData.pointerCurrentRaycast.gameObject;
+
+            // Process the first mouse button fully
+            ProcessMousePress(leftButtonData);
+            ProcessMove(leftButtonData.buttonData);
+            ProcessDrag(leftButtonData.buttonData);
+
+            // Now process right / middle clicks
+            ProcessMousePress(mouseData.GetButtonState(PointerEventData.InputButton.Right).eventData);
+            ProcessDrag(mouseData.GetButtonState(PointerEventData.InputButton.Right).eventData.buttonData);
+            ProcessMousePress(mouseData.GetButtonState(PointerEventData.InputButton.Middle).eventData);
+            ProcessDrag(mouseData.GetButtonState(PointerEventData.InputButton.Middle).eventData.buttonData);
+
+            if (!Mathf.Approximately(leftButtonData.buttonData.scrollDelta.sqrMagnitude, 0.0f))
+            {
+                var scrollHandler = ExecuteEvents.GetEventHandler<IScrollHandler>(leftButtonData.buttonData.pointerCurrentRaycast.gameObject);
+                ExecuteEvents.ExecuteHierarchy(scrollHandler, leftButtonData.buttonData, ExecuteEvents.scrollHandler);
+            }
+        }
+
+        bool GetPointerData(int id, out RayEventData data, bool create)
+        {
+            if (!m_PointerData.TryGetValue(id, out data) && create)
+            {
+                data = new RayEventData(eventSystem)
+                {
+                    pointerId = id,
+                    rayOrigin = transform
+                };
+                m_PointerData.Add(id, data);
+                return true;
+            }
+            return false;
+        }
+
+        RayMouseState GetMousePointerEventData(int id)
+        {
+            // Populate the left button...
+            RayEventData leftData;
+            var created = GetPointerData(kMouseLeftId, out leftData, true);
+
+            leftData.Reset();
+
+            if (created)
+                leftData.position = input.mousePosition;
+
+            Vector2 pos = input.mousePosition;
+            if (Cursor.lockState == CursorLockMode.Locked)
+            {
+                // We don't want to do ANY cursor-based interaction when the mouse is locked
+                leftData.position = new Vector2(-1.0f, -1.0f);
+                leftData.delta = Vector2.zero;
+            }
+            else
+            {
+                leftData.delta = pos - leftData.position;
+                leftData.position = pos;
+            }
+            leftData.scrollDelta = input.mouseScrollDelta;
+            leftData.button = PointerEventData.InputButton.Left;
+            eventSystem.RaycastAll(leftData, m_RaycastResultCache);
+            var raycast = FindFirstRaycast(m_RaycastResultCache);
+            leftData.pointerCurrentRaycast = raycast;
+            m_RaycastResultCache.Clear();
+
+            // copy the apropriate data into right and middle slots
+            RayEventData rightData;
+            GetPointerData(kMouseRightId, out rightData, true);
+            CopyFromTo(leftData, rightData);
+            rightData.button = PointerEventData.InputButton.Right;
+
+            RayEventData middleData;
+            GetPointerData(kMouseMiddleId, out middleData, true);
+            CopyFromTo(leftData, middleData);
+            middleData.button = PointerEventData.InputButton.Middle;
+
+            m_RayMouseState.SetButtonState(PointerEventData.InputButton.Left, StateForMouseButton(0), leftData);
+            m_RayMouseState.SetButtonState(PointerEventData.InputButton.Right, StateForMouseButton(1), rightData);
+            m_RayMouseState.SetButtonState(PointerEventData.InputButton.Middle, StateForMouseButton(2), middleData);
+
+            return m_RayMouseState;
+        }
+
+        void ProcessMove(RayEventData rayEvent)
+        {
+            var targetGO = (Cursor.lockState == CursorLockMode.Locked ? null : rayEvent.pointerCurrentRaycast.gameObject);
+            HandlePointerExitAndEnter(rayEvent, targetGO);
+        }
+
+        void ProcessMousePress(MouseButtonRayEventData data)
+        {
+            var rayEvent = data.buttonData;
+            var currentOverGo = rayEvent.pointerCurrentRaycast.gameObject;
+
+            // PointerDown notification
+            if (data.PressedThisFrame())
+            {
+                rayEvent.eligibleForClick = true;
+                rayEvent.delta = Vector2.zero;
+                rayEvent.dragging = false;
+                rayEvent.useDragThreshold = true;
+                rayEvent.pressPosition = rayEvent.position;
+                rayEvent.pointerPressRaycast = rayEvent.pointerCurrentRaycast;
+
+                DeselectIfSelectionChanged(currentOverGo, rayEvent);
+
+                // search for the control that will receive the press
+                // if we can't find a press handler set the press
+                // handler to be what would receive a click.
+                var newPressed = ExecuteEvents.ExecuteHierarchy(currentOverGo, rayEvent, ExecuteEvents.pointerDownHandler);
+
+                // didnt find a press handler... search for a click handler
+                if (newPressed == null)
+                    newPressed = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
+
+                // Debug.Log("Pressed: " + newPressed);
+
+                var time = Time.unscaledTime;
+
+                if (newPressed == rayEvent.lastPress)
+                {
+                    var diffTime = time - rayEvent.clickTime;
+                    if (diffTime < 0.3f)
+                        ++rayEvent.clickCount;
+                    else
+                        rayEvent.clickCount = 1;
+
+                    rayEvent.clickTime = time;
+                }
+                else
+                {
+                    rayEvent.clickCount = 1;
+                }
+
+                rayEvent.pointerPress = newPressed;
+                rayEvent.rawPointerPress = currentOverGo;
+
+                rayEvent.clickTime = time;
+
+                // Save the drag handler as well
+                var dragHandler = ExecuteEvents.GetEventHandler<IDragHandler>(currentOverGo);
+                if (dragHandler == null)
+                    dragHandler = ExecuteEvents.GetEventHandler<IRayDragHandler>(currentOverGo);
+
+                rayEvent.pointerDrag = dragHandler;
+
+                if (dragHandler != null)
+                    ExecuteEvents.Execute(dragHandler, rayEvent, ExecuteEvents.initializePotentialDrag);
+
+                m_InputRayEvent = rayEvent;
+            }
+
+            // PointerUp notification
+            if (data.ReleasedThisFrame())
+            {
+                ReleaseMouse(rayEvent, currentOverGo);
+            }
+        }
+
+        public override void UpdateModule()
+        {
+            if (!eventSystem.isFocused && ShouldIgnoreEventsOnNoFocus())
+            {
+                if (m_InputRayEvent != null && m_InputRayEvent.pointerDrag != null && m_InputRayEvent.dragging)
+                {
+                    ReleaseMouse(m_InputRayEvent, m_InputRayEvent.pointerCurrentRaycast.gameObject);
+                }
+
+                m_InputRayEvent = null;
+
+                return;
+            }
+
+            //m_LastMousePosition = m_RayMousePosition;
+            m_RayMousePosition = input.mousePosition;
+        }
+
+        void ReleaseMouse(RayEventData pointerEvent, GameObject currentOverGo)
+        {
+            ExecuteEvents.Execute(pointerEvent.pointerPress, pointerEvent, ExecuteEvents.pointerUpHandler);
+
+            var pointerUpHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
+
+            // PointerClick and Drop events
+            if (pointerEvent.pointerPress == pointerUpHandler && pointerEvent.eligibleForClick)
+            {
+                ExecuteEvents.Execute(pointerEvent.pointerPress, pointerEvent, ExecuteEvents.pointerClickHandler);
+            }
+            else if (pointerEvent.pointerDrag != null && pointerEvent.dragging)
+            {
+                ExecuteEvents.ExecuteHierarchy(currentOverGo, pointerEvent, ExecuteEvents.dropHandler);
+            }
+
+            pointerEvent.eligibleForClick = false;
+            pointerEvent.pointerPress = null;
+            pointerEvent.rawPointerPress = null;
+
+            if (pointerEvent.pointerDrag != null && pointerEvent.dragging)
+            {
+                ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteEvents.endDragHandler);
+                ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteRayEvents.endDragHandler);
+            }
+
+            pointerEvent.dragging = false;
+            pointerEvent.pointerDrag = null;
+
+            // redo pointer enter / exit to refresh state
+            // so that if we moused over something that ignored it before
+            // due to having pressed on something else
+            // it now gets it.
+            if (currentOverGo != pointerEvent.pointerEnter)
+            {
+                HandlePointerExitAndEnter(pointerEvent, null);
+                HandlePointerExitAndEnter(pointerEvent, currentOverGo);
+            }
+
+            m_InputRayEvent = pointerEvent;
         }
 
         static bool HoveringInteractable(RayEventData eventData, GameObject currentObject, out bool hasScrollHandler)
@@ -414,6 +964,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 {
                     var hovered = cachedEventData.hovered[i];
 
+                    ExecuteEvents.Execute(hovered, eventData, ExecuteEvents.pointerExitHandler);
                     ExecuteEvents.Execute(hovered, eventData, ExecuteRayEvents.rayExitHandler);
                     if (rayExited != null)
                         rayExited(hovered, eventData);
@@ -431,9 +982,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     var transform = newEnterTarget.transform;
                     while (transform != null)
                     {
-                        ExecuteEvents.Execute(transform.gameObject, cachedEventData, ExecuteRayEvents.rayHoverHandler);
+                        var hovered = transform.gameObject;
+                        ExecuteEvents.Execute(hovered, cachedEventData, ExecuteRayEvents.rayHoverHandler);
                         if (rayHovering != null)
-                            rayHovering(transform.gameObject, cachedEventData);
+                            rayHovering(hovered, cachedEventData);
 
                         transform = transform.parent;
                     }
@@ -457,9 +1009,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (commonRoot != null && commonRoot.transform == transform)
                         break;
 
-                    ExecuteEvents.Execute(transform.gameObject, cachedEventData, ExecuteRayEvents.rayExitHandler);
+                    var hovered = transform.gameObject;
+                    ExecuteEvents.Execute(hovered, cachedEventData, ExecuteEvents.pointerExitHandler);
+                    ExecuteEvents.Execute(hovered, cachedEventData, ExecuteRayEvents.rayExitHandler);
                     if (rayExited != null)
-                        rayExited(transform.gameObject, cachedEventData);
+                        rayExited(hovered, cachedEventData);
 
                     transform = transform.parent;
                 }
@@ -472,9 +1026,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var transform = newEnterTarget.transform;
                 while (transform != null && transform.gameObject != commonRoot)
                 {
-                    ExecuteEvents.Execute(transform.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
+                    var hovered = transform.gameObject;
+                    ExecuteEvents.Execute(hovered, cachedEventData, ExecuteEvents.pointerEnterHandler);
+                    ExecuteEvents.Execute(hovered, cachedEventData, ExecuteRayEvents.rayEnterHandler);
                     if (rayEntered != null)
-                        rayEntered(transform.gameObject, cachedEventData);
+                        rayEntered(hovered, cachedEventData);
 
                     transform = transform.parent;
                 }
@@ -525,6 +1081,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
 
                 var draggedObject = ExecuteEvents.GetEventHandler<IDragHandler>(hoveredObject);
+                if (draggedObject == null)
+                    draggedObject = ExecuteEvents.GetEventHandler<IRayDragHandler>(hoveredObject);
+
                 eventData.pointerDrag = draggedObject;
                 source.draggedObject = draggedObject;
 
@@ -596,6 +1155,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             eventData.delta = Vector2.zero;
             eventData.position = source.position;
             eventData.scrollDelta = Vector2.zero;
+
+            var ray = eventCamera.ScreenPointToRay(source.position);
+            Debug.DrawRay(ray.origin, ray.direction * 10);
 
             eventSystem.RaycastAll(eventData, m_RaycastResultCache);
             eventData.pointerCurrentRaycast = FindFirstRaycast(m_RaycastResultCache);
