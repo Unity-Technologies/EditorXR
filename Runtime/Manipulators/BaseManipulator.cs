@@ -136,6 +136,9 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
         protected virtual void UpdateHandleTip(BaseHandle handle, HandleEventData eventData, bool active)
         {
             var rayOrigin = eventData.rayOrigin;
+            if (rayOrigin == null)
+                rayOrigin = eventData.camera.transform;
+
             HandleTip handleTip;
             Renderer handleTipRenderer;
             if (!m_HandleTips.TryGetValue(rayOrigin, out handleTip))
@@ -228,6 +231,9 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
         protected virtual void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData)
         {
             var rayOrigin = eventData.rayOrigin;
+            if (rayOrigin == null)
+                rayOrigin = eventData.camera.transform;
+
             if (handle.IndexOfHoverSource(rayOrigin) > 0)
                 return;
 
@@ -240,7 +246,11 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
         protected virtual void OnHandleHovering(BaseHandle handle, HandleEventData eventData)
         {
-            if (handle.IndexOfHoverSource(eventData.rayOrigin) > 0)
+            var rayOrigin = eventData.rayOrigin;
+            if (rayOrigin == null)
+                rayOrigin = eventData.camera.transform;
+
+            if (handle.IndexOfHoverSource(rayOrigin) > 0)
                 return;
 
             if (!handle.hasDragSource)
@@ -250,6 +260,9 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
         protected virtual void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData)
         {
             var rayOrigin = eventData.rayOrigin;
+            if (rayOrigin == null)
+                rayOrigin = eventData.camera.transform;
+
             if (handle.IndexOfHoverSource(rayOrigin) > 0)
                 return;
 
@@ -265,6 +278,9 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
         protected virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
         {
             var rayOrigin = eventData.rayOrigin;
+            if (rayOrigin == null)
+                rayOrigin = eventData.camera.transform;
+
             if (handle.IndexOfDragSource(rayOrigin) > 0)
                 return;
 
@@ -285,7 +301,11 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
         protected virtual void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
         {
-            if (handle.IndexOfDragSource(eventData.rayOrigin) != 0)
+            var rayOrigin = eventData.rayOrigin;
+            if (rayOrigin == null)
+                rayOrigin = eventData.camera.transform;
+
+            if (handle.IndexOfDragSource(rayOrigin) != 0)
                 return;
 
             UpdateHandleTip(handle, eventData, true);
@@ -294,6 +314,8 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
         protected virtual void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
         {
             var rayOrigin = eventData.rayOrigin;
+            if (rayOrigin == null)
+                rayOrigin = eventData.camera.transform;
 
             UpdateHandleTip(handle, eventData, false);
 

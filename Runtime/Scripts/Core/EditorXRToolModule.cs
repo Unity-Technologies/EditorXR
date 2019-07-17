@@ -14,14 +14,14 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class ToolData
+    public class ToolData
     {
         public ITool tool;
         public ActionMapInput input;
         public Sprite icon;
     }
 
-    class EditorXRToolModule : MonoBehaviour,
+    public class EditorXRToolModule : MonoBehaviour,
         IInterfaceConnector, IUsesConnectInterfaces, IDelayedInitializationModule,
         IUsesFunctionalityInjection, IProvidesSelectTool
     {
@@ -300,12 +300,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
         /// <param name="rayOrigin">The ray origin on which to spawn th tool</param>
         /// <param name="deviceInputModule">The device input module, if it exists</param>
         /// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
-        ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device, Transform rayOrigin,
+        public ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device, Transform rayOrigin,
             DeviceInputModule deviceInputModule)
         {
             usedDevices = new HashSet<InputDevice>();
             if (!typeof(ITool).IsAssignableFrom(toolType))
+            {
+                Debug.LogWarningFormat("Cannot spawn {0} which is not an ITool", toolType.Name);
                 return null;
+            }
 
             var deviceSlots = new HashSet<DeviceSlot>();
             var tool = EditorXRUtils.AddComponent(toolType, gameObject) as ITool;

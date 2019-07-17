@@ -192,100 +192,100 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public class ScreenRaycastSource : IRaycastSource
-        {
-            MultipleRayInputModule m_Owner;
-
-            public RayEventData eventData { get; private set; }
-            public bool blocked { get; set; }
-            public Transform rayOrigin { get; private set; }
-
-            public GameObject hoveredObject { get; private set; }
-            public GameObject draggedObject { get; set; }
-            public Camera eventCamera { get; private set; }
-            public Vector2 position { get { return UnityEngine.Input.mousePosition; } }
-
-            public Func<IRaycastSource, bool> isValid;
-
-            public bool hasObject { get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; } }
-
-            public GameObject currentObject { get { return hoveredObject ? hoveredObject : draggedObject; } }
-
-            public ScreenRaycastSource(Camera camera, MultipleRayInputModule owner)
-            {
-                m_Owner = owner;
-                eventCamera = camera;
-                rayOrigin = camera.transform;
-            }
-
-            public void Update()
-            {
-                if (eventData == null)
-                    eventData = new RayEventData(m_Owner.eventSystem);
-
-                hoveredObject = m_Owner.GetRayIntersection(this); // Check all currently running raycasters
-
-                eventData.node = Node.None;
-                eventData.rayOrigin = rayOrigin;
-                eventData.pointerLength = m_Owner.GetPointerLength(eventData.rayOrigin);
-                eventData.useDragThreshold = true;
-
-                if (isValid != null && !isValid(this))
-                {
-                    var currentRaycast = eventData.pointerCurrentRaycast;
-                    currentRaycast.gameObject = null;
-                    eventData.pointerCurrentRaycast = currentRaycast;
-                    hoveredObject = null;
-                    m_Owner.HandlePointerExitAndEnter(eventData, null, true); // Send only exit events
-
-                    if (UnityEngine.Input.GetMouseButtonUp(0))
-                        m_Owner.OnSelectReleased(this);
-
-                    return;
-                }
-
-                m_Owner.HandlePointerExitAndEnter(eventData, hoveredObject); // Send enter and exit events
-
-                var hasScrollHandler = false;
-                var hasInteractable = hasObject && HoveringInteractable(eventData, currentObject, out hasScrollHandler);
-
-                // Proceed only if pointer is interacting with something
-                if (!hasInteractable)
-                {
-                    if (UnityEngine.Input.GetMouseButtonUp(0))
-                        m_Owner.OnSelectReleased(this);
-
-                    return;
-                }
-
-                // Send select pressed and released events
-                if (UnityEngine.Input.GetMouseButtonDown(0))
-                    m_Owner.OnSelectPressed(this);
-
-                if (UnityEngine.Input.GetMouseButtonUp(0))
-                {
-                    m_Owner.OnSelectReleased(this);
-                }
-                else
-                {
-                    m_Owner.ProcessMove(eventData);
-                    m_Owner.ProcessDrag(eventData);
-                }
-
-                // Send scroll events
-                if (currentObject && hasScrollHandler)
-                {
-                    var scrollDelta = UnityEngine.Input.mouseScrollDelta;
-                    var verticalScrollValue = scrollDelta.y;
-                    var horizontalScrollValue = scrollDelta.x;
-                    if (!Mathf.Approximately(verticalScrollValue, 0f) || !Mathf.Approximately(horizontalScrollValue, 0f))
-                    {
-                        eventData.scrollDelta = new Vector2(horizontalScrollValue, verticalScrollValue);
-                        ExecuteEvents.ExecuteHierarchy(currentObject, eventData, ExecuteEvents.scrollHandler);
-                    }
-                }
-            }
-        }
+//        public class ScreenRaycastSource : IRaycastSource
+//        {
+//            MultipleRayInputModule m_Owner;
+//
+//            public RayEventData eventData { get; private set; }
+//            public bool blocked { get; set; }
+//            public Transform rayOrigin { get; private set; }
+//
+//            public GameObject hoveredObject { get; private set; }
+//            public GameObject draggedObject { get; set; }
+//            public Camera eventCamera { get; private set; }
+//            public Vector2 position { get { return UnityEngine.Input.mousePosition; } }
+//
+//            public Func<IRaycastSource, bool> isValid;
+//
+//            public bool hasObject { get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; } }
+//
+//            public GameObject currentObject { get { return hoveredObject ? hoveredObject : draggedObject; } }
+//
+//            public ScreenRaycastSource(Camera camera, MultipleRayInputModule owner)
+//            {
+//                m_Owner = owner;
+//                eventCamera = camera;
+//                rayOrigin = camera.transform;
+//            }
+//
+//            public void Update()
+//            {
+//                if (eventData == null)
+//                    eventData = new RayEventData(m_Owner.eventSystem);
+//
+//                hoveredObject = m_Owner.GetRayIntersection(this); // Check all currently running raycasters
+//
+//                eventData.node = Node.None;
+//                eventData.rayOrigin = rayOrigin;
+//                eventData.pointerLength = m_Owner.GetPointerLength(eventData.rayOrigin);
+//                eventData.useDragThreshold = true;
+//
+//                if (isValid != null && !isValid(this))
+//                {
+//                    var currentRaycast = eventData.pointerCurrentRaycast;
+//                    currentRaycast.gameObject = null;
+//                    eventData.pointerCurrentRaycast = currentRaycast;
+//                    hoveredObject = null;
+//                    m_Owner.HandlePointerExitAndEnter(eventData, null, true); // Send only exit events
+//
+//                    if (UnityEngine.Input.GetMouseButtonUp(0))
+//                        m_Owner.OnSelectReleased(this);
+//
+//                    return;
+//                }
+//
+//                m_Owner.HandlePointerExitAndEnter(eventData, hoveredObject); // Send enter and exit events
+//
+//                var hasScrollHandler = false;
+//                var hasInteractable = hasObject && HoveringInteractable(eventData, currentObject, out hasScrollHandler);
+//
+//                // Proceed only if pointer is interacting with something
+//                if (!hasInteractable)
+//                {
+//                    if (UnityEngine.Input.GetMouseButtonUp(0))
+//                        m_Owner.OnSelectReleased(this);
+//
+//                    return;
+//                }
+//
+//                // Send select pressed and released events
+//                if (UnityEngine.Input.GetMouseButtonDown(0))
+//                    m_Owner.OnSelectPressed(this);
+//
+//                if (UnityEngine.Input.GetMouseButtonUp(0))
+//                {
+//                    m_Owner.OnSelectReleased(this);
+//                }
+//                else
+//                {
+//                    m_Owner.ProcessMove(eventData);
+//                    m_Owner.ProcessDrag(eventData);
+//                }
+//
+//                // Send scroll events
+//                if (currentObject && hasScrollHandler)
+//                {
+//                    var scrollDelta = UnityEngine.Input.mouseScrollDelta;
+//                    var verticalScrollValue = scrollDelta.y;
+//                    var horizontalScrollValue = scrollDelta.x;
+//                    if (!Mathf.Approximately(verticalScrollValue, 0f) || !Mathf.Approximately(horizontalScrollValue, 0f))
+//                    {
+//                        eventData.scrollDelta = new Vector2(horizontalScrollValue, verticalScrollValue);
+//                        ExecuteEvents.ExecuteHierarchy(currentObject, eventData, ExecuteEvents.scrollHandler);
+//                    }
+//                }
+//            }
+//        }
 
         public class MouseButtonRayEventData
         {
@@ -581,33 +581,33 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        void ProcessTouchPress(RayEventData pointerEvent, bool pressed, bool released)
+        void ProcessTouchPress(RayEventData rayEvent, bool pressed, bool released)
         {
-            var currentOverGo = pointerEvent.pointerCurrentRaycast.gameObject;
+            var currentOverGo = rayEvent.pointerCurrentRaycast.gameObject;
 
             // PointerDown notification
             if (pressed)
             {
-                pointerEvent.eligibleForClick = true;
-                pointerEvent.delta = Vector2.zero;
-                pointerEvent.dragging = false;
-                pointerEvent.useDragThreshold = true;
-                pointerEvent.pressPosition = pointerEvent.position;
-                pointerEvent.pointerPressRaycast = pointerEvent.pointerCurrentRaycast;
+                rayEvent.eligibleForClick = true;
+                rayEvent.delta = Vector2.zero;
+                rayEvent.dragging = false;
+                rayEvent.useDragThreshold = true;
+                rayEvent.pressPosition = rayEvent.position;
+                rayEvent.pointerPressRaycast = rayEvent.pointerCurrentRaycast;
 
-                DeselectIfSelectionChanged(currentOverGo, pointerEvent);
+                DeselectIfSelectionChanged(currentOverGo, rayEvent);
 
-                if (pointerEvent.pointerEnter != currentOverGo)
+                if (rayEvent.pointerEnter != currentOverGo)
                 {
                     // send a pointer enter to the touched element if it isn't the one to select...
-                    HandlePointerExitAndEnter(pointerEvent, currentOverGo);
-                    pointerEvent.pointerEnter = currentOverGo;
+                    HandlePointerExitAndEnter(rayEvent, currentOverGo);
+                    rayEvent.pointerEnter = currentOverGo;
                 }
 
                 // search for the control that will receive the press
                 // if we can't find a press handler set the press
                 // handler to be what would receive a click.
-                var newPressed = ExecuteEvents.ExecuteHierarchy(currentOverGo, pointerEvent, ExecuteEvents.pointerDownHandler);
+                var newPressed = ExecuteEvents.ExecuteHierarchy(currentOverGo, rayEvent, ExecuteEvents.pointerDownHandler);
 
                 // didnt find a press handler... search for a click handler
                 if (newPressed == null)
@@ -617,44 +617,44 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 var time = Time.unscaledTime;
 
-                if (newPressed == pointerEvent.lastPress)
+                if (newPressed == rayEvent.lastPress)
                 {
-                    var diffTime = time - pointerEvent.clickTime;
+                    var diffTime = time - rayEvent.clickTime;
                     if (diffTime < 0.3f)
-                        ++pointerEvent.clickCount;
+                        ++rayEvent.clickCount;
                     else
-                        pointerEvent.clickCount = 1;
+                        rayEvent.clickCount = 1;
 
-                    pointerEvent.clickTime = time;
+                    rayEvent.clickTime = time;
                 }
                 else
                 {
-                    pointerEvent.clickCount = 1;
+                    rayEvent.clickCount = 1;
                 }
 
-                pointerEvent.pointerPress = newPressed;
-                pointerEvent.rawPointerPress = currentOverGo;
+                rayEvent.pointerPress = newPressed;
+                rayEvent.rawPointerPress = currentOverGo;
 
-                pointerEvent.clickTime = time;
+                rayEvent.clickTime = time;
 
                 // Save the drag handler as well
                 var dragHandler = ExecuteEvents.GetEventHandler<IDragHandler>(currentOverGo);
                 if (dragHandler == null)
                     dragHandler = ExecuteEvents.GetEventHandler<IRayDragHandler>(currentOverGo);
 
-                pointerEvent.pointerDrag = dragHandler;
+                rayEvent.pointerDrag = dragHandler;
 
                 if (dragHandler != null)
-                    ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteEvents.initializePotentialDrag);
+                    ExecuteEvents.Execute(rayEvent.pointerDrag, rayEvent, ExecuteEvents.initializePotentialDrag);
 
-                m_InputRayEvent = pointerEvent;
+                m_InputRayEvent = rayEvent;
             }
 
             // PointerUp notification
             if (released)
             {
                 // Debug.Log("Executing pressup on: " + pointer.pointerPress);
-                ExecuteEvents.Execute(pointerEvent.pointerPress, pointerEvent, ExecuteEvents.pointerUpHandler);
+                ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteEvents.pointerUpHandler);
 
                 // Debug.Log("KeyCode: " + pointer.eventData.keyCode);
 
@@ -662,33 +662,33 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var pointerUpHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
 
                 // PointerClick and Drop events
-                if (pointerEvent.pointerPress == pointerUpHandler && pointerEvent.eligibleForClick)
+                if (rayEvent.pointerPress == pointerUpHandler && rayEvent.eligibleForClick)
                 {
-                    ExecuteEvents.Execute(pointerEvent.pointerPress, pointerEvent, ExecuteEvents.pointerClickHandler);
+                    ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteEvents.pointerClickHandler);
                 }
-                else if (pointerEvent.pointerDrag != null && pointerEvent.dragging)
+                else if (rayEvent.pointerDrag != null && rayEvent.dragging)
                 {
-                    ExecuteEvents.ExecuteHierarchy(currentOverGo, pointerEvent, ExecuteEvents.dropHandler);
-                }
-
-                pointerEvent.eligibleForClick = false;
-                pointerEvent.pointerPress = null;
-                pointerEvent.rawPointerPress = null;
-
-                if (pointerEvent.pointerDrag != null && pointerEvent.dragging)
-                {
-                    ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteEvents.endDragHandler);
-                    ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteRayEvents.endDragHandler);
+                    ExecuteEvents.ExecuteHierarchy(currentOverGo, rayEvent, ExecuteEvents.dropHandler);
                 }
 
-                pointerEvent.dragging = false;
-                pointerEvent.pointerDrag = null;
+                rayEvent.eligibleForClick = false;
+                rayEvent.pointerPress = null;
+                rayEvent.rawPointerPress = null;
+
+                if (rayEvent.pointerDrag != null && rayEvent.dragging)
+                {
+                    ExecuteEvents.Execute(rayEvent.pointerDrag, rayEvent, ExecuteEvents.endDragHandler);
+                    ExecuteEvents.Execute(rayEvent.pointerDrag, rayEvent, ExecuteRayEvents.endDragHandler);
+                }
+
+                rayEvent.dragging = false;
+                rayEvent.pointerDrag = null;
 
                 // send exit events as we need to simulate this on touch up on touch device
-                ExecuteEvents.ExecuteHierarchy(pointerEvent.pointerEnter, pointerEvent, ExecuteEvents.pointerExitHandler);
-                pointerEvent.pointerEnter = null;
+                ExecuteEvents.ExecuteHierarchy(rayEvent.pointerEnter, rayEvent, ExecuteEvents.pointerExitHandler);
+                rayEvent.pointerEnter = null;
 
-                m_InputRayEvent = pointerEvent;
+                m_InputRayEvent = rayEvent;
             }
         }
 
@@ -722,15 +722,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        bool GetPointerData(int id, out RayEventData data, bool create)
+        bool GetRayData(int id, out RayEventData data, bool create)
         {
             if (!m_PointerData.TryGetValue(id, out data) && create)
             {
                 data = new RayEventData(eventSystem)
                 {
                     pointerId = id,
-                    rayOrigin = transform
+                    camera = CameraUtils.GetMainCamera()
                 };
+
+                Debug.Log("setup " + data.camera);
+
                 m_PointerData.Add(id, data);
                 return true;
             }
@@ -741,7 +744,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             // Populate the left button...
             RayEventData leftData;
-            var created = GetPointerData(kMouseLeftId, out leftData, true);
+            var created = GetRayData(kMouseLeftId, out leftData, true);
 
             leftData.Reset();
 
@@ -760,21 +763,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 leftData.delta = pos - leftData.position;
                 leftData.position = pos;
             }
+
             leftData.scrollDelta = input.mouseScrollDelta;
             leftData.button = PointerEventData.InputButton.Left;
             eventSystem.RaycastAll(leftData, m_RaycastResultCache);
             var raycast = FindFirstRaycast(m_RaycastResultCache);
             leftData.pointerCurrentRaycast = raycast;
+            //Debug.Log(raycast.worldPosition);
             m_RaycastResultCache.Clear();
 
             // copy the apropriate data into right and middle slots
             RayEventData rightData;
-            GetPointerData(kMouseRightId, out rightData, true);
+            GetRayData(kMouseRightId, out rightData, true);
             CopyFromTo(leftData, rightData);
             rightData.button = PointerEventData.InputButton.Right;
 
             RayEventData middleData;
-            GetPointerData(kMouseMiddleId, out middleData, true);
+            GetRayData(kMouseMiddleId, out middleData, true);
             CopyFromTo(leftData, middleData);
             middleData.button = PointerEventData.InputButton.Middle;
 
@@ -879,46 +884,46 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_RayMousePosition = input.mousePosition;
         }
 
-        void ReleaseMouse(RayEventData pointerEvent, GameObject currentOverGo)
+        void ReleaseMouse(RayEventData rayEvent, GameObject currentOverGo)
         {
-            ExecuteEvents.Execute(pointerEvent.pointerPress, pointerEvent, ExecuteEvents.pointerUpHandler);
+            ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteEvents.pointerUpHandler);
 
             var pointerUpHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
 
             // PointerClick and Drop events
-            if (pointerEvent.pointerPress == pointerUpHandler && pointerEvent.eligibleForClick)
+            if (rayEvent.pointerPress == pointerUpHandler && rayEvent.eligibleForClick)
             {
-                ExecuteEvents.Execute(pointerEvent.pointerPress, pointerEvent, ExecuteEvents.pointerClickHandler);
+                ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteEvents.pointerClickHandler);
             }
-            else if (pointerEvent.pointerDrag != null && pointerEvent.dragging)
+            else if (rayEvent.pointerDrag != null && rayEvent.dragging)
             {
-                ExecuteEvents.ExecuteHierarchy(currentOverGo, pointerEvent, ExecuteEvents.dropHandler);
-            }
-
-            pointerEvent.eligibleForClick = false;
-            pointerEvent.pointerPress = null;
-            pointerEvent.rawPointerPress = null;
-
-            if (pointerEvent.pointerDrag != null && pointerEvent.dragging)
-            {
-                ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteEvents.endDragHandler);
-                ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteRayEvents.endDragHandler);
+                ExecuteEvents.ExecuteHierarchy(currentOverGo, rayEvent, ExecuteEvents.dropHandler);
             }
 
-            pointerEvent.dragging = false;
-            pointerEvent.pointerDrag = null;
+            rayEvent.eligibleForClick = false;
+            rayEvent.pointerPress = null;
+            rayEvent.rawPointerPress = null;
+
+            if (rayEvent.pointerDrag != null && rayEvent.dragging)
+            {
+                ExecuteEvents.Execute(rayEvent.pointerDrag, rayEvent, ExecuteEvents.endDragHandler);
+                ExecuteEvents.Execute(rayEvent.pointerDrag, rayEvent, ExecuteRayEvents.endDragHandler);
+            }
+
+            rayEvent.dragging = false;
+            rayEvent.pointerDrag = null;
 
             // redo pointer enter / exit to refresh state
             // so that if we moused over something that ignored it before
             // due to having pressed on something else
             // it now gets it.
-            if (currentOverGo != pointerEvent.pointerEnter)
+            if (currentOverGo != rayEvent.pointerEnter)
             {
-                HandlePointerExitAndEnter(pointerEvent, null);
-                HandlePointerExitAndEnter(pointerEvent, currentOverGo);
+                HandlePointerExitAndEnter(rayEvent, null);
+                HandlePointerExitAndEnter(rayEvent, currentOverGo);
             }
 
-            m_InputRayEvent = pointerEvent;
+            m_InputRayEvent = rayEvent;
         }
 
         static bool HoveringInteractable(RayEventData eventData, GameObject currentObject, out bool hasScrollHandler)
@@ -938,6 +943,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             var clone = m_TempRayEvent;
             clone.rayOrigin = eventData.rayOrigin;
+            clone.camera = eventData.camera;
+            clone.position = eventData.position;
+            clone.delta = eventData.delta;
             clone.node = eventData.node;
             clone.hovered.Clear();
             clone.hovered.AddRange(eventData.hovered);

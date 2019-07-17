@@ -37,6 +37,8 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         protected override HandleEventData GetHandleEventData(RayEventData eventData)
         {
             k_SphereHandleEventData.rayOrigin = eventData.rayOrigin;
+            k_SphereHandleEventData.camera = eventData.camera;
+            k_SphereHandleEventData.position = eventData.position;
             k_SphereHandleEventData.direct = UIUtils.IsDirectEvent(eventData);
             k_SphereHandleEventData.raycastHitDistance = eventData.pointerCurrentRaycast.distance;
 

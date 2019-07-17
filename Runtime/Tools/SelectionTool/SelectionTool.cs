@@ -15,7 +15,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
     [SpatialMenuItem("Selection", "Tools", "Select & manipulate objects in the scene")]
-    sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
+    public sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
         IUsesSetHighlight, IUsesSelectObject, IUsesSetManipulatorsVisible, IUsesIsHoveringOverUI, IUsesDirectSelection,
         ILinkedObject, IUsesCanGrabObject, IUsesGetManipulatorDragState, IUsesNode, IUsesGetRayVisibility,
         IUsesIsMainMenuVisible, IUsesIsInMiniWorld,IRayToNode, IUsesGetDefaultRayColor, IUsesSetDefaultRayColor,
@@ -195,7 +195,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
             }
 
-            m_NormalRayColor = this.GetDefaultRayColor(rayOrigin);
+            if (this.HasProvider<IProvidesGetDefaultRayColor>())
+                m_NormalRayColor = this.GetDefaultRayColor(rayOrigin);
+
             m_MultiselectRayColor = m_NormalRayColor;
             m_MultiselectRayColor = MaterialUtils.HueShift(m_MultiselectRayColor, k_MultiselectHueShift);
 

@@ -90,6 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         protected virtual HandleEventData GetHandleEventData(RayEventData eventData)
         {
             k_HandleEventData.rayOrigin = eventData.rayOrigin;
+            k_HandleEventData.camera = eventData.camera;
             k_HandleEventData.direct = UIUtils.IsDirectEvent(eventData);
             return k_HandleEventData;
         }
@@ -110,6 +111,9 @@ namespace UnityEditor.Experimental.EditorVR.Handles
                 return;
 
             var rayOrigin = eventData.rayOrigin;
+            if (rayOrigin == null)
+                rayOrigin = eventData.camera.transform;
+
             m_DragSources.Add(rayOrigin);
             startDragPositions[rayOrigin] = eventData.pointerCurrentRaycast.worldPosition;
 
@@ -136,7 +140,11 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
         public void OnEndDrag(RayEventData eventData)
         {
-            if (m_DragSources.Remove(eventData.rayOrigin))
+            var rayOrigin = eventData.rayOrigin;
+            if (rayOrigin == null)
+                rayOrigin = eventData.camera.transform;
+
+            if (m_DragSources.Remove(rayOrigin))
                 OnHandleDragEnded(GetHandleEventData(eventData));
         }
 
@@ -145,7 +153,11 @@ namespace UnityEditor.Experimental.EditorVR.Handles
             if (!UIUtils.IsValidEvent(eventData, selectionFlags))
                 return;
 
-            m_HoverSources.Add(eventData.rayOrigin);
+            var rayOrigin = eventData.rayOrigin;
+            if (rayOrigin == null)
+                rayOrigin = eventData.camera.transform;
+
+            m_HoverSources.Add(rayOrigin);
             OnHandleHoverStarted(GetHandleEventData(eventData));
         }
 
@@ -157,15 +169,19 @@ namespace UnityEditor.Experimental.EditorVR.Handles
             // because the pointer wasn't close enough to the handle
             if (selectionFlags == SelectionFlags.Direct)
             {
-                if (!handleEventData.direct && m_HoverSources.Remove(eventData.rayOrigin))
+                var rayOrigin = eventData.rayOrigin;
+                if (rayOrigin == null)
+                    rayOrigin = eventData.camera.transform;
+
+                if (!handleEventData.direct && m_HoverSources.Remove(rayOrigin))
                 {
                     OnHandleHoverEnded(handleEventData);
                     return;
                 }
 
-                if (handleEventData.direct && !m_HoverSources.Contains(eventData.rayOrigin))
+                if (handleEventData.direct && !m_HoverSources.Contains(rayOrigin))
                 {
-                    m_HoverSources.Add(eventData.rayOrigin);
+                    m_HoverSources.Add(rayOrigin);
                     OnHandleHoverStarted(handleEventData);
                 }
             }
@@ -176,7 +192,11 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
         public void OnRayExit(RayEventData eventData)
         {
-            if (m_HoverSources.Remove(eventData.rayOrigin))
+            var rayOrigin = eventData.rayOrigin;
+            if (rayOrigin == null)
+                rayOrigin = eventData.camera.transform;
+
+            if (m_HoverSources.Remove(rayOrigin))
                 OnHandleHoverEnded(GetHandleEventData(eventData));
         }
 

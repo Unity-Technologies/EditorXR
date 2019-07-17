@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         Image m_TextPanel;
-        
+
         [SerializeField]
         TextMeshProUGUI m_Text;
 #pragma warning restore 649
@@ -83,10 +83,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public void OnRayEnter(RayEventData eventData)
         {
-            m_InteractingRayOrigin = eventData.rayOrigin;
+            var rayOrigin = eventData.rayOrigin;
+            if (rayOrigin == null)
+                rayOrigin = eventData.camera.transform;
+
+            m_InteractingRayOrigin = rayOrigin;
 
             if (hovered != null)
-                hovered(eventData.rayOrigin);
+                hovered(rayOrigin);
         }
 
         void OnButtonClicked()

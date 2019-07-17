@@ -37,14 +37,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [RequiresTag(VRPlayerTag)]
 #endif
     [ModuleOrder(ModuleOrders.EditorVRLoadOrder)]
-    sealed class EditorVR : IEditor, IModule, IUsesConnectInterfaces, IInterfaceConnector
+    sealed class EditorVR : IEditor, IModule, IUsesConnectInterfaces
     {
         const HideFlags k_DefaultHideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
         internal const string VRPlayerTag = "VRPlayer";
         const string k_PreserveLayout = "EditorVR.PreserveLayout";
         const string k_IncludeInBuilds = "EditorVR.IncludeInBuilds";
-
-        event Action selectionChanged;
 
         static bool s_IsInitialized;
         EditorXRMiniWorldModule m_MiniWorldModule;
@@ -67,8 +65,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static Type DefaultAlternateMenu { get; set; }
         internal static Type[] HiddenTypes { get; set; }
         internal static Action UpdateInputManager { private get; set; }
-
-        public int connectInterfaceOrder { get { return 0; } }
 
 #if !FI_AUTOFILL
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
@@ -116,8 +112,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal void Initialize()
         {
-            Selection.selectionChanged += OnSelectionChanged;
-
             if (UpdateInputManager != null)
                 UpdateInputManager();
 
@@ -132,9 +126,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomCuratedLightGradient();
             UnityBrandColorScheme.saturatedSessionGradient = UnityBrandColorScheme.GetRandomCuratedGradient();
-
-            // In case we have anything selected at start, set up manipulators, inspector, etc.
-            EditorApplication.delayCall += OnSelectionChanged;
 
             var delayedInitializationModules = new List<IDelayedInitializationModule>();
             foreach (var module in ModuleLoaderCore.instance.modules)
@@ -188,12 +179,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 #endif
 
-        void OnSelectionChanged()
-        {
-            if (selectionChanged != null)
-                selectionChanged();
-        }
-
         internal void Shutdown()
         {
             var delayedInitializationModules = new List<IDelayedInitializationModule>();
@@ -210,11 +195,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 module.Shutdown();
             }
-
-            Selection.selectionChanged -= OnSelectionChanged;
-
-            // Suppress MissingReferenceException in tests
-            EditorApplication.delayCall -= OnSelectionChanged;
 
 #if UNITY_EDITOR
             DrivenRectTransformTracker.StartRecordingUndo();
@@ -257,20 +237,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (activeView)
                 activeView.Close();
 #endif
-        }
-
-        public void ConnectInterface(object target, object userData = null)
-        {
-            var selectionChanged = target as ISelectionChanged;
-            if (selectionChanged != null)
-                this.selectionChanged += selectionChanged.OnSelectionChanged;
-        }
-
-        public void DisconnectInterface(object target, object userData = null)
-        {
-            var selectionChanged = target as ISelectionChanged;
-            if (selectionChanged != null)
-                this.selectionChanged -= selectionChanged.OnSelectionChanged;
         }
     }
 #else

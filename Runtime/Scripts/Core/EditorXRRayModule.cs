@@ -644,7 +644,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     return dpr.GetColor();
             }
 
-            return m_HighlightModule.highlightColor;
+            if (m_HighlightModule != null)
+                return m_HighlightModule.highlightColor;
+
+            return default(Color);
         }
 
         public void OnSelectionChanged()

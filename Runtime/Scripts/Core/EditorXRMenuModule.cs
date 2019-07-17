@@ -486,6 +486,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             var eventData = source.eventData;
             var rayOrigin = eventData.rayOrigin;
+            if (rayOrigin == null)
+                rayOrigin = eventData.camera.transform;
 
             DeviceData deviceData = null;
             foreach (var currentDevice in m_ToolModule.deviceData)

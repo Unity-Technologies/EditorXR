@@ -12,6 +12,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public Transform rayOrigin { get; set; }
 
         /// <summary>
+        /// The camera from where the ray is cast if this event came from the screen
+        /// </summary>
+        public Camera camera { get; set; }
+
+        /// <summary>
         /// The node associated with the ray
         /// </summary>
         public Node node { get; set; }

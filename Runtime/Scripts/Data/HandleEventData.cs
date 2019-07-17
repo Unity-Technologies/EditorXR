@@ -10,12 +10,19 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         /// <summary>
         /// The source transform from where the ray is cast
         /// </summary>
-        public Transform rayOrigin;
+        public Transform rayOrigin { get; set; }
+
+        /// <summary>
+        /// The camera from where the ray is cast if this event came from the screen
+        /// </summary>
+        public Camera camera { get; set; }
 
         /// <summary>
         /// Whether this pointer was within range to be considered "direct"
         /// </summary>
         public bool direct;
+
+        public Vector3 position;
 
         /// <summary>
         /// Change in position between last frame and this frame

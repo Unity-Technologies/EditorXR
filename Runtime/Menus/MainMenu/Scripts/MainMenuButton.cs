@@ -52,8 +52,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 if (m_Description)
                     descriptionText = m_Description.text;
 
+                var rayOrigin = eventData.rayOrigin;
+                if (rayOrigin == null)
+                    rayOrigin = eventData.camera.transform;
+
                 if (hovered != null)
-                    hovered(eventData.rayOrigin, toolType, descriptionText);
+                    hovered(rayOrigin, toolType, descriptionText);
 
                 if (hoverStarted != null)
                     hoverStarted.Invoke();
@@ -67,9 +71,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             if (button.interactable)
             {
+                var rayOrigin = eventData.rayOrigin;
+                if (rayOrigin == null)
+                    rayOrigin = eventData.camera.transform;
 
                 if (hovered != null)
-                    hovered(eventData.rayOrigin, null, null);
+                    hovered(rayOrigin, null, null);
 
                 if (hoverEnded != null)
                     hoverEnded.Invoke();

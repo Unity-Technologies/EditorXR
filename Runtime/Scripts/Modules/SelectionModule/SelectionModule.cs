@@ -10,8 +10,9 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SelectionModule : ScriptableSettings<SelectionModule>, IModule, IUsesGameObjectLocking, ISelectionChanged,
-        IUsesControlHaptics, IRayToNode, IUsesContainsVRPlayerCompletely, IProvidesGrouping, IProvidesSelectObject
+    sealed class SelectionModule : ScriptableSettings<SelectionModule>, IDelayedInitializationModule,
+        IUsesGameObjectLocking, IUsesControlHaptics, IRayToNode, IUsesContainsVRPlayerCompletely,
+        IProvidesGrouping, IProvidesSelectObject, IInterfaceConnector
     {
 #pragma warning disable 649
         [SerializeField]
@@ -21,9 +22,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         GameObject m_CurrentGroupRoot;
         readonly Dictionary<GameObject, GameObject> m_GroupMap = new Dictionary<GameObject, GameObject>(); // Maps objects to their group parent
 
+        event Action selectionChanged;
+
         public Func<GameObject, bool> overrideSelectObject { private get; set; }
 
         public event Action<Transform> selected;
+
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
 #if !FI_AUTOFILL
         IProvidesGameObjectLocking IFunctionalitySubscriber<IProvidesGameObjectLocking>.provider { get; set; }
@@ -129,13 +136,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 selected(rayOrigin);
         }
 
-        public void OnSelectionChanged()
-        {
-            // Selection can change outside of this module, so stay in sync
-            if (Selection.objects.Length == 0)
-                m_CurrentGroupRoot = null;
-        }
-
         GameObject GetGroupRoot(GameObject hoveredObject)
         {
             if (!hoveredObject)
@@ -186,5 +186,45 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         public void UnloadProvider() { }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var selectionChanged = target as ISelectionChanged;
+            if (selectionChanged != null)
+                this.selectionChanged += selectionChanged.OnSelectionChanged;
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var selectionChanged = target as ISelectionChanged;
+            if (selectionChanged != null)
+                this.selectionChanged -= selectionChanged.OnSelectionChanged;
+        }
+
+        void OnSelectionChanged()
+        {
+            // Selection can change outside of this module, so stay in sync
+            if (Selection.objects.Length == 0)
+                m_CurrentGroupRoot = null;
+
+            if (selectionChanged != null)
+                selectionChanged();
+        }
+
+        public void Initialize()
+        {
+            Selection.selectionChanged += OnSelectionChanged;
+
+            // In case we have anything selected at start, set up manipulators, inspector, etc.
+            EditorApplication.delayCall += OnSelectionChanged;
+        }
+
+        public void Shutdown()
+        {
+            Selection.selectionChanged -= OnSelectionChanged;
+
+            // Suppress MissingReferenceException in tests
+            EditorApplication.delayCall -= OnSelectionChanged;
+        }
     }
 }
