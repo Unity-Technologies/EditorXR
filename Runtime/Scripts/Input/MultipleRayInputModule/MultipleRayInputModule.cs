@@ -316,7 +316,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        protected class RayButtonState
+        class RayButtonState
         {
             private PointerEventData.InputButton m_Button = PointerEventData.InputButton.Left;
 
@@ -613,8 +613,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (newPressed == null)
                     newPressed = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
 
-                // Debug.Log("Pressed: " + newPressed);
-
                 var time = Time.unscaledTime;
 
                 if (newPressed == rayEvent.lastPress)
@@ -653,10 +651,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             // PointerUp notification
             if (released)
             {
-                // Debug.Log("Executing pressup on: " + pointer.pointerPress);
                 ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteEvents.pointerUpHandler);
-
-                // Debug.Log("KeyCode: " + pointer.eventData.keyCode);
 
                 // see if we mouse up on the same element that we clicked on...
                 var pointerUpHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
@@ -722,17 +717,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        bool GetRayData(int id, out RayEventData data, bool create)
+        bool GetScreenRayData(int id, out RayEventData data, bool create)
         {
             if (!m_PointerData.TryGetValue(id, out data) && create)
             {
+                var mainCamera = CameraUtils.GetMainCamera();
                 data = new RayEventData(eventSystem)
                 {
                     pointerId = id,
-                    camera = CameraUtils.GetMainCamera()
+                    rayOrigin = mainCamera.transform,
+                    camera = mainCamera
                 };
-
-                Debug.Log("setup " + data.camera);
 
                 m_PointerData.Add(id, data);
                 return true;
@@ -744,7 +739,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             // Populate the left button...
             RayEventData leftData;
-            var created = GetRayData(kMouseLeftId, out leftData, true);
+            var created = GetScreenRayData(kMouseLeftId, out leftData, true);
 
             leftData.Reset();
 
@@ -769,17 +764,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             eventSystem.RaycastAll(leftData, m_RaycastResultCache);
             var raycast = FindFirstRaycast(m_RaycastResultCache);
             leftData.pointerCurrentRaycast = raycast;
-            //Debug.Log(raycast.worldPosition);
             m_RaycastResultCache.Clear();
 
             // copy the apropriate data into right and middle slots
             RayEventData rightData;
-            GetRayData(kMouseRightId, out rightData, true);
+            GetScreenRayData(kMouseRightId, out rightData, true);
             CopyFromTo(leftData, rightData);
             rightData.button = PointerEventData.InputButton.Right;
 
             RayEventData middleData;
-            GetRayData(kMouseMiddleId, out middleData, true);
+            GetScreenRayData(kMouseMiddleId, out middleData, true);
             CopyFromTo(leftData, middleData);
             middleData.button = PointerEventData.InputButton.Middle;
 
@@ -821,8 +815,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 // didnt find a press handler... search for a click handler
                 if (newPressed == null)
                     newPressed = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
-
-                // Debug.Log("Pressed: " + newPressed);
 
                 var time = Time.unscaledTime;
 
@@ -1165,8 +1157,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             eventData.scrollDelta = Vector2.zero;
 
             var ray = eventCamera.ScreenPointToRay(source.position);
-            Debug.DrawRay(ray.origin, ray.direction * 10);
-
             eventSystem.RaycastAll(eventData, m_RaycastResultCache);
             eventData.pointerCurrentRaycast = FindFirstRaycast(m_RaycastResultCache);
             var hit = eventData.pointerCurrentRaycast.gameObject;

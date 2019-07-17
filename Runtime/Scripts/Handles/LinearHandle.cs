@@ -44,7 +44,6 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
         protected override HandleEventData GetHandleEventData(RayEventData eventData)
         {
-            //Debug.Log(eventData.pointerCurrentRaycast.worldPosition + "\n" + Environment.StackTrace);
             k_LinearHandleEventData.rayOrigin = eventData.rayOrigin;
             k_LinearHandleEventData.camera = eventData.camera;
             k_LinearHandleEventData.position = eventData.position;
@@ -57,9 +56,6 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         void UpdateEventData(LinearHandleEventData eventData, bool setLastPosition = true)
         {
             var rayOrigin = eventData.rayOrigin;
-            if (rayOrigin == null)
-                rayOrigin = eventData.camera.transform;
-
             var lastPosition = m_LastPositions[rayOrigin];
             var worldPosition = lastPosition;
 
@@ -76,21 +72,17 @@ namespace UnityEditor.Experimental.EditorVR.Handles
                 m_Plane.SetNormalAndPosition(transform.up, transform.position);
             }
 
-            float distance;
-            //Debug.Log(eventData.position);
-            var ray = eventData.rayOrigin == null ?
-                eventData.camera.ScreenPointToRay(eventData.position) :
-                new Ray(rayOrigin.position, rayOrigin.forward);
+            var ray = eventData.camera == null ?
+                new Ray(rayOrigin.position, rayOrigin.forward) :
+                eventData.camera.ScreenPointToRay(eventData.position);
 
-            Debug.DrawRay(ray.origin, ray.direction * 10);
+            float distance;
             if (m_Plane.Raycast(ray, out distance))
                 worldPosition = ray.GetPoint(Mathf.Min(distance, k_MaxDragDistance * this.GetViewerScale()));
 
             eventData.raycastHitWorldPosition = worldPosition;
 
             eventData.deltaPosition = Vector3.Project(worldPosition - lastPosition, transform.forward);
-
-            //Debug.Log(eventData.deltaPosition);
 
             if (setLastPosition)
                 m_LastPositions[rayOrigin] = worldPosition;

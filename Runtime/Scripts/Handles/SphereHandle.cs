@@ -102,7 +102,10 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         Vector3 GetRayPoint(HandleEventData eventData)
         {
             var rayOrigin = eventData.rayOrigin;
-            var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+            var ray = eventData.camera == null ?
+                new Ray(rayOrigin.position, rayOrigin.forward) :
+                eventData.camera.ScreenPointToRay(eventData.position);
+            
             return ray.GetPoint(m_CurrentRadius);
         }
     }

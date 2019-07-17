@@ -36,12 +36,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (m_CanvasGroup && !m_CanvasGroup.interactable)
                 return;
 
-            var rayOrigin = eventData.rayOrigin;
-            if (rayOrigin == null)
-                rayOrigin = eventData.camera.transform;
-
             if (m_Toggle.interactable && hovered != null)
-                hovered(rayOrigin);
+                hovered(eventData.rayOrigin);
         }
 
         public void OnRayExit(RayEventData eventData)
@@ -49,12 +45,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (m_CanvasGroup && !m_CanvasGroup.interactable)
                 return;
 
-            var rayOrigin = eventData.rayOrigin;
-            if (rayOrigin == null)
-                rayOrigin = eventData.camera.transform;
-
             if (m_Toggle.interactable && hovered != null)
-                hovered(rayOrigin);
+                hovered(eventData.rayOrigin);
         }
 
         public void OnPointerClick(PointerEventData eventData)

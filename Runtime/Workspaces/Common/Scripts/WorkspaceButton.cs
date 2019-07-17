@@ -463,11 +463,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public void OnRayEnter(RayEventData eventData)
         {
-            var rayOrigin = eventData.rayOrigin;
-            if (rayOrigin == null)
-                rayOrigin = eventData.camera.transform;
-
-            m_InteractingRayOrigin = rayOrigin;
+            m_InteractingRayOrigin = eventData.rayOrigin;
             if (hovered != null)
                 hovered(m_InteractingRayOrigin);
 

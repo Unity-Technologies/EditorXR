@@ -48,9 +48,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (dropReceiver != null)
             {
                 var rayOrigin = eventData.rayOrigin;
-                if (rayOrigin == null)
-                    rayOrigin = eventData.camera.transform;
-
                 if (dropReceiver.CanDrop(GetCurrentDropObject(rayOrigin)))
                 {
                     dropReceiver.OnDropHoverStarted();
@@ -69,9 +66,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (dropReceiver != null)
             {
                 var rayOrigin = eventData.rayOrigin;
-                if (rayOrigin == null)
-                    rayOrigin = eventData.camera.transform;
-
                 if (m_HoverObjects.Remove(rayOrigin))
                 {
                     dropReceiver.OnDropHoverEnded();
@@ -84,13 +78,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             var droppable = ComponentUtils<IDroppable>.GetComponent(gameObject);
             if (droppable != null)
-            {
-                var rayOrigin = eventData.rayOrigin;
-                if (rayOrigin == null)
-                    rayOrigin = eventData.camera.transform;
-
-                m_Droppables[rayOrigin] = droppable;
-            }
+                m_Droppables[eventData.rayOrigin] = droppable;
         }
 
         public void OnDragEnded(GameObject gameObject, RayEventData eventData)
@@ -99,9 +87,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (droppable != null)
             {
                 var rayOrigin = eventData.rayOrigin;
-                if (rayOrigin == null)
-                    rayOrigin = eventData.camera.transform;
-
                 m_Droppables.Remove(rayOrigin);
 
                 var dropReceiver = GetCurrentDropReceiver(rayOrigin);

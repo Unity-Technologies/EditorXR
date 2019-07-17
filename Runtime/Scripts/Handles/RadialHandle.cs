@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
         Plane m_Plane;
         readonly Dictionary<Transform, Vector3> m_LastPositions = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
-        readonly Dictionary<Transform, Vector3> m_LastDragForwards = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
+        readonly Dictionary<Transform, Vector3> m_LastRayDirection = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
 
         // Local method use only -- created here to reduce garbage collection
         static readonly RadialHandleEventData k_RadialHandleEventData = new RadialHandleEventData(null, false);
@@ -43,9 +43,10 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
             var radialEventData = (RadialHandleEventData)eventData;
             m_LastPositions[rayOrigin] = radialEventData.raycastHitWorldPosition;
-            m_LastDragForwards[rayOrigin] = rayOrigin.forward;
+            var forward = rayOrigin.forward;
+            m_LastRayDirection[rayOrigin] = forward;
 
-            m_Plane.SetNormalAndPosition(rayOrigin.forward, transform.position);
+            m_Plane.SetNormalAndPosition(forward, transform.position);
 
             base.OnHandleDragStarted(eventData);
         }
@@ -55,21 +56,26 @@ namespace UnityEditor.Experimental.EditorVR.Handles
             var rayOrigin = eventData.rayOrigin;
 
             var lastPosition = m_LastPositions[rayOrigin];
-            var lastDragForward = m_LastDragForwards[rayOrigin];
+            var lastDragForward = m_LastRayDirection[rayOrigin];
             var worldPosition = lastPosition;
 
+            var ray = eventData.camera == null ?
+                new Ray(rayOrigin.position, rayOrigin.forward) :
+                eventData.camera.ScreenPointToRay(eventData.position);
+
             float distance;
-            var ray = new Ray(rayOrigin.position, rayOrigin.forward);
             if (m_Plane.Raycast(ray, out distance))
                 worldPosition = ray.GetPoint(Mathf.Abs(distance));
 
-            var dragTangent = Vector3.Cross(transform.up, (startDragPositions[rayOrigin] - transform.position).normalized);
-            var angle = m_TurnSpeed * Vector3.Angle(rayOrigin.forward, lastDragForward) *
+            var transform = this.transform;
+            var up = transform.up;
+            var dragTangent = Vector3.Cross(up, (startDragPositions[rayOrigin] - transform.position).normalized);
+            var angle = m_TurnSpeed * Vector3.Angle(ray.direction, lastDragForward) *
                 Vector3.Dot((worldPosition - lastPosition).normalized, dragTangent);
-            eventData.deltaRotation = Quaternion.AngleAxis(angle, transform.up);
+            eventData.deltaRotation = Quaternion.AngleAxis(angle, up);
 
             m_LastPositions[rayOrigin] = worldPosition;
-            m_LastDragForwards[rayOrigin] = rayOrigin.forward;
+            m_LastRayDirection[rayOrigin] = ray.direction;
 
             base.OnHandleDragging(eventData);
         }
