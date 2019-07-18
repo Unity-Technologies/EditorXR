@@ -548,8 +548,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void ProcessDrag(RayEventData pointerEvent)
         {
-            if (!pointerEvent.IsPointerMoving() ||
-                Cursor.lockState == CursorLockMode.Locked ||
+            if (Cursor.lockState == CursorLockMode.Locked ||
                 pointerEvent.pointerDrag == null)
                 return;
 
