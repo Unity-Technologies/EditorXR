@@ -15,7 +15,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class DeviceData
+    public class DeviceData
     {
         public IProxy proxy;
         public InputDevice inputDevice;
@@ -45,8 +45,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         const string k_IncludeInBuilds = "EditorVR.IncludeInBuilds";
 
         static bool s_IsInitialized;
-        EditorXRMiniWorldModule m_MiniWorldModule;
-        EditorXRToolModule m_ToolModule;
 
         internal static bool preserveLayout
         {
@@ -201,34 +199,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
         }
 
-        internal void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
-        {
-            if (m_MiniWorldModule != null)
-                m_MiniWorldModule.UpdateMiniWorlds();
-
-            if (m_ToolModule == null)
-                return;
-
-            foreach (var device in m_ToolModule.deviceData)
-            {
-                if (!device.proxy.active)
-                    continue;
-
-                foreach (var toolData in device.toolData)
-                {
-                    var process = toolData.tool as IProcessInput;
-                    if (process != null && ((MonoBehaviour)toolData.tool).enabled
-                        && processedInputs.Add(process)) // Only process inputs for an instance of a tool once (e.g. two-handed tools)
-                        process.ProcessInput(toolData.input, consumeControl);
-                }
-            }
-        }
-
-        public void LoadModule()
-        {
-            m_MiniWorldModule = ModuleLoaderCore.instance.GetModule<EditorXRMiniWorldModule>();
-            m_ToolModule = ModuleLoaderCore.instance.GetModule<EditorXRToolModule>();
-        }
+        public void LoadModule() { }
 
         public void UnloadModule()
         {

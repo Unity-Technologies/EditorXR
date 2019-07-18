@@ -45,6 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Initialize()
         {
+            // TODO: Ensure all objects are disconnected so that this isn't necessary
             m_ConnectedInterfaces.Clear();
         }
 

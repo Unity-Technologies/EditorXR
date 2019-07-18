@@ -28,14 +28,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
         static readonly List<Type> k_AllTools = new List<Type>();
 
         readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
-//        LockModule m_LockModule;
-//        EditorXRMenuModule m_MenuModule;
-//        DeviceInputModule m_DeviceInputModule;
         EditorXRRayModule m_RayModule;
 
-        internal readonly List<DeviceData> deviceData = new List<DeviceData>();
+        List<Type> allTools { get { return k_AllTools; } }
 
-        internal List<Type> allTools { get { return k_AllTools; } }
+        public readonly List<DeviceData> deviceData = new List<DeviceData>();
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
@@ -190,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return EditorVR.DefaultTools.Contains(type);
         }
 
-        internal void SpawnDefaultTools(IProxy proxy)
+        public void SpawnDefaultTools(IProxy proxy)
         {
             var defaultTools = EditorVR.DefaultTools;
             var moduleLoaderCore = ModuleLoaderCore.instance;

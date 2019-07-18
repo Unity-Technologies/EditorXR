@@ -15,8 +15,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class EditorXRRayModule : ScriptableSettings<EditorXRRayModule>, IModuleDependency<HighlightModule>,
-        IModuleDependency<DeviceInputModule>, IModuleDependency<KeyboardModule>, IInterfaceConnector, IForEachRayOrigin,
+    class EditorXRRayModule : ScriptableSettings<EditorXRRayModule>,
+        IModuleDependency<DeviceInputModule>, IInterfaceConnector, IForEachRayOrigin,
         IUsesConnectInterfaces, IStandardIgnoreList, IDelayedInitializationModule, ISelectionChanged,
         IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults, IProvidesSetDefaultRayColor,
         IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings, IProvidesGetRayVisibility, IProvidesGetPreviewOrigin,
@@ -45,11 +45,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         StandardManipulator m_StandardManipulator;
         ScaleManipulator m_ScaleManipulator;
-        HighlightModule m_HighlightModule;
         EditorXRMiniWorldModule m_MiniWorldModule;
         IntersectionModule m_IntersectionModule;
         DeviceInputModule m_DeviceInputModule;
-        KeyboardModule m_KeyboardModule;
         WorkspaceModule m_WorkspaceModule;
         EditorXRDirectSelectionModule m_DirectSelectionModule;
         EditorXRMenuModule m_MenuModule;
@@ -75,19 +73,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
 #endif
 
-        public void ConnectDependency(HighlightModule dependency)
-        {
-            m_HighlightModule = dependency;
-        }
-
         public void ConnectDependency(DeviceInputModule dependency)
         {
             m_DeviceInputModule = dependency;
-        }
-
-        public void ConnectDependency(KeyboardModule dependency)
-        {
-            m_KeyboardModule = dependency;
         }
 
         public void LoadModule()
@@ -135,7 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var rayOrigin = userData as Transform;
             if (rayOrigin)
             {
-                var evrDeviceData = m_ToolModule.deviceData;
+                var deviceData = m_ToolModule.deviceData;
 
                 var ray = target as IUsesRayOrigin;
                 if (ray != null)
@@ -153,11 +141,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     rayOrigins.otherRayOrigins = otherRayOrigins;
                 }
 
-                var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+                var firstDeviceData = deviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 
                 var handedRay = target as IUsesNode;
-                if (handedRay != null && deviceData != null)
-                    handedRay.node = deviceData.node;
+                if (handedRay != null && firstDeviceData != null)
+                    handedRay.node = firstDeviceData.node;
             }
 
             var selectionModule = target as SelectionModule;
@@ -213,25 +201,25 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (uiModule)
                 m_InputModule = uiModule.InputModule;
 
-            var cameraRig = CameraUtils.GetCameraRig();
-            var proxyTypes = CollectionPool<List<Type>, Type>.GetCollection();
-            typeof(IProxy).GetImplementationsOfInterface(proxyTypes);
-            foreach (var proxyType in proxyTypes)
-            {
-                var proxy = (IProxy)EditorXRUtils.CreateGameObjectWithComponent(proxyType, cameraRig, false);
-                this.ConnectInterfaces(proxy);
-                this.InjectFunctionalitySingle(proxy);
-                var trackedObjectInput = m_DeviceInputModule.trackedObjectInput;
-                if (trackedObjectInput == null)
-                    Debug.LogError("Device Input Module not initialized--trackedObjectInput is null");
-
-                proxy.trackedObjectInput = trackedObjectInput;
-                proxy.activeChanged += () => OnProxyActiveChanged(proxy);
-
-                m_Proxies.Add(proxy);
-            }
-
-            CollectionPool<List<Type>, Type>.RecycleCollection(proxyTypes);
+//            var cameraRig = CameraUtils.GetCameraRig();
+//            var proxyTypes = CollectionPool<List<Type>, Type>.GetCollection();
+//            typeof(IProxy).GetImplementationsOfInterface(proxyTypes);
+//            foreach (var proxyType in proxyTypes)
+//            {
+//                var proxy = (IProxy)EditorXRUtils.CreateGameObjectWithComponent(proxyType, cameraRig, false);
+//                this.ConnectInterfaces(proxy);
+//                this.InjectFunctionalitySingle(proxy);
+//                var trackedObjectInput = m_DeviceInputModule.trackedObjectInput;
+//                if (trackedObjectInput == null)
+//                    Debug.LogError("Device Input Module not initialized--trackedObjectInput is null");
+//
+//                proxy.trackedObjectInput = trackedObjectInput;
+//                proxy.activeChanged += () => OnProxyActiveChanged(proxy);
+//
+//                m_Proxies.Add(proxy);
+//            }
+//
+//            CollectionPool<List<Type>, Type>.RecycleCollection(proxyTypes);
         }
 
         public void Shutdown()
@@ -245,9 +233,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (proxy.active)
             {
-                var evrDeviceData = m_ToolModule.deviceData;
-                if (!evrDeviceData.Any(dd => dd.proxy == proxy))
+                var deviceData = m_ToolModule.deviceData;
+                if (!deviceData.Any(dd => dd.proxy == proxy))
                 {
+                    var moduleLoaderCore = ModuleLoaderCore.instance;
+                    var keyboardModule = moduleLoaderCore.GetModule<KeyboardModule>();
+                    var highlightModule = moduleLoaderCore.GetModule<HighlightModule>();
                     foreach (var rayOriginPair in proxy.rayOrigins)
                     {
                         var node = rayOriginPair.Key;
@@ -262,12 +253,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             var deviceNode = m_DeviceInputModule.GetDeviceNode(device);
                             if (deviceNode == node)
                             {
-                                var deviceData = new DeviceData();
-                                evrDeviceData.Add(deviceData);
-                                deviceData.proxy = proxy;
-                                deviceData.node = node;
-                                deviceData.rayOrigin = rayOrigin;
-                                deviceData.inputDevice = device;
+                                var newDeviceData = new DeviceData();
+                                deviceData.Add(newDeviceData);
+                                newDeviceData.proxy = proxy;
+                                newDeviceData.node = node;
+                                newDeviceData.rayOrigin = rayOrigin;
+                                newDeviceData.inputDevice = device;
 
                                 if (!m_InputModule)
                                     continue;
@@ -313,10 +304,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         rayTransform.rotation = rayOrigin.rotation;
                         var dpr = rayTransform.GetComponent<DefaultProxyRay>();
                         this.InjectFunctionalitySingle(dpr);
-                        dpr.SetColor(m_HighlightModule.highlightColor);
+                        dpr.SetColor(highlightModule.highlightColor);
                         m_DefaultRays.Add(rayOrigin, dpr);
 
-                        m_KeyboardModule.SpawnKeyboardMallet(rayOrigin);
+                        keyboardModule.SpawnKeyboardMallet(rayOrigin);
 
                         var proxyExtras = m_ProxyExtras;
                         if (proxyExtras)
@@ -337,7 +328,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         tester.active = proxy.active;
                         m_IntersectionModule.AddTester(tester);
 
-                        m_HighlightModule.AddRayOriginForNode(node, rayOrigin);
+                        highlightModule.AddRayOriginForNode(node, rayOrigin);
 
                         if (m_WorkspaceModule != null)
                         {
@@ -632,7 +623,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     dpr.SetColor(color);
             }
 
-            m_HighlightModule.highlightColor = color;
+            var highlightModule = ModuleLoaderCore.instance.GetModule<HighlightModule>();
+            if (highlightModule != null)
+                highlightModule.highlightColor = color;
         }
 
         public Color GetDefaultRayColor(Transform rayOrigin)
@@ -644,8 +637,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     return dpr.GetColor();
             }
 
-            if (m_HighlightModule != null)
-                return m_HighlightModule.highlightColor;
+            var highlightModule = ModuleLoaderCore.instance.GetModule<HighlightModule>();
+            if (highlightModule != null)
+                return highlightModule.highlightColor;
 
             return default(Color);
         }

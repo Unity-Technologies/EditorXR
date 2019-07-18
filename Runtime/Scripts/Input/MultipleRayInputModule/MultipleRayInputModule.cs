@@ -390,11 +390,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static LayerMask s_LayerMask;
 
         readonly Dictionary<Transform, IRaycastSource> m_RaycastSources = new Dictionary<Transform, IRaycastSource>();
-        readonly Dictionary<int, RayEventData> m_PointerData = new Dictionary<int, RayEventData>();
+        readonly Dictionary<int, RayEventData> m_RayData = new Dictionary<int, RayEventData>();
 
         Camera m_EventCamera;
 
-        Vector2 m_RayMousePosition;
         RayEventData m_InputRayEvent;
         readonly RayMouseState m_RayMouseState = new RayMouseState();
 
@@ -493,7 +492,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             // touch needs to take precedence because of the mouse emulation layer
             if (!ProcessTouchEvents() && input.mousePresent)
-                ProcessMouseEvent();
+                ProcessRayMouseEvent();
 
             if (eventSystem.sendNavigationEvents)
             {
@@ -687,14 +686,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        new void ProcessMouseEvent()
+        void ProcessRayMouseEvent()
         {
-            ProcessMouseEvent(0);
-        }
-
-        new void ProcessMouseEvent(int id)
-        {
-            var mouseData = GetMousePointerEventData(id);
+            var mouseData = GetMouseRayEventData();
             var leftButtonData = mouseData.GetButtonState(PointerEventData.InputButton.Left).eventData;
 
             //m_CurrentFocusedGameObject = leftButtonData.buttonData.pointerCurrentRaycast.gameObject;
@@ -719,7 +713,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         bool GetScreenRayData(int id, out RayEventData data, bool create)
         {
-            if (!m_PointerData.TryGetValue(id, out data) && create)
+            if (!m_RayData.TryGetValue(id, out data) && create)
             {
                 var mainCamera = CameraUtils.GetMainCamera();
                 data = new RayEventData(eventSystem)
@@ -729,13 +723,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     camera = mainCamera
                 };
 
-                m_PointerData.Add(id, data);
+                m_RayData.Add(id, data);
                 return true;
             }
             return false;
         }
 
-        RayMouseState GetMousePointerEventData(int id)
+        RayMouseState GetMouseRayEventData()
         {
             // Populate the left button...
             RayEventData leftData;
@@ -868,12 +862,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
 
                 m_InputRayEvent = null;
-
-                return;
             }
-
-            //m_LastMousePosition = m_RayMousePosition;
-            m_RayMousePosition = input.mousePosition;
         }
 
         void ReleaseMouse(RayEventData rayEvent, GameObject currentOverGo)

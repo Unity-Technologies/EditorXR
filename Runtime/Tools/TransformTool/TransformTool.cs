@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     public sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
         IGrabObjects, IUsesSelectObject, IManipulatorController, IUsesSnapping, IUsesSetHighlight, ILinkedObject, IRayToNode,
-        IUsesControlHaptics, IUsesRayOrigin, IUsesNode, /* ICustomActionMap, */ ITwoHandedScaler, IUsesIsMainMenuVisible,
+        IUsesControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IUsesIsMainMenuVisible,
         IUsesGetRayVisibility, IUsesRayVisibilitySettings, IUsesRequestFeedback, IUsesFunctionalityInjection
     {
         enum TwoHandedManipulateMode
@@ -444,10 +444,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 UpdateCurrentManipulator();
         }
 
-        //public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
-        void Update()
+        public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
-            //m_Input = (TransformInput)input;
+            m_Input = (TransformInput)input;
 
             if (!this.IsSharedUpdater(this))
                 return;
@@ -455,257 +454,257 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             var hasObject = false;
             var manipulatorGameObject = m_CurrentManipulator.gameObject;
             var gameObjects = Selection.gameObjects;
-//            if (!m_CurrentManipulator.dragging)
-//            {
-//                var directSelection = this.GetDirectSelection();
-//
-//                var hasLeft = m_LeftGrabData != null;
-//                var hasRight = m_RightGrabData != null;
-//                hasObject = directSelection.Count > 0 || hasLeft || hasRight;
-//
-//                var hoveringSelection = false;
-//                foreach (var kvp in directSelection)
-//                {
-//                    if (gameObjects.Contains(kvp.Value.gameObject))
-//                    {
-//                        hoveringSelection = true;
-//                        break;
-//                    }
-//                }
-//
-//                // Disable manipulator on direct hover or drag
-//                if (manipulatorGameObject.activeSelf && (hoveringSelection || hasLeft || hasRight))
-//                    manipulatorGameObject.SetActive(false);
-//
-//                var scaleHover = false;
-//                foreach (var kvp in directSelection)
-//                {
-//                    var directRayOrigin = kvp.Key;
-//                    var directSelectionData = kvp.Value;
-//
-//                    if (!(hasLeft || hasRight) && this.IsMainMenuVisible(directRayOrigin))
-//                        continue;
-//
-//                    var directHoveredObject = directSelectionData.gameObject;
-//
-//                    var selectionCandidate = this.GetSelectionCandidate(directHoveredObject, true);
-//
-//                    // Can't select this object (it might be locked or static)
-//                    if (directHoveredObject && !selectionCandidate)
-//                        continue;
-//
-//                    if (selectionCandidate)
-//                        directHoveredObject = selectionCandidate;
-//
-//                    if (!this.CanGrabObject(directHoveredObject, directRayOrigin))
-//                        continue;
-//
-//                    this.AddRayVisibilitySettings(directRayOrigin, this, false, true); // This will also disable ray selection
-//
-//                    if (!this.IsConeVisible(directRayOrigin))
-//                        continue;
-//
-//                    var grabbingNode = this.RequestNodeFromRayOrigin(directRayOrigin);
-//                    var transformTool = linkedObjects.Cast<TransformTool>().FirstOrDefault(linkedObject => linkedObject.node == grabbingNode);
-//                    if (transformTool == null)
-//                        continue;
-//
-//                    // Check if the other hand is already grabbing for two-handed scale
-//                    var otherData = grabbingNode == Node.LeftHand ? m_RightGrabData : m_LeftGrabData;
-//
-//                    if (otherData != null && !otherData.grabbedTransforms.Contains(directHoveredObject.transform))
-//                        otherData = null;
-//
-//                    if (otherData != null)
-//                    {
-//                        scaleHover = true;
-//                        if (m_ScaleFeedback.Count == 0)
-//                            ShowScaleFeedback(grabbingNode);
-//                    }
-//
-//                    var transformInput = transformTool.m_Input;
-//
-//                    if (transformInput.select.wasJustPressed)
-//                    {
-//                        this.ClearSnappingState(directRayOrigin);
-//
-//                        consumeControl(transformInput.select);
-//
-//                        var grabbedObjects = new HashSet<Transform> { directHoveredObject.transform };
-//                        grabbedObjects.UnionWith(Selection.transforms);
-//
-//                        if (objectsGrabbed != null && !m_Scaling)
-//                            objectsGrabbed(directRayOrigin, grabbedObjects);
-//
-//                        var grabData = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray(), directSelectionData.contactPoint);
-//                        if (grabbingNode == Node.LeftHand)
-//                            m_LeftGrabData = grabData;
-//                        else
-//                            m_RightGrabData = grabData;
-//
-//                        ShowGrabFeedback(grabbingNode);
-//                        if (otherData != null)
-//                        {
-//                            m_ScaleFirstNode = grabbingNode == Node.LeftHand ? Node.RightHand : Node.LeftHand;
-//                            otherData.StartScaling(grabData);
-//                            ShowScaleOptionsFeedback(otherData.twoHandedManipulateMode);
-//                            m_Scaling = true;
-//                        }
-//
-//                        // A direct selection has been made. Hide the manipulator until the selection changes
-//                        m_DirectSelected = true;
-//
-//#if UNITY_EDITOR
-//                        Undo.IncrementCurrentGroup();
-//#endif
-//                    }
-//                }
-//
-//                if (!scaleHover)
-//                    HideScaleFeedback();
-//
-//                hasLeft = m_LeftGrabData != null;
-//                hasRight = m_RightGrabData != null;
-//
-//                var leftInput = m_LeftGrabData != null ? m_LeftGrabData.input : null;
-//                var leftHeld = m_LeftGrabData != null && leftInput.select.isHeld;
-//                var rightInput = m_RightGrabData != null ? m_RightGrabData.input : null;
-//                var rightHeld = m_RightGrabData != null && rightInput.select.isHeld;
-//
-//                if (hasLeft)
-//                {
-//                    consumeControl(leftInput.cancel);
-//                    consumeControl(leftInput.suppressVertical);
-//                    if (!m_Scaling && leftInput.cancel.wasJustPressed)
-//                    {
-//                        m_LeftGrabData.Cancel();
-//                        DropHeldObjects(Node.LeftHand);
-//                        hasLeft = false;
-//                    }
-//
-//                    if (leftInput.select.wasJustReleased)
-//                    {
-//                        if (rightInput != null && rightInput.select.wasJustReleased)
-//                        {
-//                            HideScaleOptionFeedback();
-//                            m_Scaling = false;
-//                        }
-//
-//                        DropHeldObjects(Node.LeftHand);
-//                        hasLeft = false;
-//                        consumeControl(leftInput.select);
-//                    }
-//                }
-//
-//                if (hasRight)
-//                {
-//                    consumeControl(rightInput.cancel);
-//                    consumeControl(rightInput.suppressVertical);
-//                    if (!m_Scaling && rightInput.cancel.wasJustPressed)
-//                    {
-//                        m_RightGrabData.Cancel();
-//                        DropHeldObjects(Node.RightHand);
-//                        hasRight = false;
-//                    }
-//
-//                    if (rightInput.select.wasJustReleased)
-//                    {
-//                        if (leftInput != null && leftInput.select.wasJustReleased)
-//                        {
-//                            HideScaleOptionFeedback();
-//                            m_Scaling = false;
-//                        }
-//
-//                        DropHeldObjects(Node.RightHand);
-//                        hasRight = false;
-//                        consumeControl(rightInput.select);
-//                    }
-//                }
-//
-//                if (hasLeft && hasRight && leftHeld && rightHeld && m_Scaling) // Two-handed scaling
-//                {
-//                    var rightRayOrigin = m_RightGrabData.rayOrigin;
-//                    var leftRayOrigin = m_LeftGrabData.rayOrigin;
-//                    var leftCancel = leftInput.cancel;
-//                    var rightCancel = rightInput.cancel;
-//
-//                    var scaleGrabData = m_ScaleFirstNode == Node.LeftHand ? m_LeftGrabData : m_RightGrabData;
-//                    if (leftCancel.wasJustPressed)
-//                    {
-//                        if (scaleGrabData.twoHandedManipulateMode == TwoHandedManipulateMode.ScaleOnly)
-//                            scaleGrabData.twoHandedManipulateMode = TwoHandedManipulateMode.RotateAndScale;
-//                        else
-//                            scaleGrabData.twoHandedManipulateMode = TwoHandedManipulateMode.ScaleOnly;
-//
-//                        ShowScaleOptionsFeedback(scaleGrabData.twoHandedManipulateMode);
-//                    }
-//
-//                    if (rightCancel.wasJustPressed)
-//                    {
-//                        HideScaleOptionFeedback();
-//                        m_Scaling = false;
-//                        if (m_ScaleFirstNode == Node.LeftHand)
-//                            m_LeftGrabData.Cancel();
-//                        else
-//                            m_RightGrabData.Cancel();
-//
-//                        DropHeldObjects(Node.RightHand);
-//                        DropHeldObjects(Node.LeftHand);
-//                    }
-//                    else if (m_ScaleFirstNode == Node.LeftHand)
-//                    {
-//                        m_LeftGrabData.ScaleObjects(m_RightGrabData);
-//                        this.ClearSnappingState(leftRayOrigin);
-//                    }
-//                    else
-//                    {
-//                        m_RightGrabData.ScaleObjects(m_LeftGrabData);
-//                        this.ClearSnappingState(rightRayOrigin);
-//                    }
-//                }
-//                else
-//                {
-//                    // If m_Scaling is true but both hands don't have a grab, we need to transfer back to one-handed manipulation
-//                    // Offsets will change while scaling. Whichever hand keeps holding the trigger after scaling is done will need to reset itself
-//                    if (m_Scaling)
-//                    {
-//                        if (hasLeft)
-//                        {
-//                            m_LeftGrabData.Reset();
-//
-//                            if (objectsTransferred != null && m_ScaleFirstNode == Node.RightHand)
-//                                objectsTransferred(m_RightGrabData.rayOrigin, m_LeftGrabData.rayOrigin);
-//                        }
-//
-//                        if (hasRight)
-//                        {
-//                            m_RightGrabData.Reset();
-//
-//                            if (objectsTransferred != null && m_ScaleFirstNode == Node.LeftHand)
-//                                objectsTransferred(m_LeftGrabData.rayOrigin, m_RightGrabData.rayOrigin);
-//                        }
-//
-//                        HideScaleOptionFeedback();
-//                        m_Scaling = false;
-//                    }
-//
-//                    if (hasLeft && leftHeld)
-//                        m_LeftGrabData.UpdatePositions(this);
-//
-//                    if (hasRight && rightHeld)
-//                        m_RightGrabData.UpdatePositions(this);
-//                }
-//
-//                foreach (var linkedObject in linkedObjects)
-//                {
-//                    var transformTool = (TransformTool)linkedObject;
-//                    var otherRayOrigin = transformTool.rayOrigin;
-//                    if (!(m_Scaling || directSelection.ContainsKey(otherRayOrigin) || GrabDataForNode(transformTool.node) != null))
-//                    {
-//                        this.RemoveRayVisibilitySettings(otherRayOrigin, this);
-//                    }
-//                }
-//            }
+            if (!m_CurrentManipulator.dragging)
+            {
+                var directSelection = this.GetDirectSelection();
+
+                var hasLeft = m_LeftGrabData != null;
+                var hasRight = m_RightGrabData != null;
+                hasObject = directSelection.Count > 0 || hasLeft || hasRight;
+
+                var hoveringSelection = false;
+                foreach (var kvp in directSelection)
+                {
+                    if (gameObjects.Contains(kvp.Value.gameObject))
+                    {
+                        hoveringSelection = true;
+                        break;
+                    }
+                }
+
+                // Disable manipulator on direct hover or drag
+                if (manipulatorGameObject.activeSelf && (hoveringSelection || hasLeft || hasRight))
+                    manipulatorGameObject.SetActive(false);
+
+                var scaleHover = false;
+                foreach (var kvp in directSelection)
+                {
+                    var directRayOrigin = kvp.Key;
+                    var directSelectionData = kvp.Value;
+
+                    if (!(hasLeft || hasRight) && this.IsMainMenuVisible(directRayOrigin))
+                        continue;
+
+                    var directHoveredObject = directSelectionData.gameObject;
+
+                    var selectionCandidate = this.GetSelectionCandidate(directHoveredObject, true);
+
+                    // Can't select this object (it might be locked or static)
+                    if (directHoveredObject && !selectionCandidate)
+                        continue;
+
+                    if (selectionCandidate)
+                        directHoveredObject = selectionCandidate;
+
+                    if (!this.CanGrabObject(directHoveredObject, directRayOrigin))
+                        continue;
+
+                    this.AddRayVisibilitySettings(directRayOrigin, this, false, true); // This will also disable ray selection
+
+                    if (!this.IsConeVisible(directRayOrigin))
+                        continue;
+
+                    var grabbingNode = this.RequestNodeFromRayOrigin(directRayOrigin);
+                    var transformTool = linkedObjects.Cast<TransformTool>().FirstOrDefault(linkedObject => linkedObject.node == grabbingNode);
+                    if (transformTool == null)
+                        continue;
+
+                    // Check if the other hand is already grabbing for two-handed scale
+                    var otherData = grabbingNode == Node.LeftHand ? m_RightGrabData : m_LeftGrabData;
+
+                    if (otherData != null && !otherData.grabbedTransforms.Contains(directHoveredObject.transform))
+                        otherData = null;
+
+                    if (otherData != null)
+                    {
+                        scaleHover = true;
+                        if (m_ScaleFeedback.Count == 0)
+                            ShowScaleFeedback(grabbingNode);
+                    }
+
+                    var transformInput = transformTool.m_Input;
+
+                    if (transformInput.select.wasJustPressed)
+                    {
+                        this.ClearSnappingState(directRayOrigin);
+
+                        consumeControl(transformInput.select);
+
+                        var grabbedObjects = new HashSet<Transform> { directHoveredObject.transform };
+                        grabbedObjects.UnionWith(Selection.transforms);
+
+                        if (objectsGrabbed != null && !m_Scaling)
+                            objectsGrabbed(directRayOrigin, grabbedObjects);
+
+                        var grabData = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray(), directSelectionData.contactPoint);
+                        if (grabbingNode == Node.LeftHand)
+                            m_LeftGrabData = grabData;
+                        else
+                            m_RightGrabData = grabData;
+
+                        ShowGrabFeedback(grabbingNode);
+                        if (otherData != null)
+                        {
+                            m_ScaleFirstNode = grabbingNode == Node.LeftHand ? Node.RightHand : Node.LeftHand;
+                            otherData.StartScaling(grabData);
+                            ShowScaleOptionsFeedback(otherData.twoHandedManipulateMode);
+                            m_Scaling = true;
+                        }
+
+                        // A direct selection has been made. Hide the manipulator until the selection changes
+                        m_DirectSelected = true;
+
+#if UNITY_EDITOR
+                        Undo.IncrementCurrentGroup();
+#endif
+                    }
+                }
+
+                if (!scaleHover)
+                    HideScaleFeedback();
+
+                hasLeft = m_LeftGrabData != null;
+                hasRight = m_RightGrabData != null;
+
+                var leftInput = m_LeftGrabData != null ? m_LeftGrabData.input : null;
+                var leftHeld = m_LeftGrabData != null && leftInput.select.isHeld;
+                var rightInput = m_RightGrabData != null ? m_RightGrabData.input : null;
+                var rightHeld = m_RightGrabData != null && rightInput.select.isHeld;
+
+                if (hasLeft)
+                {
+                    consumeControl(leftInput.cancel);
+                    consumeControl(leftInput.suppressVertical);
+                    if (!m_Scaling && leftInput.cancel.wasJustPressed)
+                    {
+                        m_LeftGrabData.Cancel();
+                        DropHeldObjects(Node.LeftHand);
+                        hasLeft = false;
+                    }
+
+                    if (leftInput.select.wasJustReleased)
+                    {
+                        if (rightInput != null && rightInput.select.wasJustReleased)
+                        {
+                            HideScaleOptionFeedback();
+                            m_Scaling = false;
+                        }
+
+                        DropHeldObjects(Node.LeftHand);
+                        hasLeft = false;
+                        consumeControl(leftInput.select);
+                    }
+                }
+
+                if (hasRight)
+                {
+                    consumeControl(rightInput.cancel);
+                    consumeControl(rightInput.suppressVertical);
+                    if (!m_Scaling && rightInput.cancel.wasJustPressed)
+                    {
+                        m_RightGrabData.Cancel();
+                        DropHeldObjects(Node.RightHand);
+                        hasRight = false;
+                    }
+
+                    if (rightInput.select.wasJustReleased)
+                    {
+                        if (leftInput != null && leftInput.select.wasJustReleased)
+                        {
+                            HideScaleOptionFeedback();
+                            m_Scaling = false;
+                        }
+
+                        DropHeldObjects(Node.RightHand);
+                        hasRight = false;
+                        consumeControl(rightInput.select);
+                    }
+                }
+
+                if (hasLeft && hasRight && leftHeld && rightHeld && m_Scaling) // Two-handed scaling
+                {
+                    var rightRayOrigin = m_RightGrabData.rayOrigin;
+                    var leftRayOrigin = m_LeftGrabData.rayOrigin;
+                    var leftCancel = leftInput.cancel;
+                    var rightCancel = rightInput.cancel;
+
+                    var scaleGrabData = m_ScaleFirstNode == Node.LeftHand ? m_LeftGrabData : m_RightGrabData;
+                    if (leftCancel.wasJustPressed)
+                    {
+                        if (scaleGrabData.twoHandedManipulateMode == TwoHandedManipulateMode.ScaleOnly)
+                            scaleGrabData.twoHandedManipulateMode = TwoHandedManipulateMode.RotateAndScale;
+                        else
+                            scaleGrabData.twoHandedManipulateMode = TwoHandedManipulateMode.ScaleOnly;
+
+                        ShowScaleOptionsFeedback(scaleGrabData.twoHandedManipulateMode);
+                    }
+
+                    if (rightCancel.wasJustPressed)
+                    {
+                        HideScaleOptionFeedback();
+                        m_Scaling = false;
+                        if (m_ScaleFirstNode == Node.LeftHand)
+                            m_LeftGrabData.Cancel();
+                        else
+                            m_RightGrabData.Cancel();
+
+                        DropHeldObjects(Node.RightHand);
+                        DropHeldObjects(Node.LeftHand);
+                    }
+                    else if (m_ScaleFirstNode == Node.LeftHand)
+                    {
+                        m_LeftGrabData.ScaleObjects(m_RightGrabData);
+                        this.ClearSnappingState(leftRayOrigin);
+                    }
+                    else
+                    {
+                        m_RightGrabData.ScaleObjects(m_LeftGrabData);
+                        this.ClearSnappingState(rightRayOrigin);
+                    }
+                }
+                else
+                {
+                    // If m_Scaling is true but both hands don't have a grab, we need to transfer back to one-handed manipulation
+                    // Offsets will change while scaling. Whichever hand keeps holding the trigger after scaling is done will need to reset itself
+                    if (m_Scaling)
+                    {
+                        if (hasLeft)
+                        {
+                            m_LeftGrabData.Reset();
+
+                            if (objectsTransferred != null && m_ScaleFirstNode == Node.RightHand)
+                                objectsTransferred(m_RightGrabData.rayOrigin, m_LeftGrabData.rayOrigin);
+                        }
+
+                        if (hasRight)
+                        {
+                            m_RightGrabData.Reset();
+
+                            if (objectsTransferred != null && m_ScaleFirstNode == Node.LeftHand)
+                                objectsTransferred(m_LeftGrabData.rayOrigin, m_RightGrabData.rayOrigin);
+                        }
+
+                        HideScaleOptionFeedback();
+                        m_Scaling = false;
+                    }
+
+                    if (hasLeft && leftHeld)
+                        m_LeftGrabData.UpdatePositions(this);
+
+                    if (hasRight && rightHeld)
+                        m_RightGrabData.UpdatePositions(this);
+                }
+
+                foreach (var linkedObject in linkedObjects)
+                {
+                    var transformTool = (TransformTool)linkedObject;
+                    var otherRayOrigin = transformTool.rayOrigin;
+                    if (!(m_Scaling || directSelection.ContainsKey(otherRayOrigin) || GrabDataForNode(transformTool.node) != null))
+                    {
+                        this.RemoveRayVisibilitySettings(otherRayOrigin, this);
+                    }
+                }
+            }
 
             // Manipulator is disabled while direct manipulation is happening
             if (hasObject || m_DirectSelected)

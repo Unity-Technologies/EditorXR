@@ -34,6 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         PlayerHandle m_PlayerHandle;
 
         EditorXRToolModule m_ToolModule;
+        EditorXRMiniWorldModule m_MiniWorldModule;
 
         readonly HashSet<InputControl> m_LockedControls = new HashSet<InputControl>();
         readonly Dictionary<ActionMapInput, ICustomActionMap> m_IgnoreLocking = new Dictionary<ActionMapInput, ICustomActionMap>();
@@ -76,9 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         select deviceData.inputDevice).FirstOrDefault();
             }
 
-            var editorVR = ModuleLoaderCore.instance.GetModule<Core.EditorVR>();
-            if (editorVR != null)
-                processInput = editorVR.ProcessInput;
+            m_MiniWorldModule = ModuleLoaderCore.instance.GetModule<EditorXRMiniWorldModule>();
         }
 
         public void Initialize()
@@ -152,8 +151,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 processor.processor.ProcessInput(processor.input, m_ConsumeControl);
             }
 
-            if (processInput != null)
-                processInput(m_ProcessedInputs, m_ConsumeControl);
+            if (m_MiniWorldModule != null)
+                m_MiniWorldModule.UpdateMiniWorlds();
+
+            if (m_ToolModule == null)
+                return;
+
+            foreach (var device in m_ToolModule.deviceData)
+            {
+                if (!device.proxy.active)
+                    continue;
+
+                foreach (var toolData in device.toolData)
+                {
+                    var process = toolData.tool as IProcessInput;
+                    if (process != null && ((MonoBehaviour)toolData.tool).enabled
+                        && m_ProcessedInputs.Add(process)) // Only process inputs for an instance of a tool once (e.g. two-handed tools)
+                        process.ProcessInput(toolData.input, ConsumeControl);
+                }
+            }
         }
 
         void CreateDefaultActionMapInputs()
@@ -338,7 +354,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return Node.None;
         }
 
-        public void AddInputProcessor(IProcessInput processInput, object userData)
+        void AddInputProcessor(IProcessInput processInput, object userData)
         {
             var rayOrigin = userData as Transform;
             var inputDevice = inputDeviceForRayOrigin(rayOrigin);
