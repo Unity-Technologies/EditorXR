@@ -523,7 +523,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 bool released;
                 bool pressed;
-                var pointer = GetTouchPointerEventData(touch, out pressed, out released);
+                var pointer = GetTouchRayEventData(touch, out pressed, out released);
 
                 ProcessTouchPress(pointer, pressed, released);
 
@@ -578,6 +578,45 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteRayEvents.dragHandler);
             }
         }
+
+        RayEventData GetTouchRayEventData(Touch input, out bool pressed, out bool released)
+        {
+            RayEventData rayData;
+            var created = GetScreenRayData(input.fingerId, out rayData, true);
+
+            rayData.Reset();
+
+            pressed = created || (input.phase == TouchPhase.Began);
+            released = (input.phase == TouchPhase.Canceled) || (input.phase == TouchPhase.Ended);
+
+            if (created)
+                rayData.position = input.position;
+
+            if (pressed)
+                rayData.delta = Vector2.zero;
+            else
+                rayData.delta = input.position - rayData.position;
+
+            rayData.position = input.position;
+
+            rayData.button = PointerEventData.InputButton.Left;
+
+            if (input.phase == TouchPhase.Canceled)
+            {
+                rayData.pointerCurrentRaycast = new RaycastResult();
+            }
+            else
+            {
+                eventSystem.RaycastAll(rayData, m_RaycastResultCache);
+
+                var raycast = FindFirstRaycast(m_RaycastResultCache);
+                rayData.pointerCurrentRaycast = raycast;
+                m_RaycastResultCache.Clear();
+            }
+
+            return rayData;
+        }
+
 
         void ProcessTouchPress(RayEventData rayEvent, bool pressed, bool released)
         {
@@ -759,7 +798,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             leftData.pointerCurrentRaycast = raycast;
             m_RaycastResultCache.Clear();
 
-            // copy the apropriate data into right and middle slots
+            // copy the appropriate data into right and middle slots
             RayEventData rightData;
             GetScreenRayData(kMouseRightId, out rightData, true);
             CopyFromTo(leftData, rightData);

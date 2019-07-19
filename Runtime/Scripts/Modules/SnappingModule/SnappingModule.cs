@@ -15,7 +15,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
-    sealed class SnappingModule : ScriptableSettings<SnappingModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
+    public sealed class SnappingModule : ScriptableSettings<SnappingModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
         IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences, IStandardIgnoreList, IUsesSceneRaycast,
         IProvidesSnapping
     {
@@ -278,7 +278,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        bool groundSnappingEnabled
+        public bool groundSnappingEnabled
         {
             get { return m_Preferences.groundSnappingEnabled; }
             set

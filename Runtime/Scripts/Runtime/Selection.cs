@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor
 {
     public static class Selection
     {
@@ -44,6 +44,12 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 var go = activeGameObject;
                 return go ? go.transform : null;
+            }
+            set
+            {
+                var oldObjects = s_Objects;
+                s_Objects = value ? new[] { value.gameObject } : null;
+                CheckSelectionChanged(oldObjects);
             }
         }
 
