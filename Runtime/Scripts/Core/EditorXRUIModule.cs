@@ -51,7 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         Transform m_ModuleParent;
         GameObject m_NewEventSystem;
         MultipleRayInputModule m_NewInputModule;
-        ScreenInputHelper m_NewInputHelper;
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
@@ -121,7 +120,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void Initialize()
         {
             var eventSystem = FindObjectOfType<EventSystem>();
-            //ScreenInputHelper inputHelper;
             if (eventSystem)
             {
                 InputModule = eventSystem.GetComponent<MultipleRayInputModule>();
@@ -130,30 +128,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     m_NewInputModule = eventSystem.gameObject.AddComponent<MultipleRayInputModule>();
                     InputModule = m_NewInputModule;
                 }
-
-//                inputHelper = eventSystem.GetComponent<ScreenInputHelper>();
-//                if (!inputHelper)
-//                {
-//                    inputHelper = eventSystem.gameObject.AddComponent<ScreenInputHelper>();
-//                    m_NewInputHelper = inputHelper;
-//                }
             }
             else
             {
                 m_NewEventSystem = new GameObject("EventSystem");
                 InputModule = m_NewEventSystem.AddComponent<MultipleRayInputModule>();
-
-//                inputHelper = m_NewEventSystem.GetComponent<ScreenInputHelper>();
-//                if (!inputHelper)
-//                {
-//                    inputHelper = m_NewEventSystem.gameObject.AddComponent<ScreenInputHelper>();
-//                    m_NewInputHelper = inputHelper;
-//                }
             }
 
 #if UNITY_EDITOR
             InputModule.StartRunInEditMode();
-            //inputHelper.StartRunInEditMode();
 #endif
 
             m_FIModule.activeIsland.AddProviders(new List<IFunctionalityProvider> { InputModule });
@@ -182,9 +165,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (m_NewInputModule)
                 DestroyImmediate(m_NewInputModule);
-
-            if (m_NewInputHelper)
-                DestroyImmediate(m_NewInputHelper);
 
             if (m_NewEventSystem)
                 DestroyImmediate(m_NewEventSystem);

@@ -9,13 +9,11 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
-using Cursor = UnityEngine.Cursor;
-using Touch = UnityEngine.Touch;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     // Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-    sealed class MultipleRayInputModule : StandaloneInputModule, IUsesPointer, IUsesConnectInterfaces,
+    class MultipleRayInputModule : RayInputModule, IUsesPointer, IUsesConnectInterfaces,
         IProvidesIsHoveringOverUI, IUsesFunctionalityInjection, IProvidesBlockUIInteraction
     {
         public class RaycastSource : ICustomActionMap, IUsesRequestFeedback, IRaycastSource
@@ -192,210 +190,44 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-//        public class ScreenRaycastSource : IRaycastSource
-//        {
-//            MultipleRayInputModule m_Owner;
-//
-//            public RayEventData eventData { get; private set; }
-//            public bool blocked { get; set; }
-//            public Transform rayOrigin { get; private set; }
-//
-//            public GameObject hoveredObject { get; private set; }
-//            public GameObject draggedObject { get; set; }
-//            public Camera eventCamera { get; private set; }
-//            public Vector2 position { get { return UnityEngine.Input.mousePosition; } }
-//
-//            public Func<IRaycastSource, bool> isValid;
-//
-//            public bool hasObject { get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; } }
-//
-//            public GameObject currentObject { get { return hoveredObject ? hoveredObject : draggedObject; } }
-//
-//            public ScreenRaycastSource(Camera camera, MultipleRayInputModule owner)
-//            {
-//                m_Owner = owner;
-//                eventCamera = camera;
-//                rayOrigin = camera.transform;
-//            }
-//
-//            public void Update()
-//            {
-//                if (eventData == null)
-//                    eventData = new RayEventData(m_Owner.eventSystem);
-//
-//                hoveredObject = m_Owner.GetRayIntersection(this); // Check all currently running raycasters
-//
-//                eventData.node = Node.None;
-//                eventData.rayOrigin = rayOrigin;
-//                eventData.pointerLength = m_Owner.GetPointerLength(eventData.rayOrigin);
-//                eventData.useDragThreshold = true;
-//
-//                if (isValid != null && !isValid(this))
-//                {
-//                    var currentRaycast = eventData.pointerCurrentRaycast;
-//                    currentRaycast.gameObject = null;
-//                    eventData.pointerCurrentRaycast = currentRaycast;
-//                    hoveredObject = null;
-//                    m_Owner.HandlePointerExitAndEnter(eventData, null, true); // Send only exit events
-//
-//                    if (UnityEngine.Input.GetMouseButtonUp(0))
-//                        m_Owner.OnSelectReleased(this);
-//
-//                    return;
-//                }
-//
-//                m_Owner.HandlePointerExitAndEnter(eventData, hoveredObject); // Send enter and exit events
-//
-//                var hasScrollHandler = false;
-//                var hasInteractable = hasObject && HoveringInteractable(eventData, currentObject, out hasScrollHandler);
-//
-//                // Proceed only if pointer is interacting with something
-//                if (!hasInteractable)
-//                {
-//                    if (UnityEngine.Input.GetMouseButtonUp(0))
-//                        m_Owner.OnSelectReleased(this);
-//
-//                    return;
-//                }
-//
-//                // Send select pressed and released events
-//                if (UnityEngine.Input.GetMouseButtonDown(0))
-//                    m_Owner.OnSelectPressed(this);
-//
-//                if (UnityEngine.Input.GetMouseButtonUp(0))
-//                {
-//                    m_Owner.OnSelectReleased(this);
-//                }
-//                else
-//                {
-//                    m_Owner.ProcessMove(eventData);
-//                    m_Owner.ProcessDrag(eventData);
-//                }
-//
-//                // Send scroll events
-//                if (currentObject && hasScrollHandler)
-//                {
-//                    var scrollDelta = UnityEngine.Input.mouseScrollDelta;
-//                    var verticalScrollValue = scrollDelta.y;
-//                    var horizontalScrollValue = scrollDelta.x;
-//                    if (!Mathf.Approximately(verticalScrollValue, 0f) || !Mathf.Approximately(horizontalScrollValue, 0f))
-//                    {
-//                        eventData.scrollDelta = new Vector2(horizontalScrollValue, verticalScrollValue);
-//                        ExecuteEvents.ExecuteHierarchy(currentObject, eventData, ExecuteEvents.scrollHandler);
-//                    }
-//                }
-//            }
-//        }
-
-        public class MouseButtonRayEventData
-        {
-            /// <summary>
-            /// The state of the button this frame.
-            /// </summary>
-            public PointerEventData.FramePressState buttonState;
-
-            /// <summary>
-            /// Pointer data associated with the mouse event.
-            /// </summary>
-            public RayEventData buttonData;
-
-            /// <summary>
-            /// Was the button pressed this frame?
-            /// </summary>
-            public bool PressedThisFrame()
-            {
-                return buttonState == PointerEventData.FramePressState.Pressed || buttonState == PointerEventData.FramePressState.PressedAndReleased;
-            }
-
-            /// <summary>
-            /// Was the button released this frame?
-            /// </summary>
-            public bool ReleasedThisFrame()
-            {
-                return buttonState == PointerEventData.FramePressState.Released || buttonState == PointerEventData.FramePressState.PressedAndReleased;
-            }
-        }
-
-        class RayButtonState
-        {
-            private PointerEventData.InputButton m_Button = PointerEventData.InputButton.Left;
-
-            public MouseButtonRayEventData eventData
-            {
-                get { return m_EventData; }
-                set { m_EventData = value; }
-            }
-
-            public PointerEventData.InputButton button
-            {
-                get { return m_Button; }
-                set { m_Button = value; }
-            }
-
-            private MouseButtonRayEventData m_EventData;
-        }
-
-        class RayMouseState
-        {
-            List<RayButtonState> m_TrackedButtons = new List<RayButtonState>();
-
-            public bool AnyPressesThisFrame()
-            {
-                for (int i = 0; i < m_TrackedButtons.Count; i++)
-                {
-                    if (m_TrackedButtons[i].eventData.PressedThisFrame())
-                        return true;
-                }
-                return false;
-            }
-
-            public bool AnyReleasesThisFrame()
-            {
-                for (int i = 0; i < m_TrackedButtons.Count; i++)
-                {
-                    if (m_TrackedButtons[i].eventData.ReleasedThisFrame())
-                        return true;
-                }
-                return false;
-            }
-
-            public RayButtonState GetButtonState(PointerEventData.InputButton button)
-            {
-                RayButtonState tracked = null;
-                for (int i = 0; i < m_TrackedButtons.Count; i++)
-                {
-                    if (m_TrackedButtons[i].button == button)
-                    {
-                        tracked = m_TrackedButtons[i];
-                        break;
-                    }
-                }
-
-                if (tracked == null)
-                {
-                    tracked = new RayButtonState { button = button, eventData = new MouseButtonRayEventData() };
-                    m_TrackedButtons.Add(tracked);
-                }
-                return tracked;
-            }
-
-            public void SetButtonState(PointerEventData.InputButton button, PointerEventData.FramePressState stateForMouseButton, RayEventData data)
-            {
-                var toModify = GetButtonState(button);
-                toModify.eventData.buttonState = stateForMouseButton;
-                toModify.eventData.buttonData = data;
-            }
-        }
-
         static LayerMask s_LayerMask;
 
+        [SerializeField]
+        private string m_HorizontalAxis = "Horizontal";
+
+        /// <summary>
+        /// Name of the vertical axis for movement (if axis events are used).
+        /// </summary>
+        [SerializeField]
+        private string m_VerticalAxis = "Vertical";
+
+        /// <summary>
+        /// Name of the submit button.
+        /// </summary>
+        [SerializeField]
+        private string m_SubmitButton = "Submit";
+
+        /// <summary>
+        /// Name of the submit button.
+        /// </summary>
+        [SerializeField]
+        private string m_CancelButton = "Cancel";
+
+        [SerializeField]
+        private float m_InputActionsPerSecond = 10;
+
+        [SerializeField]
+        private float m_RepeatDelay = 0.5f;
+
+        float m_PrevActionTime;
+        Vector2 m_LastMoveVector;
+        int m_ConsecutiveMoveCount;
+
         readonly Dictionary<Transform, IRaycastSource> m_RaycastSources = new Dictionary<Transform, IRaycastSource>();
-        readonly Dictionary<int, RayEventData> m_RayData = new Dictionary<int, RayEventData>();
 
         Camera m_EventCamera;
 
         RayEventData m_InputRayEvent;
-        readonly RayMouseState m_RayMouseState = new RayMouseState();
 
         public Camera eventCamera
         {
@@ -451,8 +283,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             this.InjectFunctionalitySingle(source);
             m_RaycastSources.Add(rayOrigin, source);
         }
-
-        public void AddRaycastSource(Transform rayOrigin, IRaycastSource source) { m_RaycastSources.Add(rayOrigin, source); }
 
         public RayEventData GetPointerEventData(Transform rayOrigin)
         {
@@ -512,6 +342,106 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_EventCamera.farClipPlane = camera.farClipPlane;
         }
 
+        protected bool SendUpdateEventToSelectedObject()
+        {
+            if (eventSystem.currentSelectedGameObject == null)
+                return false;
+
+            var data = GetBaseEventData();
+            ExecuteEvents.Execute(eventSystem.currentSelectedGameObject, data, ExecuteEvents.updateSelectedHandler);
+            return data.used;
+        }
+
+        /// <summary>
+        /// Calculate and send a move event to the current selected object.
+        /// </summary>
+        /// <returns>If the move event was used by the selected object.</returns>
+        protected bool SendMoveEventToSelectedObject()
+        {
+            float time = Time.unscaledTime;
+
+            Vector2 movement = GetRawMoveVector();
+            if (Mathf.Approximately(movement.x, 0f) && Mathf.Approximately(movement.y, 0f))
+            {
+                m_ConsecutiveMoveCount = 0;
+                return false;
+            }
+
+            bool similarDir = (Vector2.Dot(movement, m_LastMoveVector) > 0);
+
+            // If direction didn't change at least 90 degrees, wait for delay before allowing consequtive event.
+            if (similarDir && m_ConsecutiveMoveCount == 1)
+            {
+                if (time <= m_PrevActionTime + m_RepeatDelay)
+                    return false;
+            }
+            // If direction changed at least 90 degree, or we already had the delay, repeat at repeat rate.
+            else
+            {
+                if (time <= m_PrevActionTime + 1f / m_InputActionsPerSecond)
+                    return false;
+            }
+
+            var axisEventData = GetAxisEventData(movement.x, movement.y, 0.6f);
+
+            if (axisEventData.moveDir != MoveDirection.None)
+            {
+                ExecuteEvents.Execute(eventSystem.currentSelectedGameObject, axisEventData, ExecuteEvents.moveHandler);
+                if (!similarDir)
+                    m_ConsecutiveMoveCount = 0;
+                m_ConsecutiveMoveCount++;
+                m_PrevActionTime = time;
+                m_LastMoveVector = movement;
+            }
+            else
+            {
+                m_ConsecutiveMoveCount = 0;
+            }
+
+            return axisEventData.used;
+        }
+
+        /// <summary>
+        /// Calculate and send a submit event to the current selected object.
+        /// </summary>
+        /// <returns>If the submit event was used by the selected object.</returns>
+        protected bool SendSubmitEventToSelectedObject()
+        {
+            if (eventSystem.currentSelectedGameObject == null)
+                return false;
+
+            var data = GetBaseEventData();
+            if (input.GetButtonDown(m_SubmitButton))
+                ExecuteEvents.Execute(eventSystem.currentSelectedGameObject, data, ExecuteEvents.submitHandler);
+
+            if (input.GetButtonDown(m_CancelButton))
+                ExecuteEvents.Execute(eventSystem.currentSelectedGameObject, data, ExecuteEvents.cancelHandler);
+            return data.used;
+        }
+
+        private Vector2 GetRawMoveVector()
+        {
+            Vector2 move = Vector2.zero;
+            move.x = input.GetAxisRaw(m_HorizontalAxis);
+            move.y = input.GetAxisRaw(m_VerticalAxis);
+
+            if (input.GetButtonDown(m_HorizontalAxis))
+            {
+                if (move.x < 0)
+                    move.x = -1f;
+                if (move.x > 0)
+                    move.x = 1f;
+            }
+            if (input.GetButtonDown(m_VerticalAxis))
+            {
+                if (move.y < 0)
+                    move.y = -1f;
+                if (move.y > 0)
+                    move.y = 1f;
+            }
+            return move;
+        }
+
         bool ProcessTouchEvents()
         {
             for (var i = 0; i < input.touchCount; ++i)
@@ -533,90 +463,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     ProcessDrag(pointer);
                 }
                 else
-                    RemovePointerData(pointer);
+                    RemoveRayData(pointer);
             }
             return input.touchCount > 0;
         }
-
-        static bool ShouldStartDrag(Vector2 pressPos, Vector2 currentPos, float threshold, bool useDragThreshold)
-        {
-            if (!useDragThreshold)
-                return true;
-
-            return (pressPos - currentPos).sqrMagnitude >= threshold * threshold;
-        }
-
-        void ProcessDrag(RayEventData pointerEvent)
-        {
-            if (Cursor.lockState == CursorLockMode.Locked ||
-                pointerEvent.pointerDrag == null)
-                return;
-
-            if (!pointerEvent.dragging
-                && ShouldStartDrag(pointerEvent.pressPosition, pointerEvent.position, eventSystem.pixelDragThreshold, pointerEvent.useDragThreshold))
-            {
-                ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteEvents.beginDragHandler);
-                ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteRayEvents.beginDragHandler);
-                pointerEvent.dragging = true;
-            }
-
-            // Drag notification
-            if (pointerEvent.dragging)
-            {
-                // Before doing drag we should cancel any pointer down state
-                // And clear selection!
-                if (pointerEvent.pointerPress != pointerEvent.pointerDrag)
-                {
-                    ExecuteEvents.Execute(pointerEvent.pointerPress, pointerEvent, ExecuteEvents.pointerUpHandler);
-
-                    pointerEvent.eligibleForClick = false;
-                    pointerEvent.pointerPress = null;
-                    pointerEvent.rawPointerPress = null;
-                }
-
-                ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteEvents.dragHandler);
-                ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteRayEvents.dragHandler);
-            }
-        }
-
-        RayEventData GetTouchRayEventData(Touch input, out bool pressed, out bool released)
-        {
-            RayEventData rayData;
-            var created = GetScreenRayData(input.fingerId, out rayData, true);
-
-            rayData.Reset();
-
-            pressed = created || (input.phase == TouchPhase.Began);
-            released = (input.phase == TouchPhase.Canceled) || (input.phase == TouchPhase.Ended);
-
-            if (created)
-                rayData.position = input.position;
-
-            if (pressed)
-                rayData.delta = Vector2.zero;
-            else
-                rayData.delta = input.position - rayData.position;
-
-            rayData.position = input.position;
-
-            rayData.button = PointerEventData.InputButton.Left;
-
-            if (input.phase == TouchPhase.Canceled)
-            {
-                rayData.pointerCurrentRaycast = new RaycastResult();
-            }
-            else
-            {
-                eventSystem.RaycastAll(rayData, m_RaycastResultCache);
-
-                var raycast = FindFirstRaycast(m_RaycastResultCache);
-                rayData.pointerCurrentRaycast = raycast;
-                m_RaycastResultCache.Clear();
-            }
-
-            return rayData;
-        }
-
 
         void ProcessTouchPress(RayEventData rayEvent, bool pressed, bool released)
         {
@@ -727,7 +577,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void ProcessRayMouseEvent()
         {
             var mouseData = GetMouseRayEventData();
-            var leftButtonData = mouseData.GetButtonState(PointerEventData.InputButton.Left).eventData;
+            var leftButtonData = mouseData.GetRayButtonState(PointerEventData.InputButton.Left).eventData;
 
             //m_CurrentFocusedGameObject = leftButtonData.buttonData.pointerCurrentRaycast.gameObject;
 
@@ -737,10 +587,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             ProcessDrag(leftButtonData.buttonData);
 
             // Now process right / middle clicks
-            ProcessMousePress(mouseData.GetButtonState(PointerEventData.InputButton.Right).eventData);
-            ProcessDrag(mouseData.GetButtonState(PointerEventData.InputButton.Right).eventData.buttonData);
-            ProcessMousePress(mouseData.GetButtonState(PointerEventData.InputButton.Middle).eventData);
-            ProcessDrag(mouseData.GetButtonState(PointerEventData.InputButton.Middle).eventData.buttonData);
+            ProcessMousePress(mouseData.GetRayButtonState(PointerEventData.InputButton.Right).eventData);
+            ProcessDrag(mouseData.GetRayButtonState(PointerEventData.InputButton.Right).eventData.buttonData);
+            ProcessMousePress(mouseData.GetRayButtonState(PointerEventData.InputButton.Middle).eventData);
+            ProcessDrag(mouseData.GetRayButtonState(PointerEventData.InputButton.Middle).eventData.buttonData);
 
             if (!Mathf.Approximately(leftButtonData.buttonData.scrollDelta.sqrMagnitude, 0.0f))
             {
@@ -765,61 +615,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return true;
             }
             return false;
-        }
-
-        RayMouseState GetMouseRayEventData()
-        {
-            // Populate the left button...
-            RayEventData leftData;
-            var created = GetScreenRayData(kMouseLeftId, out leftData, true);
-
-            leftData.Reset();
-
-            if (created)
-                leftData.position = input.mousePosition;
-
-            Vector2 pos = input.mousePosition;
-            if (Cursor.lockState == CursorLockMode.Locked)
-            {
-                // We don't want to do ANY cursor-based interaction when the mouse is locked
-                leftData.position = new Vector2(-1.0f, -1.0f);
-                leftData.delta = Vector2.zero;
-            }
-            else
-            {
-                leftData.delta = pos - leftData.position;
-                leftData.position = pos;
-            }
-
-            leftData.scrollDelta = input.mouseScrollDelta;
-            leftData.button = PointerEventData.InputButton.Left;
-            eventSystem.RaycastAll(leftData, m_RaycastResultCache);
-            var raycast = FindFirstRaycast(m_RaycastResultCache);
-            leftData.pointerCurrentRaycast = raycast;
-            m_RaycastResultCache.Clear();
-
-            // copy the appropriate data into right and middle slots
-            RayEventData rightData;
-            GetScreenRayData(kMouseRightId, out rightData, true);
-            CopyFromTo(leftData, rightData);
-            rightData.button = PointerEventData.InputButton.Right;
-
-            RayEventData middleData;
-            GetScreenRayData(kMouseMiddleId, out middleData, true);
-            CopyFromTo(leftData, middleData);
-            middleData.button = PointerEventData.InputButton.Middle;
-
-            m_RayMouseState.SetButtonState(PointerEventData.InputButton.Left, StateForMouseButton(0), leftData);
-            m_RayMouseState.SetButtonState(PointerEventData.InputButton.Right, StateForMouseButton(1), rightData);
-            m_RayMouseState.SetButtonState(PointerEventData.InputButton.Middle, StateForMouseButton(2), middleData);
-
-            return m_RayMouseState;
-        }
-
-        void ProcessMove(RayEventData rayEvent)
-        {
-            var targetGO = (Cursor.lockState == CursorLockMode.Locked ? null : rayEvent.pointerCurrentRaycast.gameObject);
-            HandlePointerExitAndEnter(rayEvent, targetGO);
         }
 
         void ProcessMousePress(MouseButtonRayEventData data)
