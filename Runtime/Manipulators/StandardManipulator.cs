@@ -64,9 +64,6 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
             base.OnHandleDragging(handle, eventData);
 
             var rayOrigin = eventData.rayOrigin;
-            if (rayOrigin == null)
-                rayOrigin = eventData.camera.transform;
-            
             if (handle.IndexOfDragSource(rayOrigin) > 0)
                 return;
 

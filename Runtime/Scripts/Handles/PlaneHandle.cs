@@ -61,8 +61,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         protected override void OnHandleDragging(HandleEventData eventData)
         {
             var rayOrigin = eventData.rayOrigin;
-
-            var lastPosition = m_LastPositions[eventData.rayOrigin];
+            var lastPosition = m_LastPositions[rayOrigin];
             var worldPosition = lastPosition;
 
             var ray = eventData.camera == null ?
@@ -74,7 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
                 worldPosition = ray.GetPoint(Mathf.Min(Mathf.Abs(distance), k_MaxDragDistance * this.GetViewerScale()));
 
             var deltaPosition = worldPosition - lastPosition;
-            m_LastPositions[eventData.rayOrigin] = worldPosition;
+            m_LastPositions[rayOrigin] = worldPosition;
 
             deltaPosition = transform.InverseTransformVector(deltaPosition);
             deltaPosition.z = 0;

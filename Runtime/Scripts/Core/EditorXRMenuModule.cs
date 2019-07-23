@@ -474,9 +474,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal bool IsValidHover(IRaycastSource source)
         {
-            var go = source.draggedObject;
+            var eventData = source.eventData;
+            var currentRaycast = eventData.pointerCurrentRaycast;
+            var go = eventData.pointerDrag;
             if (!go)
-                go = source.hoveredObject;
+                go = currentRaycast.gameObject;
 
             if (!go)
                 return true;
@@ -484,7 +486,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (go == gameObject)
                 return true;
 
-            var eventData = source.eventData;
             var rayOrigin = eventData.rayOrigin;
             DeviceData deviceData = null;
             foreach (var currentDevice in m_ToolModule.deviceData)
@@ -501,7 +502,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (go.transform.IsChildOf(deviceData.rayOrigin)) // Don't let UI on this hand block the menu
                     return false;
 
-                var scaledPointerDistance = eventData.pointerCurrentRaycast.distance / this.GetViewerScale();
+                var scaledPointerDistance = currentRaycast.distance / this.GetViewerScale();
                 var menuHideFlags = deviceData.menuHideData;
                 var mainMenu = deviceData.mainMenu;
                 IMenu openMenu = mainMenu;

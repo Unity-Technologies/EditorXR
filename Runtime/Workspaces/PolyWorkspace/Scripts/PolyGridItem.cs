@@ -321,8 +321,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 base.OnDragStarted(handle, eventData);
 
-                var rayOrigin = eventData.rayOrigin;
-                this.AddRayVisibilitySettings(rayOrigin, this, false, true);
+                this.AddRayVisibilitySettings(eventData.rayOrigin, this, false, true);
 
                 var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
                 var cloneItem = clone.GetComponent<PolyGridItem>();
@@ -355,9 +354,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (data.prefab)
             {
                 var gridItem = m_DragObject.GetComponent<PolyGridItem>();
-
-                var rayOrigin = eventData.rayOrigin;
-                this.RemoveRayVisibilitySettings(rayOrigin, this);
+                this.RemoveRayVisibilitySettings(eventData.rayOrigin, this);
 
                 if (!this.IsOverShoulder(eventData.rayOrigin))
                 {
@@ -524,7 +521,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 transitionAmount += Time.deltaTime * transitionAddMultiplier;
                 yield return null;
             }
-			
+
             UnityObjectUtils.Destroy(itemToHide);
         }
 

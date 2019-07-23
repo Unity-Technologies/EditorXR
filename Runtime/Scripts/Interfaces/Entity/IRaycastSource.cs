@@ -13,8 +13,8 @@ namespace UnityEditor.Experimental.EditorVR
         bool hasObject { get; }
         bool blocked { get; set; }
         Transform rayOrigin { get; }
-        GameObject hoveredObject { get; }
-        GameObject draggedObject { get; set; }
+        //GameObject hoveredObject { get; }
+        //GameObject draggedObject { get; set; }
         Camera eventCamera { get; }
         Vector2 position { get; }
     }

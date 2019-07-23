@@ -267,19 +267,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                 m_InputModule.AddRaycastSource(proxy, node, rayOrigin, source =>
                                 {
                                     // Do not invalidate UI raycasts in the middle of a drag operation
-                                    if (!source.draggedObject)
+                                    var eventData = source.eventData;
+                                    if (!eventData.pointerDrag)
                                     {
                                         var sourceRayOrigin = source.rayOrigin;
                                         if (m_DirectSelectionModule != null && m_DirectSelectionModule.IsHovering(sourceRayOrigin))
                                             return false;
 
-                                        var hoveredObject = source.hoveredObject;
+                                        var currentRaycast = eventData.pointerCurrentRaycast;
+                                        var hoveredObject = currentRaycast.gameObject;
 
                                         // The manipulator needs rays to go through scene objects in order to work
                                         var isManipulator = hoveredObject && hoveredObject.GetComponentInParent<IManipulator>() != null;
                                         float sceneObjectDistance;
                                         var raycastObject = m_IntersectionModule.GetFirstGameObject(sourceRayOrigin, out sceneObjectDistance);
-                                        var uiDistance = source.eventData.pointerCurrentRaycast.distance;
+                                        var uiDistance = currentRaycast.distance;
 
                                         // If the distance to a scene object is less than the distance to the hovered UI, invalidate the UI raycast
                                         if (!isManipulator && raycastObject && sceneObjectDistance < uiDistance && !ignoreList.Contains(raycastObject))

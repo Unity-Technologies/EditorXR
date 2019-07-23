@@ -40,7 +40,6 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         protected override void OnHandleDragStarted(HandleEventData eventData)
         {
             var rayOrigin = eventData.rayOrigin;
-
             var radialEventData = (RadialHandleEventData)eventData;
             m_LastPositions[rayOrigin] = radialEventData.raycastHitWorldPosition;
             var forward = rayOrigin.forward;
@@ -54,7 +53,6 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         protected override void OnHandleDragging(HandleEventData eventData)
         {
             var rayOrigin = eventData.rayOrigin;
-
             var lastPosition = m_LastPositions[rayOrigin];
             var lastDragForward = m_LastRayDirection[rayOrigin];
             var worldPosition = lastPosition;

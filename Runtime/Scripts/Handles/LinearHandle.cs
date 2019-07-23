@@ -59,17 +59,20 @@ namespace UnityEditor.Experimental.EditorVR.Handles
             var lastPosition = m_LastPositions[rayOrigin];
             var worldPosition = lastPosition;
 
+            var thisTransform = transform;
             if (m_OrientDragPlaneToRay)
             {
                 // Orient a plane for dragging purposes through the axis that rotates to avoid being parallel to the ray,
                 // so that you can prevent intersections at infinity
-                var forward = Quaternion.Inverse(transform.rotation) * (rayOrigin.position - transform.position);
+                var rotation = thisTransform.rotation;
+                var position = thisTransform.position;
+                var forward = Quaternion.Inverse(rotation) * (rayOrigin.position - position);
                 forward.z = 0;
-                m_Plane.SetNormalAndPosition(transform.rotation * forward.normalized, transform.position);
+                m_Plane.SetNormalAndPosition(rotation * forward.normalized, position);
             }
             else
             {
-                m_Plane.SetNormalAndPosition(transform.up, transform.position);
+                m_Plane.SetNormalAndPosition(thisTransform.up, thisTransform.position);
             }
 
             var ray = eventData.camera == null ?
@@ -82,7 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
             eventData.raycastHitWorldPosition = worldPosition;
 
-            eventData.deltaPosition = Vector3.Project(worldPosition - lastPosition, transform.forward);
+            eventData.deltaPosition = Vector3.Project(worldPosition - lastPosition, thisTransform.forward);
 
             if (setLastPosition)
                 m_LastPositions[rayOrigin] = worldPosition;
@@ -91,12 +94,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         protected override void OnHandleHoverStarted(HandleEventData eventData)
         {
             var linearEventData = (LinearHandleEventData)eventData;
-
-            var rayOrigin = eventData.rayOrigin;
-            if (rayOrigin == null)
-                rayOrigin = eventData.camera.transform;
-
-            m_LastPositions[rayOrigin] = linearEventData.raycastHitWorldPosition;
+            m_LastPositions[eventData.rayOrigin] = linearEventData.raycastHitWorldPosition;
 
             if (m_DragSources.Count == 0)
                 UpdateEventData(linearEventData);
@@ -115,11 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         protected override void OnHandleDragStarted(HandleEventData eventData)
         {
             var linearEventData = (LinearHandleEventData)eventData;
-            var rayOrigin = eventData.rayOrigin;
-            if (rayOrigin == null)
-                rayOrigin = eventData.camera.transform;
-
-            m_LastPositions[rayOrigin] = linearEventData.raycastHitWorldPosition;
+            m_LastPositions[eventData.rayOrigin] = linearEventData.raycastHitWorldPosition;
             UpdateEventData(linearEventData);
 
             base.OnHandleDragStarted(eventData);
