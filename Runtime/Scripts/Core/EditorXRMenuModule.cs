@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    public class MenuHideData
+    class MenuHideData
     {
         public MenuHideFlags hideFlags = MenuHideFlags.Hidden;
         public MenuHideFlags lastHideFlags = MenuHideFlags.Hidden;

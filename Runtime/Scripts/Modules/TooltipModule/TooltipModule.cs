@@ -11,7 +11,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class TooltipModule : ScriptableSettings<TooltipModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
-        IUsesViewerScale, IProvidesSetTooltipVisibility
+        IUsesViewerScale, IProvidesSetTooltipVisibility, IUsesUIEvents
     {
         class TooltipData
         {
@@ -85,6 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 #if !FI_AUTOFILL
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesUIEvents IFunctionalitySubscriber<IProvidesUIEvents>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection
@@ -109,13 +110,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_TooltipPool.Clear();
             m_TooltipDataPool.Clear();
 
-            var uiModule = ModuleLoaderCore.instance.GetModule<EditorXRUIModule>();
-            if (!uiModule)
-                return;
-
-            var inputModule = uiModule.InputModule;
-            inputModule.rayEntered += OnRayEntered;
-            inputModule.rayExited += OnRayExited;
+            this.SubscribeToRayEntered(OnRayEntered);
+            this.SubscribeToRayExited(OnRayExited);
         }
 
         public void Shutdown()
@@ -125,13 +121,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             m_Tooltips.Clear();
 
-            var uiModule = ModuleLoaderCore.instance.GetModule<EditorXRUIModule>();
-            if (!uiModule)
-                return;
-
-            var inputModule = uiModule.InputModule;
-            inputModule.rayEntered -= OnRayEntered;
-            inputModule.rayExited -= OnRayExited;
+            this.UnsubscribeFromRayEntered(OnRayEntered);
+            this.UnsubscribeFromRayExited(OnRayExited);
         }
 
         public void OnBehaviorUpdate()

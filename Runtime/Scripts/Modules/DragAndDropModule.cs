@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -6,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class DragAndDropModule : IDelayedInitializationModule, IModuleDependency<EditorXRUIModule>
+    sealed class DragAndDropModule : IDelayedInitializationModule, IModuleDependency<EditorXRUIModule>, IUsesUIEvents
     {
         readonly Dictionary<Transform, IDroppable> m_Droppables = new Dictionary<Transform, IDroppable>();
         readonly Dictionary<Transform, IDropReceiver> m_DropReceivers = new Dictionary<Transform, IDropReceiver>();
@@ -18,6 +19,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public int initializationOrder { get { return 1; } }
 
         public int shutdownOrder { get { return 0; } }
+
+#if !FI_AUTOFILL
+        IProvidesUIEvents IFunctionalitySubscriber<IProvidesUIEvents>.provider { get; set; }
+#endif
 
         object GetCurrentDropObject(Transform rayOrigin)
         {
@@ -104,20 +109,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void Initialize()
         {
-            var inputModule = m_UIModule.InputModule;
-            inputModule.rayEntered += OnRayEntered;
-            inputModule.rayExited += OnRayExited;
-            inputModule.dragStarted += OnDragStarted;
-            inputModule.dragEnded += OnDragEnded;
+            this.SubscribeToRayEntered(OnRayEntered);
+            this.SubscribeToRayExited(OnRayExited);
+            this.SubscribeToDragStarted(OnDragStarted);
+            this.SubscribeToDragEnded(OnDragEnded);
         }
 
         public void Shutdown()
         {
-            var inputModule = m_UIModule.InputModule;
-            inputModule.rayEntered -= OnRayEntered;
-            inputModule.rayExited -= OnRayExited;
-            inputModule.dragStarted -= OnDragStarted;
-            inputModule.dragEnded -= OnDragEnded;
+            this.UnsubscribeFromRayEntered(OnRayEntered);
+            this.UnsubscribeFromRayExited(OnRayExited);
+            this.UnsubscribeFromDragStarted(OnDragStarted);
+            this.UnsubscribeFromDragEnded(OnDragEnded);
         }
     }
 }

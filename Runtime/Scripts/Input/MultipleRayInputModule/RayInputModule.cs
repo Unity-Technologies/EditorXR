@@ -300,7 +300,7 @@ namespace UnityEngine.EventSystems
             leftData.pointerCurrentRaycast = raycast;
             m_RaycastResultCache.Clear();
 
-            // copy the apropriate data into right and middle slots
+            // copy the appropriate data into right and middle slots
             RayEventData rightData;
             GetRayData(kMouseRightId, out rightData, true);
             CopyFromTo(leftData, rightData);

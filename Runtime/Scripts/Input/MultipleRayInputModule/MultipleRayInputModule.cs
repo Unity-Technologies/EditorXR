@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
@@ -19,29 +20,35 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     /// Input module for working with, mouse, keyboard, or controller.
     /// </remarks>
     [AddComponentMenu("Event/Multiple Ray Input Module")]
-    class MultipleRayInputModule : RayInputModule, IUsesPointer, IUsesConnectInterfaces,
-        IProvidesIsHoveringOverUI, IUsesFunctionalityInjection, IProvidesBlockUIInteraction
+    class MultipleRayInputModule : RayInputModule, IUsesPointer, IUsesConnectInterfaces, IProvidesAddRaycastSource,
+        IProvidesIsHoveringOverUI, IUsesFunctionalityInjection, IProvidesBlockUIInteraction, IProvidesUIEvents
     {
-        public class RaycastSource : ICustomActionMap, IUsesRequestFeedback, IRaycastSource
+        class RaycastSource : ICustomActionMap, IUsesRequestFeedback, IRaycastSource
         {
-            public IProxy proxy; // Needed for checking if proxy is active
-            public Node node;
-            public Func<IRaycastSource, bool> isValid;
+            readonly IProxy m_Proxy; // Needed for checking if proxy is active
+            readonly Node m_Node;
+            readonly Func<IRaycastSource, bool> m_IsValid;
+            readonly Transform m_RayOrigin;
 
             MultipleRayInputModule m_Owner;
             readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
 
-            public GameObject hoveredObject { get; private set; }
-            public GameObject draggedObject { get; set; }
             public Camera eventCamera { get { return m_Owner.m_EventCamera; } }
 
             public Vector2 position { get { return m_Owner.m_EventCamera.pixelRect.center; } }
 
-            public Transform rayOrigin { get; private set; }
+            public Transform rayOrigin { get { return m_RayOrigin; } }
             public RayEventData eventData { get; private set; }
             public bool blocked { get; set; }
 
-            public GameObject currentObject { get { return hoveredObject ? hoveredObject : draggedObject; } }
+            public GameObject currentObject
+            {
+                get
+                {
+                    var hoveredObject = eventData.pointerCurrentRaycast.gameObject;
+                    return hoveredObject ? hoveredObject : eventData.pointerDrag;
+                }
+            }
 
             public bool hasObject { get { return currentObject != null && (m_Owner.m_LayerMask & (1 << currentObject.layer)) != 0; } }
 
@@ -54,21 +61,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, MultipleRayInputModule owner, Func<IRaycastSource, bool> validationCallback)
             {
-                this.proxy = proxy;
-                this.rayOrigin = rayOrigin;
-                this.node = node;
+                m_Proxy = proxy;
+                m_RayOrigin = rayOrigin;
+                m_Node = node;
                 m_Owner = owner;
-                isValid = validationCallback;
+                m_IsValid = validationCallback;
             }
 
             public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
             {
-                if (!(rayOrigin.gameObject.activeSelf || draggedObject) || !proxy.active)
+                if (!(m_RayOrigin.gameObject.activeSelf || eventData.pointerDrag) || !m_Proxy.active)
                     return;
 
                 var preProcessRaycastSource = m_Owner.preProcessRaycastSource;
                 if (preProcessRaycastSource != null)
-                    preProcessRaycastSource(rayOrigin);
+                    preProcessRaycastSource(m_RayOrigin);
 
                 if (eventData == null)
                     eventData = new RayEventData(m_Owner.eventSystem);
@@ -77,9 +84,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 //hoveredObject = m_Owner.GetRayIntersection(this); // Check all currently running raycasters
                 //var currentOverGo = eventData.pointerCurrentRaycast.gameObject;
-                eventData.node = node;
-                eventData.rayOrigin = rayOrigin;
-                eventData.pointerLength = m_Owner.GetPointerLength(rayOrigin);
+                eventData.node = m_Node;
+                eventData.rayOrigin = m_RayOrigin;
+                eventData.pointerLength = m_Owner.GetPointerLength(m_RayOrigin);
 
                 var uiActions = (UIActions)input;
                 var select = uiActions.select;
@@ -102,12 +109,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     return;
                 }
 
-                if (isValid != null && !isValid(this))
+                if (m_IsValid != null && !m_IsValid(this))
                 {
                     var currentRaycast = eventData.pointerCurrentRaycast;
                     currentRaycast.gameObject = null;
                     eventData.pointerCurrentRaycast = currentRaycast;
-                    hoveredObject = null;
                     m_Owner.HandlePointerExitAndEnter(eventData, null, true); // Send only exit events
 
                     if (select.wasJustReleased)
@@ -161,7 +167,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     foreach (var id in ids)
                     {
                         var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
-                        request.node = node;
+                        request.node = m_Node;
                         request.control = id;
                         request.tooltipText = tooltipText;
                         requests.Add(request);
@@ -238,6 +244,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         readonly Dictionary<Transform, IRaycastSource> m_RaycastSources = new Dictionary<Transform, IRaycastSource>();
         readonly BindingDictionary m_Controls = new BindingDictionary();
+
+        public Camera eventCamera { set { m_EventCamera = value; } }
 
         /// <summary>
         /// Force this module to be active.
@@ -455,6 +463,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             shouldActivate |= input.GetMouseButtonDown(0);
 
             if (input.touchCount > 0)
+                shouldActivate = true;
+
+            if (m_RaycastSources.Count > 0)
                 shouldActivate = true;
 
             return shouldActivate;

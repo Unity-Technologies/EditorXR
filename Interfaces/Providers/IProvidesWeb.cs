@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
-    /// Provide access to scene raycast functionality
+    /// Provide access to web functionality
     /// </summary>
     public interface IProvidesWeb : IFunctionalityProvider
     {

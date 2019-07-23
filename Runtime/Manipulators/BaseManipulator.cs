@@ -227,7 +227,8 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
         protected virtual void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData)
         {
-            if (handle.IndexOfHoverSource(eventData.rayOrigin) > 0)
+            var rayOrigin = eventData.rayOrigin;
+            if (handle.IndexOfHoverSource(rayOrigin) > 0)
                 return;
 
             if (!handle.hasDragSource)
@@ -248,7 +249,8 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
         protected virtual void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData)
         {
-            if (handle.IndexOfHoverSource(eventData.rayOrigin) > 0)
+            var rayOrigin = eventData.rayOrigin;
+            if (handle.IndexOfHoverSource(rayOrigin) > 0)
                 return;
 
             if (!handle.hasDragSource)
@@ -262,7 +264,8 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
         protected virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
         {
-            if (handle.IndexOfDragSource(eventData.rayOrigin) > 0)
+            var rayOrigin = eventData.rayOrigin;
+            if (handle.IndexOfDragSource(rayOrigin) > 0)
                 return;
 
             foreach (var h in m_AllHandles)
@@ -290,6 +293,8 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
         protected virtual void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
         {
+            var rayOrigin = eventData.rayOrigin;
+
             UpdateHandleTip(handle, eventData, false);
 
             if (handle.hasDragSource)
@@ -299,7 +304,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
                 h.gameObject.SetActive(true);
 
             if (dragEnded != null)
-                dragEnded(eventData.rayOrigin);
+                dragEnded(rayOrigin);
 
             dragging = false;
 

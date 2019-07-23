@@ -48,6 +48,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         KeyboardModule m_KeyboardModule;
 
+        MultipleRayInputModule m_InputModule;
+
         Transform m_ModuleParent;
         GameObject m_NewEventSystem;
         MultipleRayInputModule m_NewInputModule;
@@ -56,16 +58,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public int shutdownOrder { get { return 0; } }
         public int connectInterfaceOrder { get { return 0; } }
 
-        //TODO: Expose input via FI
-        internal MultipleRayInputModule InputModule { get; private set; }
-
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         public void ConnectDependency(FunctionalityInjectionModule dependency) { m_FIModule = dependency; }
-
         public void ConnectDependency(EditorXRViewerModule dependency) { m_ViewerModule = dependency; }
 
         // Unused dependency to ensure IUsesPointer is satisfied
@@ -122,40 +120,43 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var eventSystem = FindObjectOfType<EventSystem>();
             if (eventSystem)
             {
-                InputModule = eventSystem.GetComponent<MultipleRayInputModule>();
-                if (!InputModule)
+                m_InputModule = eventSystem.GetComponent<MultipleRayInputModule>();
+                if (!m_InputModule)
                 {
                     m_NewInputModule = eventSystem.gameObject.AddComponent<MultipleRayInputModule>();
-                    InputModule = m_NewInputModule;
+                    m_InputModule = m_NewInputModule;
                 }
             }
             else
             {
                 m_NewEventSystem = new GameObject("EventSystem");
-                InputModule = m_NewEventSystem.AddComponent<MultipleRayInputModule>();
+                m_InputModule = m_NewEventSystem.AddComponent<MultipleRayInputModule>();
             }
 
 #if UNITY_EDITOR
-            InputModule.StartRunInEditMode();
+            m_InputModule.StartRunInEditMode();
 #endif
 
-            m_FIModule.activeIsland.AddProviders(new List<IFunctionalityProvider> { InputModule });
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            var activeIsland = m_FIModule.activeIsland;
+            activeIsland.AddProviders(new List<IFunctionalityProvider> { m_InputModule });
+            moduleLoaderCore.InjectFunctionalityInModules(activeIsland);
 
-            this.InjectFunctionalitySingle(InputModule);
-            this.ConnectInterfaces(InputModule);
+            this.InjectFunctionalitySingle(m_InputModule);
+            this.ConnectInterfaces(m_InputModule);
 
             var customPreviewCamera = m_ViewerModule.customPreviewCamera;
             if (customPreviewCamera != null)
-                InputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
+                m_InputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
 
-            var rayModule = ModuleLoaderCore.instance.GetModule<EditorXRRayModule>();
+            var rayModule = moduleLoaderCore.GetModule<EditorXRRayModule>();
             if (rayModule != null)
-                InputModule.preProcessRaycastSource = rayModule.PreProcessRaycastSource;
+                m_InputModule.preProcessRaycastSource = rayModule.PreProcessRaycastSource;
 
             // TODO: bring back event camera
-//            m_EventCamera = EditorXRUtils.Instantiate(m_EventCameraPrefab.gameObject, m_ModuleParent).GetComponent<Camera>();
-//            m_EventCamera.enabled = false;
-//            InputModule.eventCamera = m_EventCamera;
+            m_EventCamera = EditorXRUtils.Instantiate(m_EventCameraPrefab.gameObject, m_ModuleParent).GetComponent<Camera>();
+            m_EventCamera.enabled = false;
+            m_InputModule.eventCamera = m_EventCamera;
         }
 
         public void Shutdown()
@@ -169,7 +170,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (m_NewEventSystem)
                 DestroyImmediate(m_NewEventSystem);
 
-            m_FIModule.activeIsland.RemoveProviders(new List<IFunctionalityProvider> { InputModule });
+            m_FIModule.activeIsland.RemoveProviders(new List<IFunctionalityProvider> { m_InputModule });
         }
 
         internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)

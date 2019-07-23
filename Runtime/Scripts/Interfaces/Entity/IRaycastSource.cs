@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEditor.Experimental.EditorVR.Modules;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -13,8 +12,6 @@ namespace UnityEditor.Experimental.EditorVR
         bool hasObject { get; }
         bool blocked { get; set; }
         Transform rayOrigin { get; }
-        //GameObject hoveredObject { get; }
-        //GameObject draggedObject { get; set; }
         Camera eventCamera { get; }
         Vector2 position { get; }
     }

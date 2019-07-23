@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
@@ -20,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IUsesConnectInterfaces, IStandardIgnoreList, IDelayedInitializationModule, ISelectionChanged,
         IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults, IProvidesSetDefaultRayColor,
         IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings, IProvidesGetRayVisibility, IProvidesGetPreviewOrigin,
-        IProvidesGetFieldGrabOrigin, IInstantiateUI, IUsesViewerScale
+        IProvidesGetFieldGrabOrigin, IInstantiateUI, IUsesViewerScale, IUsesAddRaycastSource, IUsesGetPointerEventData
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -55,7 +56,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         SerializedPreferencesModule m_SerializedPreferences;
 
         Transform m_ModuleParent;
-        MultipleRayInputModule m_InputModule;
 
         internal DefaultProxyRay proxyRayPrefab { get { return m_ProxyRayPrefab; } }
 
@@ -71,6 +71,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesAddRaycastSource IFunctionalitySubscriber<IProvidesAddRaycastSource>.provider { get; set; }
+        IProvidesGetPointerEventData IFunctionalitySubscriber<IProvidesGetPointerEventData>.provider { get; set; }
 #endif
 
         public void ConnectDependency(DeviceInputModule dependency)
@@ -197,29 +199,25 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Initialize()
         {
-            var uiModule = ModuleLoaderCore.instance.GetModule<EditorXRUIModule>();
-            if (uiModule)
-                m_InputModule = uiModule.InputModule;
+            var cameraRig = CameraUtils.GetCameraRig();
+            var proxyTypes = CollectionPool<List<Type>, Type>.GetCollection();
+            typeof(IProxy).GetImplementationsOfInterface(proxyTypes);
+            foreach (var proxyType in proxyTypes)
+            {
+                var proxy = (IProxy)EditorXRUtils.CreateGameObjectWithComponent(proxyType, cameraRig, false);
+                this.ConnectInterfaces(proxy);
+                this.InjectFunctionalitySingle(proxy);
+                var trackedObjectInput = m_DeviceInputModule.trackedObjectInput;
+                if (trackedObjectInput == null)
+                    Debug.LogError("Device Input Module not initialized--trackedObjectInput is null");
 
-//            var cameraRig = CameraUtils.GetCameraRig();
-//            var proxyTypes = CollectionPool<List<Type>, Type>.GetCollection();
-//            typeof(IProxy).GetImplementationsOfInterface(proxyTypes);
-//            foreach (var proxyType in proxyTypes)
-//            {
-//                var proxy = (IProxy)EditorXRUtils.CreateGameObjectWithComponent(proxyType, cameraRig, false);
-//                this.ConnectInterfaces(proxy);
-//                this.InjectFunctionalitySingle(proxy);
-//                var trackedObjectInput = m_DeviceInputModule.trackedObjectInput;
-//                if (trackedObjectInput == null)
-//                    Debug.LogError("Device Input Module not initialized--trackedObjectInput is null");
-//
-//                proxy.trackedObjectInput = trackedObjectInput;
-//                proxy.activeChanged += () => OnProxyActiveChanged(proxy);
-//
-//                m_Proxies.Add(proxy);
-//            }
-//
-//            CollectionPool<List<Type>, Type>.RecycleCollection(proxyTypes);
+                proxy.trackedObjectInput = trackedObjectInput;
+                proxy.activeChanged += () => OnProxyActiveChanged(proxy);
+
+                m_Proxies.Add(proxy);
+            }
+
+            CollectionPool<List<Type>, Type>.RecycleCollection(proxyTypes);
         }
 
         public void Shutdown()
@@ -260,11 +258,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                 newDeviceData.rayOrigin = rayOrigin;
                                 newDeviceData.inputDevice = device;
 
-                                if (!m_InputModule)
+                                if (!this.HasProvider<IProvidesAddRaycastSource>())
                                     continue;
 
                                 // Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-                                m_InputModule.AddRaycastSource(proxy, node, rayOrigin, source =>
+                                this.AddRaycastSource(proxy, node, rayOrigin, source =>
                                 {
                                     // Do not invalidate UI raycasts in the middle of a drag operation
                                     var eventData = source.eventData;
@@ -393,7 +391,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     // Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
                     // object, so visually show the ray terminating there instead of the object; UI is already given
                     // priority on the input side)
-                    var uiEventData = m_InputModule.GetPointerEventData(rayOrigin);
+                    var uiEventData = this.GetPointerEventData(rayOrigin);
                     if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
                     {
                         // Set ray length to distance to UI objects
