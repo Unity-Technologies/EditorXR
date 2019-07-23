@@ -75,11 +75,8 @@ namespace UnityEditor.Experimental.EditorVR.Handles
                 m_Plane.SetNormalAndPosition(thisTransform.up, thisTransform.position);
             }
 
-            var ray = eventData.camera == null ?
-                new Ray(rayOrigin.position, rayOrigin.forward) :
-                eventData.camera.ScreenPointToRay(eventData.position);
-
             float distance;
+            var ray = eventData.GetRay();
             if (m_Plane.Raycast(ray, out distance))
                 worldPosition = ray.GetPoint(Mathf.Min(distance, k_MaxDragDistance * this.GetViewerScale()));
 

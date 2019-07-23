@@ -21,7 +21,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     /// </remarks>
     [AddComponentMenu("Event/Multiple Ray Input Module")]
     class MultipleRayInputModule : RayInputModule, IUsesPointer, IUsesConnectInterfaces, IProvidesAddRaycastSource,
-        IProvidesIsHoveringOverUI, IUsesFunctionalityInjection, IProvidesBlockUIInteraction, IProvidesUIEvents
+        IProvidesIsHoveringOverUI, IUsesFunctionalityInjection, IProvidesBlockUIInteraction, IProvidesUIEvents,
+        IProvidesGetPointerEventData
     {
         class RaycastSource : ICustomActionMap, IUsesRequestFeedback, IRaycastSource
         {
@@ -266,54 +267,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             get { return m_InputActionsPerSecond; }
             set { m_InputActionsPerSecond = value; }
-        }
-
-        /// <summary>
-        /// Delay in seconds before the input actions per second repeat rate takes effect.
-        /// </summary>
-        /// <remarks>
-        /// If the same direction is sustained, the inputActionsPerSecond property can be used to control the rate at which events are fired. However, it can be desirable that the first repetition is delayed, so the user doesn't get repeated actions by accident.
-        /// </remarks>
-        public float repeatDelay
-        {
-            get { return m_RepeatDelay; }
-            set { m_RepeatDelay = value; }
-        }
-
-        /// <summary>
-        /// Name of the horizontal axis for movement (if axis events are used).
-        /// </summary>
-        public string horizontalAxis
-        {
-            get { return m_HorizontalAxis; }
-            set { m_HorizontalAxis = value; }
-        }
-
-        /// <summary>
-        /// Name of the vertical axis for movement (if axis events are used).
-        /// </summary>
-        public string verticalAxis
-        {
-            get { return m_VerticalAxis; }
-            set { m_VerticalAxis = value; }
-        }
-
-        /// <summary>
-        /// Maximum number of input events handled per second.
-        /// </summary>
-        public string submitButton
-        {
-            get { return m_SubmitButton; }
-            set { m_SubmitButton = value; }
-        }
-
-        /// <summary>
-        /// Input manager name for the 'cancel' button.
-        /// </summary>
-        public string cancelButton
-        {
-            get { return m_CancelButton; }
-            set { m_CancelButton = value; }
         }
 
         public LayerMask layerMask
@@ -832,6 +785,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var blockUIInteractionSubscriber = obj as IFunctionalitySubscriber<IProvidesBlockUIInteraction>;
             if (blockUIInteractionSubscriber != null)
                 blockUIInteractionSubscriber.provider = this;
+
+            var uiEventsSubscriber = obj as IFunctionalitySubscriber<IProvidesUIEvents>;
+            if (uiEventsSubscriber != null)
+                uiEventsSubscriber.provider = this;
+
+            var addRaycastSourceSubscriber = obj as IFunctionalitySubscriber<IProvidesAddRaycastSource>;
+            if (addRaycastSourceSubscriber != null)
+                addRaycastSourceSubscriber.provider = this;
+
+            var getPointerEventDataSubscriber = obj as IFunctionalitySubscriber<IProvidesGetPointerEventData>;
+            if (getPointerEventDataSubscriber != null)
+                getPointerEventDataSubscriber.provider = this;
 #endif
         }
 

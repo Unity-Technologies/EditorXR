@@ -340,7 +340,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData)
         {
             base.OnDragStarted(handle, eventData);
-            this.AddRayVisibilitySettings(eventData.rayOrigin, this, m_IncludeRaySelectForDrop, true);
+
+            var rayOrigin = eventData.rayOrigin;
+            this.AddRayVisibilitySettings(rayOrigin, this, m_IncludeRaySelectForDrop, true);
 
             var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
             var cloneItem = clone.GetComponent<AssetGridItem>();

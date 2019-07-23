@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class RayEventData : PointerEventData
+    sealed class RayEventData : PointerEventData
     {
         /// <summary>
         /// The root from where the ray is cast

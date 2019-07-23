@@ -9,7 +9,7 @@ namespace UnityEngine.EventSystems
     /// <summary>
     /// A BaseInputModule for ray-based input, based on PointerInputModule
     /// </summary>
-    public abstract class RayInputModule : BaseInputModule
+    abstract class RayInputModule : BaseInputModule
     {
         /// <summary>
         /// Id of the cached left mouse pointer event.

@@ -57,17 +57,14 @@ namespace UnityEditor.Experimental.EditorVR.Handles
             var lastDragForward = m_LastRayDirection[rayOrigin];
             var worldPosition = lastPosition;
 
-            var ray = eventData.camera == null ?
-                new Ray(rayOrigin.position, rayOrigin.forward) :
-                eventData.camera.ScreenPointToRay(eventData.position);
-
             float distance;
+            var ray = eventData.GetRay();
             if (m_Plane.Raycast(ray, out distance))
                 worldPosition = ray.GetPoint(Mathf.Abs(distance));
 
-            var transform = this.transform;
-            var up = transform.up;
-            var dragTangent = Vector3.Cross(up, (startDragPositions[rayOrigin] - transform.position).normalized);
+            var thisTransform = transform;
+            var up = thisTransform.up;
+            var dragTangent = Vector3.Cross(up, (startDragPositions[rayOrigin] - thisTransform.position).normalized);
             var angle = m_TurnSpeed * Vector3.Angle(ray.direction, lastDragForward) *
                 Vector3.Dot((worldPosition - lastPosition).normalized, dragTangent);
             eventData.deltaRotation = Quaternion.AngleAxis(angle, up);

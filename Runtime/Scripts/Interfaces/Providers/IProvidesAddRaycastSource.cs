@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Unity.Labs.EditorXR
 {
     /// <summary>
-    /// Provide access to UI events
+    /// Provide the ability to add RaycastSources to the system
     /// </summary>
     interface IProvidesAddRaycastSource : IFunctionalityProvider
     {

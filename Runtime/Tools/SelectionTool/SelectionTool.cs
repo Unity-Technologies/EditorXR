@@ -15,10 +15,10 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
     [SpatialMenuItem("Selection", "Tools", "Select & manipulate objects in the scene")]
-    public sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
+    sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
         IUsesSetHighlight, IUsesSelectObject, IUsesSetManipulatorsVisible, IUsesIsHoveringOverUI, IUsesDirectSelection,
         ILinkedObject, IUsesCanGrabObject, IUsesGetManipulatorDragState, IUsesNode, IUsesGetRayVisibility,
-        IUsesIsMainMenuVisible, IUsesIsInMiniWorld,IRayToNode, IUsesGetDefaultRayColor, IUsesSetDefaultRayColor,
+        IUsesIsMainMenuVisible, IUsesIsInMiniWorld, IRayToNode, IUsesGetDefaultRayColor, IUsesSetDefaultRayColor,
         ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,IUsesDeviceType, IMenuIcon, IUsesPointer,
         IUsesRayVisibilitySettings, IUsesViewerScale, IUsesCheckSphere, ISettingsMenuItemProvider, ISerializePreferences,
         IStandardIgnoreList, IUsesBlockUIInteraction, IUsesRequestFeedback, IUsesGetVRPlayerObjects, IUsesCheckBounds

@@ -1,13 +1,11 @@
-using System;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
-    /// Gives decorated class the ability to add raycast sources to the system
+    /// Gives decorated class the ability to add get pointer event data  from the system
     /// </summary>
     interface IUsesGetPointerEventData : IFunctionalitySubscriber<IProvidesGetPointerEventData>
     {

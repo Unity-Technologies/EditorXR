@@ -48,7 +48,9 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         protected override void OnHandleDragStarted(HandleEventData eventData)
         {
             var sphereEventData = (SphereHandleEventData)eventData;
-            if (IndexOfDragSource(eventData.rayOrigin) == 0)
+
+            var rayOrigin = eventData.rayOrigin;
+            if (IndexOfDragSource(rayOrigin) == 0)
             {
                 m_CurrentRadius = sphereEventData.raycastHitDistance;
                 m_ScrollRate = k_InitialScrollRate;
@@ -99,12 +101,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
         Vector3 GetRayPoint(HandleEventData eventData)
         {
-            var rayOrigin = eventData.rayOrigin;
-            var ray = eventData.camera == null ?
-                new Ray(rayOrigin.position, rayOrigin.forward) :
-                eventData.camera.ScreenPointToRay(eventData.position);
-
-            return ray.GetPoint(m_CurrentRadius);
+            return eventData.GetRay().GetPoint(m_CurrentRadius);
         }
     }
 }

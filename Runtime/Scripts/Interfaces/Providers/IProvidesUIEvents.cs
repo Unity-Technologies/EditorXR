@@ -8,7 +8,7 @@ namespace Unity.Labs.EditorXR.Interfaces
     /// <summary>
     /// Provide access to UI events
     /// </summary>
-    public interface IProvidesUIEvents : IFunctionalityProvider
+    interface IProvidesUIEvents : IFunctionalityProvider
     {
         event Action<GameObject, RayEventData> rayEntered;
         event Action<GameObject, RayEventData> rayHovering;

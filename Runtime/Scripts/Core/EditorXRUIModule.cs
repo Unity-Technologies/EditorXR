@@ -153,7 +153,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (rayModule != null)
                 m_InputModule.preProcessRaycastSource = rayModule.PreProcessRaycastSource;
 
-            // TODO: bring back event camera
             m_EventCamera = EditorXRUtils.Instantiate(m_EventCameraPrefab.gameObject, m_ModuleParent).GetComponent<Camera>();
             m_EventCamera.enabled = false;
             m_InputModule.eventCamera = m_EventCamera;

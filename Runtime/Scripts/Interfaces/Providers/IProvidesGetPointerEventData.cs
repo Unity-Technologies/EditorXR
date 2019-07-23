@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Unity.Labs.EditorXR
 {
     /// <summary>
-    /// Provide access to UI events
+    /// Provide access to pointer event data
     /// </summary>
     interface IProvidesGetPointerEventData : IFunctionalityProvider
     {

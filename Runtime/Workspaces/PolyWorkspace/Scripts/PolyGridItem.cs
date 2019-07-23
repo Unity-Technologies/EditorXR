@@ -321,7 +321,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 base.OnDragStarted(handle, eventData);
 
-                this.AddRayVisibilitySettings(eventData.rayOrigin, this, false, true);
+                var rayOrigin = eventData.rayOrigin;
+                this.AddRayVisibilitySettings(rayOrigin, this, false, true);
 
                 var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
                 var cloneItem = clone.GetComponent<PolyGridItem>();
@@ -354,7 +355,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (data.prefab)
             {
                 var gridItem = m_DragObject.GetComponent<PolyGridItem>();
-                this.RemoveRayVisibilitySettings(eventData.rayOrigin, this);
+
+                var rayOrigin = eventData.rayOrigin;
+                this.RemoveRayVisibilitySettings(rayOrigin, this);
 
                 if (!this.IsOverShoulder(eventData.rayOrigin))
                 {

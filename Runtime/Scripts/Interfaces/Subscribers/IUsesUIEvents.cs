@@ -6,13 +6,13 @@ using UnityEngine;
 namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
-    /// Gives decorated class access to web requests
+    /// Gives decorated class access to UI events
     /// </summary>
-    public interface IUsesUIEvents : IFunctionalitySubscriber<IProvidesUIEvents>
+    interface IUsesUIEvents : IFunctionalitySubscriber<IProvidesUIEvents>
     {
     }
 
-    public static class UseUIEventsMethods
+    static class UseUIEventsMethods
     {
         /// <summary>
         /// Subscribe to the dragStarted event
