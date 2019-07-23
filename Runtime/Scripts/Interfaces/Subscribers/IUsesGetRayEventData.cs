@@ -7,13 +7,13 @@ namespace Unity.Labs.EditorXR.Interfaces
     /// <summary>
     /// Gives decorated class the ability to add get pointer event data  from the system
     /// </summary>
-    interface IUsesGetPointerEventData : IFunctionalitySubscriber<IProvidesGetPointerEventData>
+    interface IUsesGetRayEventData : IFunctionalitySubscriber<IProvidesGetRayEventData>
     {
     }
 
-    static class UsesGetPointerEventData
+    static class UsesGetRayEventData
     {
-        public static RayEventData GetPointerEventData(this IUsesGetPointerEventData user, Transform rayOrigin)
+        public static RayEventData GetRayEventData(this IUsesGetRayEventData user, Transform rayOrigin)
         {
 #if FI_AUTOFILL
             return default(RayEventData);

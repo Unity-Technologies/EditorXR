@@ -7,7 +7,7 @@ namespace Unity.Labs.EditorXR
     /// <summary>
     /// Provide access to pointer event data
     /// </summary>
-    interface IProvidesGetPointerEventData : IFunctionalityProvider
+    interface IProvidesGetRayEventData : IFunctionalityProvider
     {
         RayEventData GetPointerEventData(Transform rayOrigin);
     }

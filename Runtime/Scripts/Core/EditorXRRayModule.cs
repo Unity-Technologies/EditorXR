@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IUsesConnectInterfaces, IStandardIgnoreList, IDelayedInitializationModule, ISelectionChanged,
         IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults, IProvidesSetDefaultRayColor,
         IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings, IProvidesGetRayVisibility, IProvidesGetPreviewOrigin,
-        IProvidesGetFieldGrabOrigin, IInstantiateUI, IUsesViewerScale, IUsesAddRaycastSource, IUsesGetPointerEventData
+        IProvidesGetFieldGrabOrigin, IInstantiateUI, IUsesViewerScale, IUsesAddRaycastSource, IUsesGetRayEventData
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -72,7 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
         IProvidesAddRaycastSource IFunctionalitySubscriber<IProvidesAddRaycastSource>.provider { get; set; }
-        IProvidesGetPointerEventData IFunctionalitySubscriber<IProvidesGetPointerEventData>.provider { get; set; }
+        IProvidesGetRayEventData IFunctionalitySubscriber<IProvidesGetRayEventData>.provider { get; set; }
 #endif
 
         public void ConnectDependency(DeviceInputModule dependency)
@@ -391,7 +391,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     // Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
                     // object, so visually show the ray terminating there instead of the object; UI is already given
                     // priority on the input side)
-                    var uiEventData = this.GetPointerEventData(rayOrigin);
+                    var uiEventData = this.GetRayEventData(rayOrigin);
                     if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
                     {
                         // Set ray length to distance to UI objects

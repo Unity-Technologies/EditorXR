@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     [AddComponentMenu("Event/Multiple Ray Input Module")]
     class MultipleRayInputModule : RayInputModule, IUsesPointer, IUsesConnectInterfaces, IProvidesAddRaycastSource,
         IProvidesIsHoveringOverUI, IUsesFunctionalityInjection, IProvidesBlockUIInteraction, IProvidesUIEvents,
-        IProvidesGetPointerEventData
+        IProvidesGetRayEventData
     {
         class RaycastSource : ICustomActionMap, IUsesRequestFeedback, IRaycastSource
         {
@@ -794,7 +794,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (addRaycastSourceSubscriber != null)
                 addRaycastSourceSubscriber.provider = this;
 
-            var getPointerEventDataSubscriber = obj as IFunctionalitySubscriber<IProvidesGetPointerEventData>;
+            var getPointerEventDataSubscriber = obj as IFunctionalitySubscriber<IProvidesGetRayEventData>;
             if (getPointerEventDataSubscriber != null)
                 getPointerEventDataSubscriber.provider = this;
 #endif
