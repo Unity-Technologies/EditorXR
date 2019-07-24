@@ -116,7 +116,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     m_Owner.OnSelectReleased(this);
 
                 m_Owner.ProcessMove(eventData);
-                m_Owner.ProcessDrag(eventData);
+                m_Owner.ProcessDrag(eventData, true);
 
                 // Send scroll events
                 if (currentObject)
@@ -755,6 +755,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             rayEvent.dragging = false;
             rayEvent.useDragThreshold = true;
             rayEvent.pointerPressRaycast = rayEvent.pointerCurrentRaycast;
+            rayEvent.pressPosition = rayEvent.position;
 
             DeselectIfSelectionChanged(currentOverGo, rayEvent);
         }

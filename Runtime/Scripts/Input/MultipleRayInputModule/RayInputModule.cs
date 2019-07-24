@@ -364,6 +364,7 @@ namespace UnityEngine.EventSystems
             clone.node = eventData.node;
             clone.hovered.Clear();
             clone.hovered.AddRange(eventData.hovered);
+            clone.pressPosition = eventData.pressPosition;
             clone.pointerEnter = eventData.pointerEnter;
             clone.pointerPress = eventData.pointerPress;
             clone.pointerDrag = eventData.pointerDrag;
@@ -466,15 +467,31 @@ namespace UnityEngine.EventSystems
         /// <summary>
         /// Process the drag for the current frame with the given pointer event.
         /// </summary>
-        protected virtual void ProcessDrag(RayEventData rayEvent)
+        protected virtual void ProcessDrag(RayEventData rayEvent, bool useWorldPosition = false)
         {
             var draggedObject = rayEvent.pointerDrag;
             if (Cursor.lockState == CursorLockMode.Locked ||
                 draggedObject == null)
                 return;
 
+            Vector3 pressPosition;
+            Vector3 currentPosition;
+            float threshold;
+            if (useWorldPosition)
+            {
+                pressPosition = rayEvent.pointerPressRaycast.worldPosition;
+                currentPosition = rayEvent.pointerCurrentRaycast.worldPosition;
+                threshold = m_DragThreshold * this.GetViewerScale();
+            }
+            else
+            {
+                pressPosition = rayEvent.pressPosition;
+                currentPosition = rayEvent.position;
+                threshold = eventSystem.pixelDragThreshold;
+            }
+
             if (!rayEvent.dragging
-                && ShouldStartDrag(rayEvent.pointerPressRaycast.worldPosition, rayEvent.pointerCurrentRaycast.worldPosition, m_DragThreshold * this.GetViewerScale(), rayEvent.useDragThreshold))
+                && ShouldStartDrag(pressPosition, currentPosition, threshold, rayEvent.useDragThreshold))
             {
                 if (dragStarted != null)
                     dragStarted(draggedObject, rayEvent);
