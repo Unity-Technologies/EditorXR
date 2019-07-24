@@ -845,14 +845,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     break;
             }
 
-            //this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_DragPulse);
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_DragPulse);
         }
 
         void Rotate(Quaternion delta, Transform rayOrigin)
         {
             m_TargetRotation = delta * m_TargetRotation;
 
-            //this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_RotatePulse);
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_RotatePulse);
         }
 
         void Scale(Vector3 delta)
