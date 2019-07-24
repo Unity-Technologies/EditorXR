@@ -21,6 +21,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public Sprite icon;
     }
 
+    class DeviceData
+    {
+        public IProxy proxy;
+        public InputDevice inputDevice;
+        public Node node;
+        public Transform rayOrigin;
+        public readonly Stack<ToolData> toolData = new Stack<ToolData>();
+        public IMainMenu mainMenu;
+        public ITool currentTool;
+        public IMenu customMenu;
+        public IToolsMenu toolsMenu;
+        public readonly List<IAlternateMenu> alternateMenus = new List<IAlternateMenu>();
+        public IAlternateMenu alternateMenu;
+        public SpatialMenu spatialMenu;
+        public readonly Dictionary<IMenu, MenuHideData> menuHideData = new Dictionary<IMenu, MenuHideData>();
+    }
+
     class EditorXRToolModule : MonoBehaviour, IModuleDependency<LockModule>,
         IModuleDependency<EditorXRMenuModule>, IModuleDependency<DeviceInputModule>,
         IInterfaceConnector, IUsesConnectInterfaces, IDelayedInitializationModule,

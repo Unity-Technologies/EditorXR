@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         Image m_TextPanel;
-        
+
         [SerializeField]
         TextMeshProUGUI m_Text;
 #pragma warning restore 649

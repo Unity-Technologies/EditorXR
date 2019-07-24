@@ -10,7 +10,9 @@ using PolyToolkit;
 using UnityEngine.Networking;
 #endif
 
+#if UNITY_EDITOR
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {

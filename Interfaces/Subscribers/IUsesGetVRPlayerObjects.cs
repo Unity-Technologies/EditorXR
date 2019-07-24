@@ -1,5 +1,5 @@
-using Unity.Labs.ModuleLoader;
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Interfaces

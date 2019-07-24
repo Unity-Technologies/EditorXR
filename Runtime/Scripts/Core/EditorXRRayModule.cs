@@ -140,7 +140,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var rayOrigin = userData as Transform;
             if (rayOrigin)
             {
-                var evrDeviceData = m_ToolModule.deviceData;
+                var deviceData = m_ToolModule.deviceData;
 
                 var ray = target as IUsesRayOrigin;
                 if (ray != null)
@@ -158,11 +158,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     rayOrigins.otherRayOrigins = otherRayOrigins;
                 }
 
-                var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+                var firstDeviceData = deviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 
                 var handedRay = target as IUsesNode;
-                if (handedRay != null && deviceData != null)
-                    handedRay.node = deviceData.node;
+                if (handedRay != null && firstDeviceData != null)
+                    handedRay.node = firstDeviceData.node;
             }
 
             var selectionModule = target as SelectionModule;
@@ -246,8 +246,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (proxy.active)
             {
-                var evrDeviceData = m_ToolModule.deviceData;
-                if (!evrDeviceData.Any(dd => dd.proxy == proxy))
+                var deviceData = m_ToolModule.deviceData;
+                if (!deviceData.Any(dd => dd.proxy == proxy))
                 {
                     foreach (var rayOriginPair in proxy.rayOrigins)
                     {
@@ -263,12 +263,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             var deviceNode = m_DeviceInputModule.GetDeviceNode(device);
                             if (deviceNode == node)
                             {
-                                var deviceData = new DeviceData();
-                                evrDeviceData.Add(deviceData);
-                                deviceData.proxy = proxy;
-                                deviceData.node = node;
-                                deviceData.rayOrigin = rayOrigin;
-                                deviceData.inputDevice = device;
+                                var newDeviceData = new DeviceData();
+                                deviceData.Add(newDeviceData);
+                                newDeviceData.proxy = proxy;
+                                newDeviceData.node = node;
+                                newDeviceData.rayOrigin = rayOrigin;
+                                newDeviceData.inputDevice = device;
 
                                 // Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
                                 m_MultipleRayInputModule.AddRaycastSource(proxy, node, rayOrigin, source =>

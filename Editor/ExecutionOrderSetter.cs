@@ -16,6 +16,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             var contextManager = new GameObject().AddComponent<EditingContextManager>();
             var managerMonoScript = MonoScript.FromMonoBehaviour(contextManager);
+            if  (managerMonoScript == null)
+                return;
+
             if (MonoImporter.GetExecutionOrder(managerMonoScript) != EditingContextManagerExecutionOrder)
                 MonoImporter.SetExecutionOrder(managerMonoScript, EditingContextManagerExecutionOrder);
 

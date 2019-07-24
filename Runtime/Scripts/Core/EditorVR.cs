@@ -7,7 +7,6 @@ using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.InputNew;
 
 #if UNITY_EDITOR
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
@@ -15,23 +14,6 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class DeviceData
-    {
-        public IProxy proxy;
-        public InputDevice inputDevice;
-        public Node node;
-        public Transform rayOrigin;
-        public readonly Stack<ToolData> toolData = new Stack<ToolData>();
-        public IMainMenu mainMenu;
-        public ITool currentTool;
-        public IMenu customMenu;
-        public IToolsMenu toolsMenu;
-        public readonly List<IAlternateMenu> alternateMenus = new List<IAlternateMenu>();
-        public IAlternateMenu alternateMenu;
-        public SpatialMenu spatialMenu;
-        public readonly Dictionary<IMenu, MenuHideData> menuHideData = new Dictionary<IMenu, MenuHideData>();
-    }
-
 #if UNITY_2018_3_OR_NEWER
 #if UNITY_EDITOR
     [RequiresTag(VRPlayerTag)]

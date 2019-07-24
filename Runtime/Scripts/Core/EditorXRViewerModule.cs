@@ -19,7 +19,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IUsesFunctionalityInjection, IProvidesViewerScale, IProvidesViewerBody, IProvidesMoveCameraRig,
         IProvidesGetVRPlayerObjects
     {
-
         [Serializable]
         class Preferences
         {
@@ -73,7 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         PlayerBody m_PlayerBody;
         GameObject m_PlayerFloor;
 
-        bool m_Initialized;
+        bool m_CameraInitialized;
         float m_OriginalNearClipPlane;
         float m_OriginalFarClipPlane;
         readonly List<GameObject> m_VRPlayerObjects = new List<GameObject>();
@@ -224,9 +223,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
 #endif
+
+            m_CameraInitialized = true;
         }
 
-        internal void UpdateCamera()
+        void UpdateCamera()
         {
 #if UNITY_EDITOR
             if (customPreviewCamera != null && customPreviewCamera as MonoBehaviour != null)
@@ -234,14 +235,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
         }
 
-        internal void AddPlayerFloor()
+        void AddPlayerFloor()
         {
             m_PlayerFloor = EditorXRUtils.Instantiate(m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false);
             this.InjectFunctionalitySingle(m_PlayerFloor.GetComponent<PlayerFloor>());
             m_VRPlayerObjects.Add(m_PlayerFloor);
         }
 
-        internal void AddPlayerModel()
+        void AddPlayerModel()
         {
             m_PlayerBody = EditorXRUtils.Instantiate(m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
             this.InjectFunctionalitySingle(m_PlayerBody);
@@ -369,10 +370,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var camera = CameraUtils.GetMainCamera();
             CameraUtils.GetCameraRig().localScale = Vector3.one * scale;
             Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / scale);
-            if (m_Initialized)
+            if (m_CameraInitialized)
             {
                 camera.nearClipPlane = m_OriginalNearClipPlane * scale;
                 camera.farClipPlane = m_OriginalFarClipPlane * scale;
+            }
+            else
+            {
+                Debug.LogWarning("Premature use of SetViewerScale");
             }
         }
 
@@ -386,12 +391,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             InitializeCamera();
             AddPlayerFloor();
             AddPlayerModel();
-            m_Initialized = true;
         }
 
         public void Shutdown()
         {
-            m_Initialized = true;
+            m_CameraInitialized = false;
             m_OriginalNearClipPlane = 0;
             m_OriginalFarClipPlane = 0;
             hmdReady = false;
