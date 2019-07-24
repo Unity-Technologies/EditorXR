@@ -2,19 +2,16 @@
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class DragAndDropModule : IDelayedInitializationModule, IModuleDependency<EditorXRUIModule>, IUsesUIEvents
+    sealed class DragAndDropModule : IDelayedInitializationModule, IUsesUIEvents
     {
         readonly Dictionary<Transform, IDroppable> m_Droppables = new Dictionary<Transform, IDroppable>();
         readonly Dictionary<Transform, IDropReceiver> m_DropReceivers = new Dictionary<Transform, IDropReceiver>();
 
         readonly Dictionary<Transform, GameObject> m_HoverObjects = new Dictionary<Transform, GameObject>();
-
-        EditorXRUIModule m_UIModule;
 
         public int initializationOrder { get { return 1; } }
 
@@ -100,8 +97,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     dropReceiver.ReceiveDrop(droppable.GetDropObject());
             }
         }
-
-        public void ConnectDependency(EditorXRUIModule dependency) { m_UIModule = dependency; }
 
         public void LoadModule() { }
 
