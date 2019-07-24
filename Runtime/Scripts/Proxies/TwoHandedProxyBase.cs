@@ -164,13 +164,15 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 { m_LeftProxyNode.rayOrigin, m_LeftProxyNode.fieldGrabOrigin },
                 { m_RightProxyNode.rayOrigin, m_RightProxyNode.fieldGrabOrigin }
             };
+
+            hidden = true;
         }
 
         protected virtual IEnumerator Start()
         {
             this.InjectFunctionalitySingle(m_LeftProxyNode);
             this.InjectFunctionalitySingle(m_RightProxyNode);
-            hidden = true;
+
             while (!active)
                 yield return null;
 

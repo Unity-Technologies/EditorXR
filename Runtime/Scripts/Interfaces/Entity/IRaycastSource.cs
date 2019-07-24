@@ -12,7 +12,5 @@ namespace UnityEditor.Experimental.EditorVR
         bool hasObject { get; }
         bool blocked { get; set; }
         Transform rayOrigin { get; }
-        Camera eventCamera { get; }
-        Vector2 position { get; }
     }
 }

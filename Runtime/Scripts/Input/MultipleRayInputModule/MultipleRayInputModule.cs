@@ -32,10 +32,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             MultipleRayInputModule m_Owner;
             readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
 
-            public Camera eventCamera { get { return m_Owner.m_EventCamera; } }
-
-            public Vector2 position { get { return m_Owner.m_EventCamera.pixelRect.center; } }
-
             public Transform rayOrigin { get { return m_RayOrigin; } }
             public RayEventData eventData { get; private set; }
             public bool blocked { get; set; }
@@ -226,12 +222,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         LayerMask m_LayerMask;
 
+        Camera m_MainCamera;
         Camera m_EventCamera;
 
         readonly Dictionary<Transform, IRaycastSource> m_RaycastSources = new Dictionary<Transform, IRaycastSource>();
         readonly BindingDictionary m_Controls = new BindingDictionary();
 
-        public Camera eventCamera { set { m_EventCamera = value; } }
+        public Camera eventCamera
+        {
+            set
+            {
+                m_EventCamera = value;
+                m_EventCamera.fieldOfView = m_MainCamera.fieldOfView;
+            }
+        }
 
         /// <summary>
         /// Force this module to be active.
@@ -270,6 +274,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         protected override void Awake()
         {
             base.Awake();
+            m_MainCamera = CameraUtils.GetMainCamera();
             m_LayerMask = LayerMask.GetMask("UI");
             var uiActionMap = MultipleRayInputModuleSettings.instance.UIActionMap;
             InputUtils.GetBindingDictionaryFromActionMap(uiActionMap, m_Controls);
@@ -483,6 +488,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         bool ProcessTouchEvents()
         {
+            // Position the event camera to cast physics rays
+            var eventCameraTransform = m_EventCamera.transform;
+            var mainCameraTransform = m_MainCamera.transform;
+            eventCameraTransform.position = mainCameraTransform.position;
+            eventCameraTransform.rotation = mainCameraTransform.rotation;
+
             for (var i = 0; i < input.touchCount; ++i)
             {
                 var touch = input.GetTouch(i);
@@ -693,6 +704,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// </summary>
         protected void ProcessMouseEvent(int id)
         {
+            // Position the event camera to cast physics rays
+            var eventCameraTransform = m_EventCamera.transform;
+            var mainCameraTransform = m_MainCamera.transform;
+            eventCameraTransform.position = mainCameraTransform.position;
+            eventCameraTransform.rotation = mainCameraTransform.rotation;
+
             var mouseData = GetMouseRayEventData(id);
             var leftButtonData = mouseData.GetButtonState(PointerEventData.InputButton.Left).eventData;
 
