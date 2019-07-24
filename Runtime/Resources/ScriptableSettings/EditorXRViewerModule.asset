@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_UsePlayerFloor: 0
   m_UsePlayerModel: 0
-  m_InitializeCamera: 1
+  m_InitializeCamera: 0
   m_PlayerModelPrefab: {fileID: 1000013280737546, guid: 3dbbb2baa83f3994e94fe56a60c73252,
     type: 3}
   m_PlayerFloorPrefab: {fileID: 1888626590568660, guid: b904665d3c595934b8950ea7c2a51972,
