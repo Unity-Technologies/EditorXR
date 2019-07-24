@@ -96,7 +96,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public int shutdownOrder { get { return 1; } }
         public int connectInterfaceOrder { get { return 1; } }
 
-        public void Initialize() { }
+        public void Initialize()
+        {
+            Preferences = SerializedPreferences.Deserialize(serializedPreferences);
+        }
 
         public void Shutdown()
         {
@@ -108,7 +111,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         internal void DeserializePreferences()
         {
-            Preferences = SerializedPreferences.Deserialize(serializedPreferences);
             if (Preferences != null)
             {
                 foreach (var serializer in m_Serializers)
@@ -170,7 +172,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             var serializePreferences = target as ISerializePreferences;
             if (serializePreferences != null)
+            {
                 m_Serializers.Add(serializePreferences);
+                if (Preferences != null)
+                    Deserialize(Preferences, serializePreferences);
+            }
         }
 
         public void DisconnectInterface(object target, object userData = null)
