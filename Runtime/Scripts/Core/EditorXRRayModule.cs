@@ -304,10 +304,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         rayTransform.rotation = rayOrigin.rotation;
                         var dpr = rayTransform.GetComponent<DefaultProxyRay>();
                         this.InjectFunctionalitySingle(dpr);
-                        dpr.SetColor(highlightModule.highlightColor);
                         m_DefaultRays.Add(rayOrigin, dpr);
+                        if (highlightModule != null)
+                        {
+                            dpr.SetColor(highlightModule.highlightColor);
+                            highlightModule.AddRayOriginForNode(node, rayOrigin);
+                        }
 
-                        keyboardModule.SpawnKeyboardMallet(rayOrigin);
+                        if(keyboardModule != null)
+                            keyboardModule.SpawnKeyboardMallet(rayOrigin);
 
                         var proxyExtras = m_ProxyExtras;
                         if (proxyExtras)
@@ -327,8 +332,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         var tester = rayOriginPair.Value.GetComponentInChildren<IntersectionTester>();
                         tester.active = proxy.active;
                         m_IntersectionModule.AddTester(tester);
-
-                        highlightModule.AddRayOriginForNode(node, rayOrigin);
 
                         if (m_WorkspaceModule != null)
                         {

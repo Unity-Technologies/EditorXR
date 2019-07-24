@@ -60,13 +60,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 #pragma warning disable 649
         [SerializeField]
-        bool m_UsePlayerFloor;
+        bool m_UsePlayerFloor = true;
 
         [SerializeField]
-        bool m_UsePlayerModel;
+        bool m_UsePlayerModel = true;
 
+        // TODO: Remove this option or provide warnings if it is used
         [SerializeField]
-        bool m_InitializeCamera;
+        bool m_InitializeCamera = true;
 
         [SerializeField]
         GameObject m_PlayerModelPrefab;
@@ -81,7 +82,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         PlayerBody m_PlayerBody;
         GameObject m_PlayerFloor;
 
-        bool m_Initialized;
+        bool m_CameraInitialized;
         float m_OriginalNearClipPlane;
         float m_OriginalFarClipPlane;
         readonly List<GameObject> m_VRPlayerObjects = new List<GameObject>();
@@ -220,6 +221,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
 #endif
+
+            m_CameraInitialized = true;
         }
 
         void UpdateCamera()
@@ -259,11 +262,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public bool IsOverShoulder(Transform rayOrigin)
         {
+            if (m_PlayerBody == null)
+                return false;
+
             return Overlaps(rayOrigin, m_PlayerBody.overShoulderTrigger);
         }
 
         public bool IsAboveHead(Transform rayOrigin)
         {
+            if (m_PlayerBody == null)
+                return false;
+
             return Overlaps(rayOrigin, m_PlayerBody.aboveHeadTrigger);
         }
 
@@ -370,7 +379,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var camera = CameraUtils.GetMainCamera();
             CameraUtils.GetCameraRig().localScale = Vector3.one * scale;
             Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / scale);
-            if (m_Initialized)
+            if (m_CameraInitialized)
             {
                 camera.nearClipPlane = m_OriginalNearClipPlane * scale;
                 camera.farClipPlane = m_OriginalFarClipPlane * scale;
@@ -397,13 +406,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (m_UsePlayerModel)
                 AddPlayerModel();
-
-            m_Initialized = true;
         }
 
         public void Shutdown()
         {
-            m_Initialized = false;
+            m_CameraInitialized = false;
             m_OriginalNearClipPlane = 0;
             m_OriginalFarClipPlane = 0;
             hmdReady = false;

@@ -360,8 +360,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public bool ContainsVRPlayerCompletely(GameObject obj)
         {
+            var vrPlayerObjects = this.GetVRPlayerObjects();
+            if (vrPlayerObjects.Count == 0)
+                return false;
+
             var objectBounds = BoundsUtils.GetBounds(obj.transform);
-            var playerBounds = BoundsUtils.GetBounds(this.GetVRPlayerObjects());
+            var playerBounds = BoundsUtils.GetBounds(vrPlayerObjects);
             playerBounds.extents += m_PlayerBoundsMargin;
             return objectBounds.ContainsCompletely(playerBounds);
         }

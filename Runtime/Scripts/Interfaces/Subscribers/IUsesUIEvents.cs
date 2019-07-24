@@ -115,7 +115,7 @@ namespace Unity.Labs.EditorXR.Interfaces
         /// </summary>
         /// <param name="user">The functionality user</param>
         /// <param name="action">The action which will be called when the event occurs</param>
-        public static void SubscribeToRayHovered(this IUsesUIEvents user, Action<GameObject, RayEventData> action)
+        public static void SubscribeToRayHovering(this IUsesUIEvents user, Action<GameObject, RayEventData> action)
         {
 #if !FI_AUTOFILL
             user.provider.rayHovering += action;
@@ -127,7 +127,7 @@ namespace Unity.Labs.EditorXR.Interfaces
         /// </summary>
         /// <param name="user">The functionality user</param>
         /// <param name="action">The action which will be unsubscribed from the event</param>
-        public static void UnsubscribeFromRayHovered(this IUsesUIEvents user, Action<GameObject, RayEventData> action)
+        public static void UnsubscribeFromRayHovering(this IUsesUIEvents user, Action<GameObject, RayEventData> action)
         {
 #if !FI_AUTOFILL
             user.provider.rayHovering -= action;

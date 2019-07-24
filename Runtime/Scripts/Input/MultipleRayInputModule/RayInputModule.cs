@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 
@@ -9,7 +11,7 @@ namespace UnityEngine.EventSystems
     /// <summary>
     /// A BaseInputModule for ray-based input, based on PointerInputModule
     /// </summary>
-    abstract class RayInputModule : BaseInputModule
+    abstract class RayInputModule : BaseInputModule, IUsesViewerScale
     {
         /// <summary>
         /// Id of the cached left mouse pointer event.
@@ -31,6 +33,9 @@ namespace UnityEngine.EventSystems
         /// </summary>
         public const int kFakeTouchesId = -4;
 
+        [SerializeField]
+        float m_DragThreshold = 0.01f;
+
         protected Dictionary<int, RayEventData> m_RayData = new Dictionary<int, RayEventData>();
 
         public event Action<GameObject, RayEventData> rayEntered;
@@ -38,6 +43,10 @@ namespace UnityEngine.EventSystems
         public event Action<GameObject, RayEventData> rayExited;
         public event Action<GameObject, RayEventData> dragStarted;
         public event Action<GameObject, RayEventData> dragEnded;
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
 
         // Local method use only -- created here to reduce garbage collection
         RayEventData m_TempRayEvent;
@@ -328,7 +337,7 @@ namespace UnityEngine.EventSystems
             return data;
         }
 
-        private static bool ShouldStartDrag(Vector2 pressPos, Vector2 currentPos, float threshold, bool useDragThreshold)
+        private static bool ShouldStartDrag(Vector3 pressPos, Vector3 currentPos, float threshold, bool useDragThreshold)
         {
             if (!useDragThreshold)
                 return true;
@@ -356,6 +365,9 @@ namespace UnityEngine.EventSystems
             clone.hovered.Clear();
             clone.hovered.AddRange(eventData.hovered);
             clone.pointerEnter = eventData.pointerEnter;
+            clone.pointerPress = eventData.pointerPress;
+            clone.pointerDrag = eventData.pointerDrag;
+            clone.pointerPressRaycast = eventData.pointerPressRaycast;
             clone.pointerCurrentRaycast = eventData.pointerCurrentRaycast;
             clone.pointerLength = eventData.pointerLength;
             clone.useDragThreshold = eventData.useDragThreshold;
@@ -462,7 +474,7 @@ namespace UnityEngine.EventSystems
                 return;
 
             if (!rayEvent.dragging
-                && ShouldStartDrag(rayEvent.pressPosition, rayEvent.position, eventSystem.pixelDragThreshold, rayEvent.useDragThreshold))
+                && ShouldStartDrag(rayEvent.pointerPressRaycast.worldPosition, rayEvent.pointerCurrentRaycast.worldPosition, m_DragThreshold * this.GetViewerScale(), rayEvent.useDragThreshold))
             {
                 if (dragStarted != null)
                     dragStarted(draggedObject, rayEvent);
@@ -499,11 +511,12 @@ namespace UnityEngine.EventSystems
             var pointerUpHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
 
             // PointerClick and Drop events
+            var draggedObject = rayEvent.pointerDrag;
             if (rayEvent.pointerPress == pointerUpHandler && rayEvent.eligibleForClick)
             {
                 ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteEvents.pointerClickHandler);
             }
-            else if (rayEvent.pointerDrag != null && rayEvent.dragging)
+            else if (draggedObject != null && rayEvent.dragging)
             {
                 ExecuteEvents.ExecuteHierarchy(currentOverGo, rayEvent, ExecuteEvents.dropHandler);
             }
@@ -512,13 +525,13 @@ namespace UnityEngine.EventSystems
             rayEvent.pointerPress = null;
             rayEvent.rawPointerPress = null;
 
-            if (rayEvent.pointerDrag != null && rayEvent.dragging)
+            if (draggedObject != null && rayEvent.dragging)
             {
                 if (dragEnded != null)
-                    dragEnded(currentOverGo, rayEvent);
+                    dragEnded(draggedObject, rayEvent);
 
-                ExecuteEvents.Execute(rayEvent.pointerDrag, rayEvent, ExecuteRayEvents.endDragHandler);
-                ExecuteEvents.Execute(rayEvent.pointerDrag, rayEvent, ExecuteEvents.endDragHandler);
+                ExecuteEvents.Execute(draggedObject, rayEvent, ExecuteRayEvents.endDragHandler);
+                ExecuteEvents.Execute(draggedObject, rayEvent, ExecuteEvents.endDragHandler);
             }
 
             rayEvent.dragging = false;

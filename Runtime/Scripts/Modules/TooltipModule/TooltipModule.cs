@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -111,6 +110,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_TooltipDataPool.Clear();
 
             this.SubscribeToRayEntered(OnRayEntered);
+            this.SubscribeToRayHovering(OnRayHovering);
             this.SubscribeToRayExited(OnRayExited);
         }
 
@@ -122,6 +122,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_Tooltips.Clear();
 
             this.UnsubscribeFromRayEntered(OnRayEntered);
+            this.UnsubscribeFromRayHovering(OnRayHovering);
             this.UnsubscribeFromRayExited(OnRayExited);
         }
 

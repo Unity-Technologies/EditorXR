@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using Unity.Labs.EditorXR;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
-using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -81,10 +79,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (eventData == null)
                     eventData = new RayEventData(m_Owner.eventSystem);
 
-                m_Owner.m_CurrentFocusedGameObject = eventData.pointerCurrentRaycast.gameObject;
-
-                //hoveredObject = m_Owner.GetRayIntersection(this); // Check all currently running raycasters
-                //var currentOverGo = eventData.pointerCurrentRaycast.gameObject;
+                m_Owner.GetRayIntersection(this); // Check all currently running raycasters
+                var currentRaycast = eventData.pointerCurrentRaycast;
+                m_Owner.m_CurrentFocusedGameObject = currentRaycast.gameObject;
                 eventData.node = m_Node;
                 eventData.rayOrigin = m_RayOrigin;
                 eventData.pointerLength = m_Owner.GetPointerLength(m_RayOrigin);
@@ -92,27 +89,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var uiActions = (UIActions)input;
                 var select = uiActions.select;
 
-                var hasScrollHandler = false;
-                var hasInteractable = hasObject && HoveringInteractable(eventData, currentObject, out hasScrollHandler);
-
-                // Proceed only if pointer is interacting with something
-                if (!hasInteractable)
-                {
-                    // If we have an object, the ray is blocked--input should not bleed through
-                    if (hasObject && select.wasJustPressed)
-                        consumeControl(select);
-
-                    HideScrollFeedback();
-
-                    if (select.wasJustReleased)
-                        m_Owner.OnSelectReleased(this);
-
-                    return;
-                }
-
                 if (m_IsValid != null && !m_IsValid(this))
                 {
-                    var currentRaycast = eventData.pointerCurrentRaycast;
                     currentRaycast.gameObject = null;
                     eventData.pointerCurrentRaycast = currentRaycast;
                     m_Owner.HandlePointerExitAndEnter(eventData, null, true); // Send only exit events
@@ -125,10 +103,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     return;
                 }
 
-                if (select.wasJustPressed)
+                if (currentRaycast.gameObject)
                 {
-                    m_Owner.OnSelectPressed(this);
-                    consumeControl(select);
+                    if (select.wasJustPressed)
+                    {
+                        m_Owner.OnSelectPressed(this);
+                        consumeControl(select);
+                    }
                 }
 
                 if (select.wasJustReleased)
@@ -138,22 +119,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_Owner.ProcessDrag(eventData);
 
                 // Send scroll events
-                if (currentObject && hasScrollHandler)
+                if (currentObject)
                 {
-                    var verticalScroll = uiActions.verticalScroll;
-                    var horizontalScroll = uiActions.horizontalScroll;
-                    var verticalScrollValue = verticalScroll.value;
-                    var horizontalScrollValue = horizontalScroll.value;
-                    if (!Mathf.Approximately(verticalScrollValue, 0f) || !Mathf.Approximately(horizontalScrollValue, 0f))
+                    var hasScrollHandler = ExecuteEvents.GetEventHandler<IScrollHandler>(currentObject);
+                    if (hasScrollHandler)
                     {
-                        consumeControl(verticalScroll);
-                        consumeControl(horizontalScroll);
-                        eventData.scrollDelta = new Vector2(horizontalScrollValue, verticalScrollValue);
-                        ExecuteEvents.ExecuteHierarchy(currentObject, eventData, ExecuteEvents.scrollHandler);
-                    }
+                        var verticalScroll = uiActions.verticalScroll;
+                        var horizontalScroll = uiActions.horizontalScroll;
+                        var verticalScrollValue = verticalScroll.value;
+                        var horizontalScrollValue = horizontalScroll.value;
+                        if (!Mathf.Approximately(verticalScrollValue, 0f) || !Mathf.Approximately(horizontalScrollValue, 0f))
+                        {
+                            consumeControl(verticalScroll);
+                            consumeControl(horizontalScroll);
+                            eventData.scrollDelta = new Vector2(horizontalScrollValue, verticalScrollValue);
+                            ExecuteEvents.ExecuteHierarchy(currentObject, eventData, ExecuteEvents.scrollHandler);
+                        }
 
-                    if (m_ScrollFeedback.Count == 0)
-                        ShowScrollFeedback();
+                        if (m_ScrollFeedback.Count == 0)
+                            ShowScrollFeedback();
+                    }
                 }
             }
 
@@ -332,17 +317,37 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             OnPointerUp(eventData, currentOverGo);
         }
 
-        static bool HoveringInteractable(RayEventData eventData, GameObject currentObject, out bool hasScrollHandler)
+        void GetRayIntersection(IRaycastSource source)
         {
-            hasScrollHandler = false;
+            // Move camera to position and rotation for the ray origin
+            var eventCameraTransform = m_EventCamera.transform;
+            eventCameraTransform.position = source.rayOrigin.position;
+            eventCameraTransform.rotation = source.rayOrigin.rotation;
 
-            var selectionFlags = ComponentUtils<ISelectionFlags>.GetComponent(currentObject);
-            if (selectionFlags != null && selectionFlags.selectionFlags == SelectionFlags.Direct && !UIUtils.IsDirectEvent(eventData))
-                return false;
+            var eventData = source.eventData;
+            eventData.Reset();
+            eventData.delta = Vector2.zero;
+            eventData.position = m_EventCamera.pixelRect.center;
+            eventData.scrollDelta = Vector2.zero;
 
-            hasScrollHandler = ExecuteEvents.GetEventHandler<IScrollHandler>(currentObject);
+            eventSystem.RaycastAll(eventData, m_RaycastResultCache);
+            var result = FindFirstRaycast(m_RaycastResultCache);
+            // TODO: Investigate zero'ed world positions
+            if (result.worldPosition == Vector3.zero)
+            {
+                foreach (var otherResult in m_RaycastResultCache)
+                {
+                    if (otherResult.worldPosition != Vector3.zero)
+                    {
+                        result.worldPosition = otherResult.worldPosition;
+                        break;
+                    }
+                }
+            }
 
-            return ExecuteEvents.GetEventHandler<IEventSystemHandler>(currentObject);
+            eventData.pointerCurrentRaycast = result;
+
+            m_RaycastResultCache.Clear();
         }
 
         static bool ShouldIgnoreEventsOnNoFocus()
@@ -743,16 +748,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        void BeginPointerDown(RayEventData pointerEvent, GameObject currentOverGo)
+        void BeginPointerDown(RayEventData rayEvent, GameObject currentOverGo)
         {
-            pointerEvent.eligibleForClick = true;
-            pointerEvent.delta = Vector2.zero;
-            pointerEvent.dragging = false;
-            pointerEvent.useDragThreshold = true;
-            pointerEvent.pressPosition = pointerEvent.position;
-            pointerEvent.pointerPressRaycast = pointerEvent.pointerCurrentRaycast;
+            rayEvent.eligibleForClick = true;
+            rayEvent.delta = Vector2.zero;
+            rayEvent.dragging = false;
+            rayEvent.useDragThreshold = true;
+            rayEvent.pointerPressRaycast = rayEvent.pointerCurrentRaycast;
 
-            DeselectIfSelectionChanged(currentOverGo, pointerEvent);
+            DeselectIfSelectionChanged(currentOverGo, rayEvent);
         }
 
         protected GameObject GetCurrentFocusedGameObject()
@@ -801,5 +805,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         public void UnloadProvider() { }
+
+        public void ShutDown()
+        {
+            m_RaycastSources.Clear();
+        }
     }
 }

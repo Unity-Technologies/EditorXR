@@ -201,12 +201,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal static bool IsDefaultTool(Type type)
         {
-            return EditorVR.DefaultTools.Contains(type);
+            var defaultTools = EditorVR.DefaultTools;
+            if (defaultTools == null)
+                return false;
+
+            return defaultTools.Contains(type);
         }
 
         public void SpawnDefaultTools(IProxy proxy)
         {
             var defaultTools = EditorVR.DefaultTools;
+            if (defaultTools == null)
+                return;
+
             var moduleLoaderCore = ModuleLoaderCore.instance;
             var menuModule = moduleLoaderCore.GetModule<EditorXRMenuModule>();
             var lockModule = moduleLoaderCore.GetModule<LockModule>();

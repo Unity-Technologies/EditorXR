@@ -170,6 +170,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 DestroyImmediate(m_NewEventSystem);
 
             m_FIModule.activeIsland.RemoveProviders(new List<IFunctionalityProvider> { m_InputModule });
+            m_InputModule.ShutDown();
         }
 
         internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)
