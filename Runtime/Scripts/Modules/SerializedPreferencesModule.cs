@@ -118,6 +118,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     Deserialize(Preferences, serializer);
                 }
             }
+
+            m_HasDeserialized = true;
         }
 
         internal string SerializePreferences()
