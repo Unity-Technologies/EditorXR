@@ -10,7 +10,8 @@
         "Unity.Labs.ListViewFramework",
         "Unity.Labs.ModuleLoader.Interfaces",
         "Unity.Labs.ModuleLoader",
-        "Unity.Labs.EditorXR.Interfaces"
+        "Unity.Labs.EditorXR.Interfaces",
+        "UnityEngine.SpatialTracking"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
