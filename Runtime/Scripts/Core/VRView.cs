@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Unity.Labs.ModuleLoader;
@@ -10,10 +11,6 @@ using UnityEngine.SpatialTracking;
 using UnityEngine.XR;
 using InputTracking = UnityEngine.XR.InputTracking;
 using TrackingSpaceType = UnityEngine.XR.TrackingSpaceType;
-
-#if UNITY_2019_1_OR_NEWER
-using System.Collections.Generic;
-#endif
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -452,17 +449,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (e.type == EventType.Repaint)
                 {
                     var renderTexture = customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_TargetTexture;
-
-                    // TODO: Investigate texture flip issue in 2019.x
-#if UNITY_2019_1_OR_NEWER
-                    if (customPreviewCamera == null)
-                    {
-                        rect.y = height;
-                        rect.height = -height;
-                    }
-#endif
-
-                    GUI.DrawTexture(rect, renderTexture, ScaleMode.StretchToFill, false);
+                    GUI.DrawTexture(guiRect, renderTexture, ScaleMode.StretchToFill, false);
                 }
             }
 
@@ -566,5 +553,5 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 #endif
-        }
     }
+}

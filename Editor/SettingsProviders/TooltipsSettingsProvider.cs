@@ -4,7 +4,12 @@ using System.Reflection;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.Utils;
 using UnityEngine;
+
+#if UNITY_2019_1_OR_NEWER
 using UnityEngine.UIElements;
+#else
+using UnityEngine.Experimental.UIElements;
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {

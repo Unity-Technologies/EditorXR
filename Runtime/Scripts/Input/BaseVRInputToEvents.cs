@@ -49,6 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Input
             }
 #endif
 
+#if UNITY_2019_1_OR_NEWER
             var nodeStates = new List<XRNodeState>();
             InputTracking.GetNodeStates(nodeStates);
             foreach (var nodeState in nodeStates)
@@ -59,7 +60,9 @@ namespace UnityEditor.Experimental.EditorVR.Input
                 if (nodeState.nodeType == XRNode.RightHand)
                     m_RightHandNodeState = nodeState;
             }
+#endif
         }
+
 
             public void Update()
         {
