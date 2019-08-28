@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Manipulators;
@@ -19,10 +21,10 @@ public enum PivotRotation
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-    sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
-        IGrabObjects, ISelectObject, IManipulatorController, IUsesSnapping, ISetHighlight, ILinkedObject, IRayToNode,
-        IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible,
-        IGetRayVisibility, IRayVisibilitySettings, IRequestFeedback
+    public sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
+        IGrabObjects, IUsesSelectObject, IManipulatorController, IUsesSnapping, IUsesSetHighlight, ILinkedObject, IRayToNode,
+        IUsesControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IUsesIsMainMenuVisible,
+        IUsesGetRayVisibility, IUsesRayVisibilitySettings, IUsesRequestFeedback, IUsesFunctionalityInjection
     {
         enum TwoHandedManipulateMode
         {
@@ -391,6 +393,20 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreActionMapInputLocking { get { return false; } }
 
+#if !FI_AUTOFILL
+        IProvidesSnapping IFunctionalitySubscriber<IProvidesSnapping>.provider { get; set; }
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesDirectSelection IFunctionalitySubscriber<IProvidesDirectSelection>.provider { get; set; }
+        IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
+        IProvidesSelectObject IFunctionalitySubscriber<IProvidesSelectObject>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+        IProvidesIsMainMenuVisible IFunctionalitySubscriber<IProvidesIsMainMenuVisible>.provider { get; set; }
+        IProvidesGetRayVisibility IFunctionalitySubscriber<IProvidesGetRayVisibility>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+        IProvidesCanGrabObject IFunctionalitySubscriber<IProvidesCanGrabObject>.provider { get; set; }
+#endif
+
         void Start()
         {
             if (!this.IsSharedUpdater(this))
@@ -413,6 +429,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_CurrentManipulator = m_StandardManipulator;
 
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
+
+            this.SubscribeToResetDirectSelectionState(OnResetDirectSelectionState);
         }
 
         public void OnSelectionChanged()
@@ -680,10 +698,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 foreach (var linkedObject in linkedObjects)
                 {
                     var transformTool = (TransformTool)linkedObject;
-                    var rayOrigin = transformTool.rayOrigin;
-                    if (!(m_Scaling || directSelection.ContainsKey(rayOrigin) || GrabDataForNode(transformTool.node) != null))
+                    var otherRayOrigin = transformTool.rayOrigin;
+                    if (!(m_Scaling || directSelection.ContainsKey(otherRayOrigin) || GrabDataForNode(transformTool.node) != null))
                     {
-                        this.RemoveRayVisibilitySettings(rayOrigin, this);
+                        this.RemoveRayVisibilitySettings(otherRayOrigin, this);
                     }
                 }
             }
@@ -823,6 +841,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     if (constraints == 0)
                         m_CurrentlySnapping = false;
+
                     break;
             }
 
@@ -856,6 +875,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         BaseManipulator CreateManipulator(GameObject prefab)
         {
             var go = EditorXRUtils.Instantiate(prefab, transform, active: false);
+            foreach (var behavior in go.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                this.InjectFunctionalitySingle(behavior);
+            }
             go.SetActive(false);
             var manipulator = go.GetComponent<BaseManipulator>();
             manipulator.translate = Translate;
@@ -984,7 +1007,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.node = node;
                     request.control = id;
                     request.tooltipText = tooltipText;
@@ -1049,6 +1072,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void OnDestroy()
         {
+            this.UnsubscribeFromResetDirectSelectionState(OnResetDirectSelectionState);
+
             if (m_ScaleManipulator)
                 UnityObjectUtils.Destroy(m_ScaleManipulator.gameObject);
 

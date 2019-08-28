@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -16,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)", typeof(MiniWorldTooltip))]
     [SpatialMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
-    sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace, IRequestFeedback, IControlHaptics, IRayToNode
+    sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace, IUsesRequestFeedback
     {
         class MiniWorldTooltip : ITooltip
         {
@@ -123,7 +125,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Vector3 m_StartDirection;
         float m_StartYaw;
 
-        // Bools denoting that a given proxy/rayOrigin is contained/inside of the workpace bounds.  Used for haptis.
+        // Bools denoting that a given proxy/rayOrigin is contained/inside of the workspace bounds.  Used for haptics.
         bool m_LeftRayOriginContained;
         bool m_RightRayOriginContained;
 
@@ -145,6 +147,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             set { m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(value); }
         }
+
+#if !FI_AUTOFILL
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+#endif
 
         public override void Setup()
         {
@@ -529,7 +535,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.node = node;
                     request.control = id;
                     request.priority = 1;

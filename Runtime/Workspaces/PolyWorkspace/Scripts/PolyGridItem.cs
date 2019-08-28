@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using TMPro;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -14,8 +16,8 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class PolyGridItem : DraggableListItem<PolyGridAsset, string>, IPlaceSceneObject, IUsesSpatialHash,
-        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesGrouping, IControlHaptics
+    class PolyGridItem : DraggableListItem<PolyGridAsset, string>, IUsesPlaceSceneObject, IUsesSpatialHash,
+        IUsesViewerBody, IUsesRayVisibilitySettings, IUsesRequestFeedback, IUsesGrouping, IUsesControlHaptics
     {
         const float k_PreviewDuration = 0.1f;
         const float k_MinPreviewScale = 0.01f;
@@ -82,6 +84,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         float m_SetupTime = float.MaxValue;
 
         public float scaleFactor { private get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
+        IProvidesPlaceSceneObject IFunctionalitySubscriber<IProvidesPlaceSceneObject>.provider { get; set; }
+        IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
+        IProvidesGrouping IFunctionalitySubscriber<IProvidesGrouping>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+#endif
 
         // Local method use only -- created here to reduce garbage collection
         Action<float> m_CompleteHoverTransition;
@@ -512,13 +524,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 transitionAmount += Time.deltaTime * transitionAddMultiplier;
                 yield return null;
             }
-			
+
             UnityObjectUtils.Destroy(itemToHide);
         }
 
         void ShowGrabFeedback(Node node)
         {
-            var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+            var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
             request.control = VRInputDevice.VRControl.Trigger1;
             request.node = node;
             request.tooltipText = "Grab";
@@ -527,7 +539,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void HideGrabFeedback()
         {
-            this.ClearFeedbackRequests();
+            this.ClearFeedbackRequests(this);
         }
     }
 }

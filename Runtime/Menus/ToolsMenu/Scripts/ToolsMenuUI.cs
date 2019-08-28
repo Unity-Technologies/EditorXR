@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -11,7 +12,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class ToolsMenuUI : MonoBehaviour, IUsesViewerScale, IInstantiateUI,
-        IConnectInterfaces, IControlSpatialHinting, IUsesRayOrigin, IUsesStencilRef
+        IUsesConnectInterfaces, IUsesControlSpatialHinting, IUsesRayOrigin, IUsesStencilRef
     {
         const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
         const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
@@ -147,6 +148,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public event Action<Transform, Type> buttonSelected;
         public event Action closeMenu;
 
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesControlSpatialHinting IFunctionalitySubscriber<IProvidesControlSpatialHinting>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
+
         void Awake()
         {
             m_OriginalLocalScale = transform.localScale;
@@ -164,13 +171,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 if (Mathf.Approximately(m_SpatialDragDistance, 1f))
                 {
                     m_DragTarget = transform.position; // Cache the initial drag target position, before performing any extra shaping to the target Vec3
-                    this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Scrolling);
+                    this.SetSpatialHintState(SpatialHintState.Scrolling);
                 }
 
                 // Follow the user's input for a short additional period of time
                 // Update the dragTarget with the current device position, to allow for visuals to better match the expected rotation/position
-                m_DragTarget = transform.position;
-                this.SetSpatialHintDragThresholdTriggerPosition(transform.position);
+                var position = transform.position;
+                m_DragTarget = position;
+                this.SetSpatialHintDragThresholdTriggerPosition(position);
                 this.SetSpatialHintContainerRotation(newHintContainerRotation);
 
                 // Perform a smooth lerp of the hint contents after dragging beyond the distance trigger threshold

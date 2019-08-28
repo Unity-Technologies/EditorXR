@@ -1,13 +1,14 @@
 #if UNITY_2018_3_OR_NEWER
 using System;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class EditorXRToolsMenuModule : IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRToolModule>,
-        IModuleDependency<EditorXRMenuModule>
+    class EditorXRToolsMenuModule : IModuleDependency<EditorXRRayModule>,
+        IModuleDependency<EditorXRToolModule>, IModuleDependency<EditorXRMenuModule>, IProvidesPreviewInToolMenuButton
     {
         EditorXRRayModule m_RayModule;
         EditorXRToolModule m_ToolModule;
@@ -32,14 +33,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             IToolsMenuMethods.mainMenuActivatorSelected = OnMainMenuActivatorSelected;
             IToolsMenuMethods.selectTool = OnToolButtonClicked;
-
-            IPreviewInToolMenuButtonMethods.previewInToolMenuButton = PreviewToolInToolMenuButton;
-            IPreviewInToolMenuButtonMethods.clearToolMenuButtonPreview = ClearToolMenuButtonPreview;
         }
 
         public void UnloadModule() { }
 
-        void PreviewToolInToolMenuButton(Transform rayOrigin, Type toolType, string toolDescription)
+        public void PreviewInToolsMenuButton(Transform rayOrigin, Type toolType, string toolDescription)
         {
             // Prevents menu buttons of types other than ITool from triggering any ToolMenuButton preview actions
             if (!toolType.GetInterfaces().Contains(typeof(ITool)))
@@ -56,7 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             });
         }
 
-        void ClearToolMenuButtonPreview()
+        public void ClearToolsMenuButtonPreview()
         {
             m_RayModule.ForEachProxyDevice(deviceData => { deviceData.toolsMenu.PreviewToolsMenuButton.previewToolType = null; });
         }
@@ -74,6 +72,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var targetToolRayOrigin = m_ToolModule.deviceData.FirstOrDefault(data => data.rayOrigin != rayOrigin).rayOrigin;
             m_MenuModule.OnMainMenuActivatorSelected(rayOrigin, targetToolRayOrigin);
         }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var previewInToolsMenuSubscriber = obj as IFunctionalitySubscriber<IProvidesPreviewInToolMenuButton>;
+            if (previewInToolsMenuSubscriber != null)
+                previewInToolsMenuSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif

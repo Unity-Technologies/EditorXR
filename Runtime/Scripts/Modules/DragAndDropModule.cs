@@ -1,16 +1,25 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class DragAndDropModule : IModuleDependency<MultipleRayInputModule>
+    sealed class DragAndDropModule : IDelayedInitializationModule, IUsesUIEvents
     {
         readonly Dictionary<Transform, IDroppable> m_Droppables = new Dictionary<Transform, IDroppable>();
         readonly Dictionary<Transform, IDropReceiver> m_DropReceivers = new Dictionary<Transform, IDropReceiver>();
 
         readonly Dictionary<Transform, GameObject> m_HoverObjects = new Dictionary<Transform, GameObject>();
+
+        public int initializationOrder { get { return 1; } }
+
+        public int shutdownOrder { get { return 0; } }
+
+#if !FI_AUTOFILL
+        IProvidesUIEvents IFunctionalitySubscriber<IProvidesUIEvents>.provider { get; set; }
+#endif
 
         object GetCurrentDropObject(Transform rayOrigin)
         {
@@ -89,16 +98,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void ConnectDependency(MultipleRayInputModule dependency)
-        {
-            dependency.rayEntered += OnRayEntered;
-            dependency.rayExited += OnRayExited;
-            dependency.dragStarted += OnDragStarted;
-            dependency.dragEnded += OnDragEnded;
-        }
-
         public void LoadModule() { }
 
         public void UnloadModule() { }
+
+        public void Initialize()
+        {
+            this.SubscribeToRayEntered(OnRayEntered);
+            this.SubscribeToRayExited(OnRayExited);
+            this.SubscribeToDragStarted(OnDragStarted);
+            this.SubscribeToDragEnded(OnDragEnded);
+        }
+
+        public void Shutdown()
+        {
+            this.UnsubscribeFromRayEntered(OnRayEntered);
+            this.UnsubscribeFromRayExited(OnRayExited);
+            this.UnsubscribeFromDragStarted(OnDragStarted);
+            this.UnsubscribeFromDragEnded(OnDragEnded);
+        }
     }
 }

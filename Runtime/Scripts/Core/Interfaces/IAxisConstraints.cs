@@ -1,4 +1,6 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿using Unity.Labs.EditorXR.Interfaces;
+
+namespace UnityEditor.Experimental.EditorVR
 {
     interface IAxisConstraints
     {

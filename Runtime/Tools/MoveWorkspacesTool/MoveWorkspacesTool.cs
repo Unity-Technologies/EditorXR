@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
@@ -9,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     [ExecuteInEditMode]
     public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IUsesViewerBody,
-        IResetWorkspaces, IAllWorkspaces, IUsesViewerScale, IRayVisibilitySettings
+        IUsesResetWorkspaces, IAllWorkspaces, IUsesViewerScale, IUsesRayVisibilitySettings
     {
         enum State
         {
@@ -38,6 +40,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Transform rayOrigin { private get; set; }
         public List<IWorkspace> allWorkspaces { private get; set; }
         public ActionMap standardActionMap { private get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
+        IProvidesResetWorkspaces IFunctionalitySubscriber<IProvidesResetWorkspaces>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+#endif
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {

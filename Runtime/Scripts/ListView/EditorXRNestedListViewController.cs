@@ -1,10 +1,13 @@
-﻿using Unity.Labs.ListView;
+﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ListView;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    abstract class EditorXRNestedListViewController<TData, TItem, TIndex> : NestedListViewController<TData, TItem, TIndex>, IInstantiateUI, IConnectInterfaces, IControlHaptics, IRayToNode
+    abstract class EditorXRNestedListViewController<TData, TItem, TIndex> : NestedListViewController<TData, TItem, TIndex>,
+        IInstantiateUI, IUsesConnectInterfaces, IUsesControlHaptics, IRayToNode
         where TData : class, INestedListViewItemData<TData, TIndex>
         where TItem : EditorXRListViewItem<TData, TIndex>, INestedListViewItem<TData, TIndex>
     {
@@ -32,6 +35,11 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         HapticPulse m_ItemDragEndPulse;
 #pragma warning restore 649
+
+#if !FI_AUTOFILL
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
 
         protected override void Recycle(TIndex index)
         {

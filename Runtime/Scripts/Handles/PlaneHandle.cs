@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils.GUI;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -28,12 +30,18 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
         public AxisFlags constraints { get { return m_Constraints; } }
 
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
+
         // Local method use only -- created here to reduce garbage collection
         static readonly PlaneHandleEventData k_LinearHandleEventData = new PlaneHandleEventData(null, false);
 
         protected override HandleEventData GetHandleEventData(RayEventData eventData)
         {
             k_LinearHandleEventData.rayOrigin = eventData.rayOrigin;
+            k_LinearHandleEventData.camera = eventData.camera;
+            k_LinearHandleEventData.position = eventData.position;
             k_LinearHandleEventData.direct = UIUtils.IsDirectEvent(eventData);
             k_LinearHandleEventData.raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition;
 
@@ -53,17 +61,16 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         protected override void OnHandleDragging(HandleEventData eventData)
         {
             var rayOrigin = eventData.rayOrigin;
-
-            var lastPosition = m_LastPositions[eventData.rayOrigin];
+            var lastPosition = m_LastPositions[rayOrigin];
             var worldPosition = lastPosition;
 
             float distance;
-            var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+            var ray = eventData.GetRay();
             if (m_Plane.Raycast(ray, out distance))
                 worldPosition = ray.GetPoint(Mathf.Min(Mathf.Abs(distance), k_MaxDragDistance * this.GetViewerScale()));
 
             var deltaPosition = worldPosition - lastPosition;
-            m_LastPositions[eventData.rayOrigin] = worldPosition;
+            m_LastPositions[rayOrigin] = worldPosition;
 
             deltaPosition = transform.InverseTransformVector(deltaPosition);
             deltaPosition.z = 0;

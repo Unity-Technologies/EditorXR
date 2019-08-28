@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -111,8 +113,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             topPanelDividerOffset = k_LeftPaneRatio; // enable & position the top-divider(mask) slightly to the left of workspace center
 
-            var contentPrefab = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
-            m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
+            var content = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+            m_ProjectUI = content.GetComponent<ProjectUI>();
+            foreach (var behavior in content.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                this.InjectFunctionalitySingle(behavior);
+            }
 
             var assetGridView = m_ProjectUI.assetGridView;
             this.ConnectInterfaces(assetGridView);
@@ -128,7 +134,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
             {
                 this.ConnectInterfaces(mb);
+                this.InjectFunctionalitySingle(mb);
             }
+
             filterList = m_FilterList;
 
             foreach (var button in m_FilterUI.GetComponentsInChildren<WorkspaceButton>())
@@ -146,6 +154,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             foreach (var mb in m_ZoomSliderUI.GetComponentsInChildren<MonoBehaviour>())
             {
                 this.ConnectInterfaces(mb);
+                this.InjectFunctionalitySingle(mb);
             }
 
             var zoomTooltip = sliderObject.GetComponentInChildren<Tooltip>();

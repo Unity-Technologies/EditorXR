@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -9,7 +10,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class TooltipModule : ScriptableSettings<TooltipModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
-        IModuleDependency<MultipleRayInputModule>, IUsesViewerScale
+        IUsesViewerScale, IProvidesSetTooltipVisibility, IUsesUIEvents
     {
         class TooltipData
         {
@@ -78,27 +79,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Vector3 m_TooltipScale;
         GameObject m_ModuleParent;
 
-        public int initializationOrder { get { return 0; } }
+        public int initializationOrder { get { return 1; } }
         public int shutdownOrder { get { return 0; } }
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesUIEvents IFunctionalitySubscriber<IProvidesUIEvents>.provider { get; set; }
+#endif
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<ITooltip> k_TooltipsToRemove = new List<ITooltip>();
         static readonly List<ITooltip> k_TooltipList = new List<ITooltip>();
         static readonly List<TooltipUI> k_TooltipUIs = new List<TooltipUI>();
 
-        public void ConnectDependency(MultipleRayInputModule dependency)
-        {
-            dependency.rayEntered += OnRayEntered;
-            dependency.rayHovering += OnRayHovering;
-            dependency.rayExited += OnRayExited;
-        }
-
         public void LoadModule()
         {
             m_TooltipScale = m_TooltipPrefab.transform.localScale;
-
-            ISetTooltipVisibilityMethods.showTooltip = ShowTooltip;
-            ISetTooltipVisibilityMethods.hideTooltip = HideTooltip;
         }
 
         public void UnloadModule() { }
@@ -112,12 +108,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_Tooltips.Clear();
             m_TooltipPool.Clear();
             m_TooltipDataPool.Clear();
+
+            this.SubscribeToRayEntered(OnRayEntered);
+            this.SubscribeToRayHovering(OnRayHovering);
+            this.SubscribeToRayExited(OnRayExited);
         }
 
         public void Shutdown()
         {
             if (m_TooltipCanvas)
                 UnityObjectUtils.Destroy(m_TooltipCanvas.gameObject);
+
+            m_Tooltips.Clear();
+
+            this.UnsubscribeFromRayEntered(OnRayEntered);
+            this.UnsubscribeFromRayHovering(OnRayHovering);
+            this.UnsubscribeFromRayExited(OnRayExited);
         }
 
         public void OnBehaviorUpdate()
@@ -308,7 +314,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        void ShowTooltip(ITooltip tooltip, bool persistent = false, float duration = 0f, ITooltipPlacement placementOverride = null, Action becameVisible = null)
+        public void ShowTooltip(ITooltip tooltip, bool persistent = false, float duration = 0f, ITooltipPlacement placementOverride = null, Action becameVisible = null)
         {
             if (!IsValidTooltip(tooltip))
                 return;
@@ -389,7 +395,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return !string.IsNullOrEmpty(tooltip.tooltipText);
         }
 
-        void HideTooltip(ITooltip tooltip, bool persistent = false)
+        public void HideTooltip(ITooltip tooltip, bool persistent = false)
         {
             TooltipData tooltipData;
             if (m_Tooltips.TryGetValue(tooltip, out tooltipData))
@@ -478,5 +484,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var visibilitySubscriber = obj as IFunctionalitySubscriber<IProvidesSetTooltipVisibility>;
+            if (visibilitySubscriber != null)
+                visibilitySubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }

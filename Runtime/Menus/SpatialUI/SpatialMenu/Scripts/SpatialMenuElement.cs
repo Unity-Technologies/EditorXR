@@ -1,5 +1,7 @@
 ﻿using System;
 using TMPro;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// Abstract class housing common SpatialMenu element functionality
     /// </summary>
-    public abstract class SpatialMenuElement : MonoBehaviour, IControlHaptics,
+    public abstract class SpatialMenuElement : MonoBehaviour, IUsesControlHaptics,
         IRayEnterHandler, IRayExitHandler
     {
         [SerializeField]
@@ -74,6 +76,10 @@ namespace UnityEditor.Experimental.EditorVR
         /// If the menu element isn't being hovered, utilize this node for performing any node-dependent logic
         /// </summary>
         public Node spatialMenuActiveControllerNode { get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+#endif
 
         void IRayEnterHandler.OnRayEnter(RayEventData eventData)
         {

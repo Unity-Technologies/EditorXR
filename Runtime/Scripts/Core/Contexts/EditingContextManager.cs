@@ -143,49 +143,65 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying)
                 return false;
 
-            return PlayerSettings.virtualRealitySupported;
-        }
-
-        [MenuItem("Edit/Project Settings/EditorXR/Default Editing Context")]
-        static void EditProjectSettings()
-        {
-            var settings = LoadProjectSettings();
-            settings.name = "Default Editing Context";
-            Selection.activeObject = settings;
+            return PlayerSettings.GetVirtualRealitySupported(BuildTargetGroup.Standalone);
         }
 
 #if UNITY_2018_3_OR_NEWER
         [SettingsProvider]
         static SettingsProvider CreateSettingsProvider()
         {
-            var provider = new SettingsProvider("Project/EditorXR", SettingsScope.Project)
+            var contextNames = GetEditingContextNames();
+            if (string.IsNullOrEmpty(settings.defaultContextName))
+                settings.defaultContextName = defaultContext.name;
+
+            var selectedIndex = Array.IndexOf(contextNames, settings.defaultContextName);
+            var provider = new SettingsProvider("Project/EditorXR/Context Manager", SettingsScope.Project)
             {
-                label = "EditorXR",
+                label = "Context Manager",
                 guiHandler = (searchContext) =>
                 {
-                    EditorGUILayout.LabelField("Context Manager", EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField("Global Settings", EditorStyles.boldLabel);
+
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        using (var changed = new EditorGUI.ChangeCheckScope())
+                        {
+                            selectedIndex = EditorGUILayout.Popup("Default Context", selectedIndex, contextNames);
+                            if (changed.changed)
+                            {
+                                settings.defaultContextName = contextNames[selectedIndex];
+                                SaveProjectSettings(settings);
+                                GUIUtility.ExitGUI();
+                            }
+                        }
+
+                        const float resetButtonWidth = 40f;
+                        if (GUILayout.Button("Reset", EditorStyles.miniButton, GUILayout.Width(resetButtonWidth)))
+                        {
+                            ResetProjectSettings();
+                            selectedIndex = 0;
+                        }
+                    }
 
                     // Auto open an EditorXR context
+                    const string title = "Auto open";
+                    const string tooltip = "Automatically open an EditorXR context when the HMD is being worn";
+
+                    using (var change = new EditorGUI.ChangeCheckScope())
                     {
-                        const string title = "Auto open";
-                        const string tooltip = "Automatically open an EditorXR context when the HMD is being worn";
+                        autoOpen = EditorGUILayout.Toggle(new GUIContent(title, tooltip), autoOpen);
 
-                        using (var change = new EditorGUI.ChangeCheckScope())
+                        if (change.changed)
+                            OnAutoOpenStateChanged();
+
+                        if (s_EnableXRFailed)
                         {
-                            autoOpen = EditorGUILayout.Toggle(new GUIContent(title, tooltip), autoOpen);
-
-                            if (change.changed)
-                                OnAutoOpenStateChanged();
-
-                            if (s_EnableXRFailed)
+                            const float retryButtonWidth = 70f;
+                            EditorGUILayout.HelpBox("Failed to initialize XR session. Check that your device and platform software are working properly.", MessageType.Warning);
+                            if (GUILayout.Button("Retry", GUILayout.Width(retryButtonWidth)))
                             {
-                                const float retryButtonWidth = 70f;
-                                EditorGUILayout.HelpBox("Failed to initialize XR session. Check that your device and platform software are working properly.", MessageType.Warning);
-                                if (GUILayout.Button("Retry", GUILayout.Width(retryButtonWidth)))
-                                {
-                                    s_EnableXRFailed = false;
-                                    OnAutoOpenStateChanged();
-                                }
+                                s_EnableXRFailed = false;
+                                OnAutoOpenStateChanged();
                             }
                         }
                     }

@@ -1,4 +1,6 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿using Unity.Labs.EditorXR.Interfaces;
+
+namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Used for passing action data for menu purposes

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -9,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class ActionsModule : MonoBehaviour, IModule, IConnectInterfaces, ISpatialMenuProvider, IInterfaceConnector
+    sealed class ActionsModule : MonoBehaviour, IModule, IUsesConnectInterfaces, ISpatialMenuProvider, IInterfaceConnector, IUsesFunctionalityInjection
     {
         List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
         readonly List<IAction> m_Actions = new List<IAction>();
@@ -21,6 +22,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public List<SpatialMenu.SpatialMenuData> spatialMenuData { get { return m_SpatialMenuData; } }
 
         public int connectInterfaceOrder { get { return 0; } }
+
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
 
         public void RemoveActions(List<IAction> actions)
         {
@@ -56,6 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 var action = EditorXRUtils.AddComponent(actionType, gameObject) as IAction;
                 this.ConnectInterfaces(action);
+                this.InjectFunctionalitySingle(action);
 
                 var defaultActionAttribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
                 if (defaultActionAttribute != null)

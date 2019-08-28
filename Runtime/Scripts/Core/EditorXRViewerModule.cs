@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -12,12 +13,12 @@ using Unity.Labs.ModuleLoader;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class EditorXRViewerModule : ScriptableSettings<EditorXRViewerModule>, IModuleDependency<IntersectionModule>,
-        IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<SpatialHashModule>, IInterfaceConnector,
-        ISerializePreferences, IConnectInterfaces,
-        IDelayedInitializationModule, IModuleBehaviorCallbacks
+    class EditorXRViewerModule : ScriptableSettings<EditorXRViewerModule>,
+        IModuleDependency<EditorXRDirectSelectionModule>, IInterfaceConnector,
+        ISerializePreferences, IUsesConnectInterfaces, IDelayedInitializationModule, IModuleBehaviorCallbacks,
+        IUsesFunctionalityInjection, IProvidesViewerScale, IProvidesViewerBody, IProvidesMoveCameraRig,
+        IProvidesGetVRPlayerObjects
     {
-
         [Serializable]
         class Preferences
         {
@@ -59,6 +60,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 #pragma warning disable 649
         [SerializeField]
+        bool m_UsePlayerFloor = true;
+
+        [SerializeField]
+        bool m_UsePlayerModel = true;
+
+        // TODO: Remove this option or provide warnings if it is used
+        [SerializeField]
+        bool m_InitializeCamera = true;
+
+        [SerializeField]
         GameObject m_PlayerModelPrefab;
 
         [SerializeField]
@@ -71,15 +82,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
         PlayerBody m_PlayerBody;
         GameObject m_PlayerFloor;
 
-        bool m_Initialized;
+        bool m_CameraInitialized;
         float m_OriginalNearClipPlane;
         float m_OriginalFarClipPlane;
         readonly List<GameObject> m_VRPlayerObjects = new List<GameObject>();
 
         readonly Preferences m_Preferences = new Preferences();
         EditorXRDirectSelectionModule m_DirectSelectionModule;
-        SpatialHashModule m_SpatialHashModule;
-        IntersectionModule m_IntersectionModule;
 
         public int initializationOrder { get { return -2; } }
         public int shutdownOrder { get { return 0; } }
@@ -91,30 +100,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public bool hmdReady { get; private set; }
 
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
+
         public void ConnectDependency(EditorXRDirectSelectionModule dependency)
         {
             m_DirectSelectionModule = dependency;
         }
 
-        public void ConnectDependency(SpatialHashModule dependency)
-        {
-            m_SpatialHashModule = dependency;
-        }
-
-        public void ConnectDependency(IntersectionModule dependency)
-        {
-            m_IntersectionModule = dependency;
-        }
-
         public void LoadModule()
         {
-            IMoveCameraRigMethods.moveCameraRig = MoveCameraRig;
-            IUsesViewerBodyMethods.isOverShoulder = IsOverShoulder;
-            IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
-            IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
-            IUsesViewerScaleMethods.setViewerScale = SetViewerScale;
-            IGetVRPlayerObjectsMethods.getVRPlayerObjects = () => m_VRPlayerObjects;
-
 #if UNITY_EDITOR
             VRView.hmdStatusChange += OnHMDStatusChange;
 #endif
@@ -224,9 +221,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
 #endif
+
+            m_CameraInitialized = true;
         }
 
-        internal void UpdateCamera()
+        void UpdateCamera()
         {
 #if UNITY_EDITOR
             if (customPreviewCamera != null && customPreviewCamera as MonoBehaviour != null)
@@ -234,33 +233,46 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
         }
 
-        internal void AddPlayerFloor()
+        void AddPlayerFloor()
         {
             m_PlayerFloor = EditorXRUtils.Instantiate(m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false);
+            this.InjectFunctionalitySingle(m_PlayerFloor.GetComponent<PlayerFloor>());
             m_VRPlayerObjects.Add(m_PlayerFloor);
         }
 
-        internal void AddPlayerModel()
+        void AddPlayerModel()
         {
             m_PlayerBody = EditorXRUtils.Instantiate(m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
+            this.InjectFunctionalitySingle(m_PlayerBody);
             var renderer = m_PlayerBody.GetComponent<Renderer>();
-            m_SpatialHashModule.spatialHash.AddObject(renderer, renderer.bounds);
+            var spatialHashModule = ModuleLoaderCore.instance.GetModule<SpatialHashModule>();
+            if (spatialHashModule != null)
+                spatialHashModule.spatialHash.AddObject(renderer, renderer.bounds);
+
             var playerObjects = m_PlayerBody.GetComponentsInChildren<Renderer>(true);
             foreach (var playerObject in playerObjects)
             {
                 m_VRPlayerObjects.Add(playerObject.gameObject);
             }
 
-            m_IntersectionModule.standardIgnoreList.AddRange(m_VRPlayerObjects);
+            var intersectionModule = ModuleLoaderCore.instance.GetModule<IntersectionModule>();
+            if (intersectionModule != null)
+                intersectionModule.standardIgnoreList.AddRange(m_VRPlayerObjects);
         }
 
-        internal bool IsOverShoulder(Transform rayOrigin)
+        public bool IsOverShoulder(Transform rayOrigin)
         {
+            if (m_PlayerBody == null)
+                return false;
+
             return Overlaps(rayOrigin, m_PlayerBody.overShoulderTrigger);
         }
 
-        bool IsAboveHead(Transform rayOrigin)
+        public bool IsAboveHead(Transform rayOrigin)
         {
+            if (m_PlayerBody == null)
+                return false;
+
             return Overlaps(rayOrigin, m_PlayerBody.aboveHeadTrigger);
         }
 
@@ -348,12 +360,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 onComplete();
         }
 
-        void MoveCameraRig(Vector3 position, Vector3? viewdirection)
+        public void MoveCameraRig(Vector3 position, Vector3? viewDirection)
         {
-            EditorMonoBehaviour.instance.StartCoroutine(UpdateCameraRig(position, viewdirection));
+            EditorMonoBehaviour.instance.StartCoroutine(UpdateCameraRig(position, viewDirection));
         }
 
-        internal float GetViewerScale()
+        public float GetViewerScale()
         {
             var cameraRig = CameraUtils.GetCameraRig();
             if (!cameraRig)
@@ -362,32 +374,43 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return cameraRig.localScale.x;
         }
 
-        void SetViewerScale(float scale)
+        public void SetViewerScale(float scale)
         {
             var camera = CameraUtils.GetMainCamera();
             CameraUtils.GetCameraRig().localScale = Vector3.one * scale;
             Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / scale);
-            if (m_Initialized)
+            if (m_CameraInitialized)
             {
                 camera.nearClipPlane = m_OriginalNearClipPlane * scale;
                 camera.farClipPlane = m_OriginalFarClipPlane * scale;
             }
+            else
+            {
+                Debug.LogWarning("Premature use of SetViewerScale");
+            }
         }
+
+        public List<GameObject> GetVRPlayerObjects() { return m_VRPlayerObjects; }
 
         public void Initialize()
         {
             preserveCameraRig = EditorVR.preserveLayout;
 
             m_VRPlayerObjects.Clear();
-            InitializeCamera();
-            AddPlayerModel();
-            AddPlayerFloor();
-            m_Initialized = true;
+
+            if (m_InitializeCamera)
+                InitializeCamera();
+
+            if (m_UsePlayerFloor)
+                AddPlayerFloor();
+
+            if (m_UsePlayerModel)
+                AddPlayerModel();
         }
 
         public void Shutdown()
         {
-            m_Initialized = true;
+            m_CameraInitialized = false;
             m_OriginalNearClipPlane = 0;
             m_OriginalFarClipPlane = 0;
             hmdReady = false;
@@ -422,6 +445,31 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var viewerScaleSubscriber = obj as IFunctionalitySubscriber<IProvidesViewerScale>;
+            if (viewerScaleSubscriber != null)
+                viewerScaleSubscriber.provider = this;
+
+            var viewerBodySubscriber = obj as IFunctionalitySubscriber<IProvidesViewerBody>;
+            if (viewerBodySubscriber != null)
+                viewerBodySubscriber.provider = this;
+
+            var moveCameraRigSubscriber = obj as IFunctionalitySubscriber<IProvidesMoveCameraRig>;
+            if (moveCameraRigSubscriber != null)
+                moveCameraRigSubscriber.provider = this;
+
+            var getVRPlayerObjectsSubscriber = obj as IFunctionalitySubscriber<IProvidesGetVRPlayerObjects>;
+            if (getVRPlayerObjectsSubscriber != null)
+                getVRPlayerObjectsSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif

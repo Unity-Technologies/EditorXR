@@ -2,39 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using UnityEngine;
 using UnityEngine.Networking;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class WebModule : IModuleBehaviorCallbacks
+    public class WebModule : IModuleBehaviorCallbacks, IProvidesWeb
     {
         class DownloadRequest
         {
             public string key; // For queuing
             public UnityWebRequest request;
-            public event Action<DownloadHandler> completed;
+            public Action<UnityWebRequest> completed;
 
             public void Complete()
             {
-                var handler = request.downloadHandler;
                 if (completed != null)
-                    completed(handler);
-            }
-        }
-
-        class TextureRequest
-        {
-            public string key; // For queuing
-            public UnityWebRequest request;
-            public event Action<DownloadHandlerTexture> completed;
-
-            public void Complete()
-            {
-                var handler = (DownloadHandlerTexture)request.downloadHandler;
-                if (completed != null)
-                    completed(handler);
+                    completed(request);
             }
         }
 
@@ -55,8 +41,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         const int k_MaxSimultaneousTransfers = 8;
         readonly Dictionary<string, DownloadRequest> m_Requests = new Dictionary<string, DownloadRequest>();
         readonly Queue<DownloadRequest> m_QueuedRequests = new Queue<DownloadRequest>();
-        readonly Dictionary<string, TextureRequest> m_TextureRequests = new Dictionary<string, TextureRequest>();
-        readonly Queue<TextureRequest> m_QueuedTextureRequests = new Queue<TextureRequest>();
 
         readonly List<FileTransfer> m_Transfers = new List<FileTransfer>();
         readonly Queue<FileTransfer> m_QueuedTransfers = new Queue<FileTransfer>();
@@ -65,11 +49,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         List<FileTransfer> m_CompletedTransfers = new List<FileTransfer>(20);
 
         /// <summary>
-        /// Download a resource at the given URL and call a method on completion, providing the DownloadHandler
+        /// Download a resource at the given URL and call a method on completion, providing the UnityWebRequest
         /// </summary>
         /// <param name="url">The URL of the resource</param>
         /// <param name="completed">The completion callback</param>
-        public void Download(string url, Action<DownloadHandler> completed)
+        public void Download(string url, Action<UnityWebRequest> completed)
         {
             DownloadRequest request;
             if (!m_Requests.TryGetValue(url, out request))
@@ -81,32 +65,33 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     m_Requests.Add(url, request);
                 else
                     m_QueuedRequests.Enqueue(request);
-            }
 
-            request.completed += completed;
+                request.completed += completed;
+            }
         }
 
         /// <summary>
-        /// Download a texture at a given URL and call a method on completion, providing the DownloadTextureHandler
+        /// Download a resource at the given URL using a custom download handler and call a method on completion, providing the UnityWebRequest
         /// </summary>
+        /// <typeparam name="THandler">The type of download handler to use</typeparam>
         /// <param name="url">The URL of the resource</param>
         /// <param name="completed">The completion callback</param>
-        public void DownloadTexture(string url, Action<DownloadHandlerTexture> completed)
+        public void Download<THandler>(string url, Action<UnityWebRequest> completed) where THandler : DownloadHandler, new()
         {
-            TextureRequest request;
-            if (!m_TextureRequests.TryGetValue(url, out request))
+            DownloadRequest request;
+            if (!m_Requests.TryGetValue(url, out request))
             {
                 var webRequest = UnityWebRequest.Get(url);
-                webRequest.downloadHandler = new DownloadHandlerTexture();
+                webRequest.downloadHandler = new THandler();
                 webRequest.SendWebRequest();
-                request = new TextureRequest { key = url, request = webRequest };
+                request = new DownloadRequest { key = url, request = webRequest };
                 if (m_Requests.Count < k_MaxSimultaneousRequests)
-                    m_TextureRequests.Add(url, request);
+                    m_Requests.Add(url, request);
                 else
-                    m_QueuedTextureRequests.Enqueue(request);
-            }
+                    m_QueuedRequests.Enqueue(request);
 
-            request.completed += completed;
+                request.completed += completed;
+            }
         }
 
         /// <summary>
@@ -117,12 +102,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// <param name="completed">The completion callback</param>
         public void Download(string url, string destination, Action completed)
         {
-            Download(url, handler =>
+            Download(url, request =>
             {
                 var transfer = new FileTransfer();
                 transfer.completed += completed;
                 m_Transfers.Add(transfer);
-                var data = handler.data;
+                var data = request.downloadHandler.data;
                 new Thread(() =>
                 {
                     File.WriteAllBytes(destination, data);
@@ -155,41 +140,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_Requests.Remove(request);
             }
 
+            m_CompletedRequests.Clear();
+
             while (m_Requests.Count < k_MaxSimultaneousRequests && m_QueuedRequests.Count > 0)
             {
                 var first = m_QueuedRequests.Dequeue();
                 m_Requests.Add(first.key, first);
-            }
-
-            //TODO: Generalize Request class
-            m_CompletedRequests.Clear();
-
-            foreach (var kvp in m_TextureRequests)
-            {
-                var request = kvp.Value;
-                var webRequest = request.request;
-
-                if (webRequest.isDone && webRequest.downloadHandler.isDone)
-                {
-                    var error = webRequest.error;
-                    if (!string.IsNullOrEmpty(error))
-                        Debug.LogWarning(error);
-
-                    request.Complete();
-
-                    m_CompletedRequests.Add(kvp.Key);
-                }
-            }
-
-            foreach (var request in m_CompletedRequests)
-            {
-                m_TextureRequests.Remove(request);
-            }
-
-            while (m_TextureRequests.Count < k_MaxSimultaneousRequests && m_QueuedTextureRequests.Count > 0)
-            {
-                var first = m_QueuedTextureRequests.Dequeue();
-                m_TextureRequests.Add(first.key, first);
             }
 
             foreach (var transfer in m_Transfers)
@@ -212,16 +168,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_Transfers.Add(first);
             }
 
-            m_CompletedRequests.Clear();
             m_CompletedTransfers.Clear();
         }
 
-        public void LoadModule()
-        {
-            IWebMethods.download = Download;
-            IWebMethods.downloadTexture = DownloadTexture;
-            IWebMethods.downloadToDisk = Download;
-        }
+        public void LoadModule() { }
 
         public void UnloadModule() { }
 
@@ -234,5 +184,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var webSubscriber = obj as IFunctionalitySubscriber<IProvidesWeb>;
+            if (webSubscriber != null)
+                webSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }

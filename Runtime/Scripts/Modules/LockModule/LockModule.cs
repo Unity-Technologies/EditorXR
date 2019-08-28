@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -8,7 +9,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class LockModule : ScriptableSettings<LockModule>, IModuleDependency<EditorXRMenuModule>, IActions, ISelectionChanged
+    sealed class LockModule : ScriptableSettings<LockModule>, IModuleDependency<EditorXRMenuModule>, IActions,
+        ISelectionChanged, IProvidesGameObjectLocking
     {
         class LockModuleAction : IAction, ITooltip
         {
@@ -54,9 +56,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             UpdateAction(null);
 
             actions = new List<IAction> { m_LockModuleAction };
-
-            IUsesGameObjectLockingMethods.setLocked = SetLocked;
-            IUsesGameObjectLockingMethods.isLocked = IsLocked;
         }
 
         public void UnloadModule() { }
@@ -158,5 +157,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             UpdateAction(Selection.activeGameObject);
         }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var lockingSubscriber = obj as IFunctionalitySubscriber<IProvidesGameObjectLocking>;
+            if (lockingSubscriber != null)
+                lockingSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }

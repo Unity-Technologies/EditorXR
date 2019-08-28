@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Text;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -11,7 +13,8 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class ToolsMenuButton : MonoBehaviour, IToolsMenuButton, ITooltip, ITooltipPlacement, ISetTooltipVisibility
+    sealed class ToolsMenuButton : MonoBehaviour, IToolsMenuButton, ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,
+        IUsesFunctionalityInjection
     {
         static Color s_FrameOpaqueColor;
 
@@ -231,6 +234,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 if (m_PreviewToolType != null) // Show the highlight if the preview type is valid; hide otherwise
                 {
                     var tempToolGo = EditorXRUtils.AddComponent(m_PreviewToolType, gameObject);
+                    this.InjectFunctionalitySingle(tempToolGo.GetComponent<ITool>());
                     var tempTool = tempToolGo as ITool;
                     if (tempTool != null)
                     {
@@ -426,11 +430,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public float iconHighlightedLocalZOffset { set { m_GradientButton.iconHighlightedLocalZOffset = value; } }
 
-
         // All buttons in a given menu share the same stencil ID which is fetched in the UI, then assigned to each button in the same menu
         public byte stencilRef { private get; set; }
 
         public event Action hovered;
+
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesSetTooltipVisibility IFunctionalitySubscriber<IProvidesSetTooltipVisibility>.provider { get; set; }
+#endif
 
         void Awake()
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Unity.Labs.ModuleLoader;
@@ -66,6 +67,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         Rect m_ToggleDeviceViewRect = new Rect(5, 0, 140, 20); // Width will be set based on window size
         Rect m_PresentationCameraRect = new Rect(0, 0, 165, 20); // Y position and width will be set based on window size
+
+#if UNITY_2019_1_OR_NEWER
+        XRNodeState m_HeadNode;
+#endif
 
         public static Transform cameraRig
         {
@@ -249,6 +254,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (viewEnabled != null)
                 viewEnabled();
+
+#if UNITY_2019_1_OR_NEWER
+            var nodeStates = new List<XRNodeState>();
+            InputTracking.GetNodeStates(nodeStates);
+            foreach (var nodeState in nodeStates)
+            {
+                if (nodeState.nodeType != XRNode.Head)
+                    continue;
+
+                m_HeadNode = nodeState;
+                break;
+            }
+#endif
         }
 
         static void CopyImagesEffectsToCamera(Camera targetCamera)
@@ -304,8 +322,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return;
 
             var cameraTransform = m_Camera.transform;
+
+#if UNITY_2019_1_OR_NEWER
+            Vector3 localPosition;
+            if (m_HeadNode.TryGetPosition(out localPosition))
+                cameraTransform.localPosition = localPosition;
+
+            Quaternion rotation;
+            if (m_HeadNode.TryGetRotation(out rotation))
+                cameraTransform.localRotation = rotation;
+#else
             cameraTransform.localPosition = InputTracking.GetLocalPosition(XRNode.Head);
             cameraTransform.localRotation = InputTracking.GetLocalRotation(XRNode.Head);
+#endif
         }
 
         public void CreateCameraTargetTexture(ref RenderTexture renderTexture, Rect cameraRect, bool hdr)

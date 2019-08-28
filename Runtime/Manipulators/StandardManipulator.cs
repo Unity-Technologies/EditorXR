@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.EditorVR.Handles;
+﻿using Unity.Labs.EditorXR.Interfaces;
+using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -68,7 +69,8 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
             if (handle is RadialHandle)
             {
-                rotate(eventData.deltaRotation, rayOrigin);
+                if (rotate != null)
+                    rotate(eventData.deltaRotation, rayOrigin);
             }
             else
             {
@@ -77,7 +79,8 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
                 if (constrainedHandle != null)
                     constraints = constrainedHandle.constraints;
 
-                translate(eventData.deltaPosition, rayOrigin, constraints);
+                if (translate != null)
+                    translate(eventData.deltaPosition, rayOrigin, constraints);
             }
         }
 

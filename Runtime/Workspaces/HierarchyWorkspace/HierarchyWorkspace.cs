@@ -1,5 +1,7 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -11,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     [EditorOnlyWorkspace]
     [MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
     [SpatialMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
-    class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
+    class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IUsesMoveCameraRig
     {
         protected const string k_Locked = "Locked";
 
@@ -66,6 +68,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public virtual string searchQuery { get { return m_FilterUI.searchQuery; } }
 
+#if !FI_AUTOFILL
+        IProvidesMoveCameraRig IFunctionalitySubscriber<IProvidesMoveCameraRig>.provider { get; set; }
+#endif
+
         public override void Setup()
         {
             // Initial bounds must be set before the base.Setup() is called
@@ -74,10 +80,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             base.Setup();
 
-            var contentPrefab = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
-            m_HierarchyUI = contentPrefab.GetComponent<HierarchyUI>();
+            var content = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+            m_HierarchyUI = content.GetComponent<HierarchyUI>();
             m_HierarchyUI.listView.lockedQueryString = k_Locked;
             hierarchyData = m_HierarchyData;
+            foreach (var behavior in content.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                this.InjectFunctionalitySingle(behavior);
+            }
 
             if (m_FilterPrefab)
             {

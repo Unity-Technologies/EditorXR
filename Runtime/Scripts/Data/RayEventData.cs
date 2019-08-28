@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.Labs.EditorXR.Interfaces;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -9,6 +10,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// The root from where the ray is cast
         /// </summary>
         public Transform rayOrigin { get; set; }
+
+        /// <summary>
+        /// The camera from where the ray is cast if this event came from the screen
+        /// </summary>
+        public Camera camera { get; set; }
 
         /// <summary>
         /// The node associated with the ray

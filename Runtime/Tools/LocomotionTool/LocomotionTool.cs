@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -12,9 +14,9 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-    sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
+    sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IUsesRayVisibilitySettings,
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-        IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
+        IUsesDeviceType, IUsesGetVRPlayerObjects, IUsesBlockUIInteraction, IUsesRequestFeedback, IUsesNode, IUsesFunctionalityInjection
     {
         [Serializable]
         class Preferences
@@ -181,6 +183,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             }
         }
 
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+        IProvidesGetVRPlayerObjects IFunctionalitySubscriber<IProvidesGetVRPlayerObjects>.provider { get; set; }
+        IProvidesBlockUIInteraction IFunctionalitySubscriber<IProvidesBlockUIInteraction>.provider { get; set; }
+#endif
+
         void Start()
         {
             if (this.IsSharedUpdater(this))
@@ -202,6 +213,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             m_BlinkVisualsGO = EditorXRUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
             m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
+            this.InjectFunctionalitySingle(m_BlinkVisuals);
             m_BlinkVisuals.ignoreList = this.GetVRPlayerObjects();
             m_BlinkVisualsGO.SetActive(false);
             m_BlinkVisualsGO.transform.parent = rayOrigin;
@@ -210,6 +222,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             var viewerScaleObject = EditorXRUtils.Instantiate(m_ViewerScaleVisualsPrefab, cameraRig, false);
             m_ViewerScaleVisuals = viewerScaleObject.GetComponent<ViewerScaleVisuals>();
+            this.InjectFunctionalitySingle(m_ViewerScaleVisuals);
             viewerScaleObject.SetActive(false);
 
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
@@ -233,7 +246,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         void OnDestroy()
         {
             this.RemoveRayVisibilitySettings(rayOrigin, this);
-            this.ClearFeedbackRequests();
+            this.ClearFeedbackRequests(this);
 
             if (m_ViewerScaleVisuals)
                 UnityObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
@@ -875,7 +888,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.node = node;
                     request.control = id;
                     request.tooltipText = tooltipText;
@@ -912,7 +925,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.control = id;
                     request.node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand;
                     request.tooltipText = "Scale";

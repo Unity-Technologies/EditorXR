@@ -1,5 +1,5 @@
 using System;
-using UnityEditor.Experimental.EditorVR.Modules;
+using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
@@ -11,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     /// Some are removed immediately after being added; others exist for the duration of an action/tool's lifespan
     /// </summary>
     public class ProxyFeedbackRequest : FeedbackRequest
+
     {
         const float k_DefaultDuration = 5f;
         const int k_DefaultMaxPresentations = 20;

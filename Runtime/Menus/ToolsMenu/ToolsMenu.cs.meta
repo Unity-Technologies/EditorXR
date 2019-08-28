@@ -10,7 +10,7 @@ MonoImporter:
   - m_ActionMap: {fileID: 11400000, guid: c9a6ad3bee1a1274c884e678ee951c4b, type: 2}
   - m_ToolsMenuPrefab: {fileID: 114000010527895234, guid: 9df94b11e4f4ed848aa8c4055b378c6a,
       type: 2}
-  - _mToolsMenuButtonTemplate: {fileID: 114000011260412956, guid: 7221a75a049ac3949a505c7c2f06bd8e,
+  - m_ToolsMenuButtonTemplate: {fileID: 114000011260412956, guid: 7221a75a049ac3949a505c7c2f06bd8e,
       type: 2}
   - m_ButtonClickPulse: {fileID: 11400000, guid: ddf15856c41896c42bfd9a7b61028844,
       type: 2}
@@ -19,6 +19,6 @@ MonoImporter:
   - m_HidingPulse: {fileID: 11400000, guid: 2e01cf9fae741534eaf75d6f0910be3a, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
+  userData:
+  assetBundleName:
+  assetBundleVariant:

@@ -1,4 +1,6 @@
 using System.Collections;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -6,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class UndoMenuUI : MonoBehaviour, IConnectInterfaces
+    sealed class UndoMenuUI : MonoBehaviour, IUsesConnectInterfaces
     {
         const float k_EngageAnimationDuration = 0.1f;
         const float k_EngagedAlpha = 0.5f;
@@ -39,9 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     return;
 
                 m_AlternateMenuOrigin = value;
-                transform.SetParent(m_AlternateMenuOrigin);
-                transform.localPosition = Vector3.zero;
-                transform.localRotation = Quaternion.identity;
+                transform.SetParent(m_AlternateMenuOrigin, false);
             }
         }
 
@@ -74,6 +74,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 gameObject.SetActive(value);
             }
         }
+
+#if !FI_AUTOFILL
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
 
         void Awake()
         {

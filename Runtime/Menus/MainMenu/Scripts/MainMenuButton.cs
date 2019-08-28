@@ -1,4 +1,5 @@
 ﻿using System;
+using Unity.Labs.EditorXR.Interfaces;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.Events;
@@ -66,7 +67,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             if (button.interactable)
             {
-
                 if (hovered != null)
                     hovered(eventData.rayOrigin, null, null);
 

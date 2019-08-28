@@ -4,13 +4,14 @@
         "input-prototype",
         "VRLR",
         "Unity.TextMeshPro",
-        "UnityEngine.SpatialTracking",
         "PolyToolkit",
         "Unity.Labs.Utils",
         "Unity.Labs.Utils.Editor",
         "Unity.Labs.ListViewFramework",
         "Unity.Labs.ModuleLoader.Interfaces",
-        "Unity.Labs.ModuleLoader"
+        "Unity.Labs.ModuleLoader",
+        "Unity.Labs.EditorXR.Interfaces",
+        "UnityEngine.SpatialTracking"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],

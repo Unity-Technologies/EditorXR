@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -8,16 +9,19 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SceneObjectModule : IModuleDependency<SpatialHashModule>, IModuleDependency<EditorXRMiniWorldModule>,
-        IUsesSpatialHash
+    sealed class SceneObjectModule : IModule, IProvidesPlaceSceneObject,
+        IProvidesPlaceSceneObjects, IProvidesDeleteSceneObject, IUsesSpatialHash
     {
         const float k_InstantiateFOVDifference = -5f;
         const float k_GrowDuration = 0.5f;
 
-        SpatialHashModule m_SpatialHashModule;
         EditorXRMiniWorldModule m_MiniWorldModule;
 
-        void PlaceSceneObject(Transform obj, Vector3 targetScale)
+#if !FI_AUTOFILL
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
+#endif
+
+        public void PlaceSceneObject(Transform obj, Vector3 targetScale)
         {
             if (!TryPlaceObjectInMiniWorld(obj, targetScale))
                 EditorMonoBehaviour.instance.StartCoroutine(PlaceSceneObjectCoroutine(obj, targetScale));
@@ -40,22 +44,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var currTime = 0f;
 
             obj.parent = null;
-            var startScale = obj.localScale;
+            var localScale = obj.localScale;
+            var startScale = localScale;
             var startPosition = BoundsUtils.GetBounds(obj).center;
-            var pivotOffset = obj.position - startPosition;
+            var position = obj.position;
+            var pivotOffset = position - startPosition;
             var startRotation = obj.rotation;
             var targetRotation = startRotation.ConstrainYaw();
 
             //Get bounds at target scale and rotation (scaled and rotated from bounds center)
-            var origScale = obj.localScale;
-            obj.localScale = targetScale;
+            var origScale = localScale;
             obj.rotation = targetRotation;
             var rotationDiff = Quaternion.Inverse(startRotation) * targetRotation;
             var scaleDiff = targetScale.magnitude / startScale.magnitude;
             var targetPivotOffset = rotationDiff * pivotOffset * scaleDiff;
-            obj.position = startPosition + targetPivotOffset;
             var bounds = BoundsUtils.GetBounds(obj);
-            obj.localScale = origScale;
+            localScale = origScale;
+            obj.localScale = localScale;
             obj.localRotation = startRotation;
             obj.position = startPosition + pivotOffset;
 
@@ -89,12 +94,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             Selection.activeGameObject = go;
 
             this.AddToSpatialHash(go);
+
 #if UNITY_EDITOR
             Undo.IncrementCurrentGroup();
 #endif
         }
 
-        void PlaceSceneObjects(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
+        public void PlaceSceneObjects(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
         {
             EditorMonoBehaviour.instance.StartCoroutine(PlaceSceneObjectsCoroutine(transforms, targetPositionOffsets, targetRotations, targetScales));
         }
@@ -185,30 +191,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 
             Selection.objects = objects;
+
 #if UNITY_EDITOR
             Undo.IncrementCurrentGroup();
 #endif
         }
 
-        public void ConnectDependency(SpatialHashModule dependency)
-        {
-            m_SpatialHashModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRMiniWorldModule dependency)
-        {
-            m_MiniWorldModule = dependency;
-        }
-
-        public void LoadModule()
-        {
-            IDeleteSceneObjectMethods.deleteSceneObject = DeleteSceneObject;
-            IPlaceSceneObjectMethods.placeSceneObject = PlaceSceneObject;
-            IPlaceSceneObjectsMethods.placeSceneObjects = PlaceSceneObjects;
-        }
+        public void LoadModule() { m_MiniWorldModule = ModuleLoaderCore.instance.GetModule<EditorXRMiniWorldModule>(); }
 
         bool TryPlaceObjectInMiniWorld(Transform obj, Vector3 targetScale)
         {
+            if (m_MiniWorldModule == null)
+                return false;
+
             foreach (var miniWorld in m_MiniWorldModule.worlds)
             {
                 if (!miniWorld.Contains(obj.position))
@@ -220,7 +215,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
                 obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale.Inverse());
 
-                m_SpatialHashModule.AddObject(obj.gameObject);
+                this.AddToSpatialHash(obj.gameObject);
                 return true;
             }
 
@@ -228,5 +223,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         public void UnloadModule() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var placeSceneObjectSubscriber = obj as IFunctionalitySubscriber<IProvidesPlaceSceneObject>;
+            if (placeSceneObjectSubscriber != null)
+                placeSceneObjectSubscriber.provider = this;
+
+            var placeSceneObjectsSubscriber = obj as IFunctionalitySubscriber<IProvidesPlaceSceneObjects>;
+            if (placeSceneObjectsSubscriber != null)
+                placeSceneObjectsSubscriber.provider = this;
+
+            var deleteObjectSubscriber = obj as IFunctionalitySubscriber<IProvidesDeleteSceneObject>;
+            if (deleteObjectSubscriber != null)
+                deleteObjectSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }

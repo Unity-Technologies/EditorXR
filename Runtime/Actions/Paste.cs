@@ -1,4 +1,7 @@
-﻿using Unity.Labs.Utils;
+﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -10,6 +13,11 @@ namespace UnityEditor.Experimental.EditorVR.Actions
     {
         static float s_BufferDistance;
 
+#if !FI_AUTOFILL
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
+
         public static void SetBufferDistance(Transform[] transforms)
         {
             if (transforms != null)
@@ -17,7 +25,8 @@ namespace UnityEditor.Experimental.EditorVR.Actions
                 var bounds = BoundsUtils.GetBounds(transforms);
 
                 s_BufferDistance = bounds.size != Vector3.zero ? (bounds.center - CameraUtils.GetMainCamera().transform.position).magnitude : 1f;
-                s_BufferDistance /= IUsesViewerScaleMethods.getViewerScale(); // Normalize this value in case viewer scale changes before paste happens
+                var viewerModule = ModuleLoaderCore.instance.GetModule<EditorXRViewerModule>();
+                s_BufferDistance /= viewerModule.GetViewerScale(); // Normalize this value in case viewer scale changes before paste happens
             }
         }
 

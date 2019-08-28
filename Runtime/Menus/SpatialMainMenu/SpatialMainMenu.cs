@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Workspaces;
@@ -8,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class SpatialMainMenu : MonoBehaviour, IMainMenu, ISpatialMenuProvider, INodeToRay, ICreateWorkspace
+    sealed class SpatialMainMenu : MonoBehaviour, IMainMenu, ISpatialMenuProvider, INodeToRay, IUsesCreateWorkspace
     {
         readonly List<SpatialMenu.SpatialMenuData> m_SpatialMenuData = new List<SpatialMenu.SpatialMenuData>();
 
@@ -37,6 +39,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             get { return MenuHideFlags.Hidden; }
             set { }
         }
+
+#if !FI_AUTOFILL
+        IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
+        IProvidesPreviewInToolMenuButton IFunctionalitySubscriber<IProvidesPreviewInToolMenuButton>.provider { get; set; }
+        IProvidesCreateWorkspace IFunctionalitySubscriber<IProvidesCreateWorkspace>.provider { get; set; }
+#endif
 
         void Start()
         {
@@ -73,39 +81,39 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 }
 
                 if (isTool)
-                    toolsSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer(itemName, description, (node) =>
+                    toolsSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer(itemName, description, correspondingNode =>
                     {
-                        this.SelectTool(this.RequestRayOriginFromNode(node), selectedType,
-                            hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
+                        this.SelectTool(this.RequestRayOriginFromNode(correspondingNode), selectedType,
+                            hideMenu: typeof(IUsesInstantiateMenuUI).IsAssignableFrom(selectedType));
                     }));
 
                 if (isWorkspace)
                     workspaceSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer(itemName, description,
-                        (node) => this.CreateWorkspace(selectedType)));
+                        correspondingNode => this.CreateWorkspace(selectedType)));
             }
 
             spatialMenuData.Add(new SpatialMenu.SpatialMenuData("Workspaces", "Open a workspace", workspaceSpatialMenuElements));
             spatialMenuData.Add(new SpatialMenu.SpatialMenuData("Tools", "Select a tool", toolsSpatialMenuElements));
 
-            toolsSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer("Selection Tool", "Perform standard object selection & manipulation", (node) =>
+            toolsSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer("Selection Tool", "Perform standard object selection & manipulation", correspondingNode =>
             {
-                this.SelectTool(this.RequestRayOriginFromNode(node), typeof(SelectionTool), hideMenu: true);
+                this.SelectTool(this.RequestRayOriginFromNode(correspondingNode), typeof(SelectionTool), hideMenu: true);
             }));
         }
 
-        public void AddSettingsMenu(ISettingsMenuProvider provider)
+        public void AddSettingsMenu(ISettingsMenuProvider menuProvider)
         {
         }
 
-        public void RemoveSettingsMenu(ISettingsMenuProvider provider)
+        public void RemoveSettingsMenu(ISettingsMenuProvider menuProvider)
         {
         }
 
-        public void AddSettingsMenuItem(ISettingsMenuItemProvider provider)
+        public void AddSettingsMenuItem(ISettingsMenuItemProvider menuProvider)
         {
         }
 
-        public void RemoveSettingsMenuItem(ISettingsMenuItemProvider provider)
+        public void RemoveSettingsMenuItem(ISettingsMenuItemProvider menuProvider)
         {
         }
     }

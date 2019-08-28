@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Input;
@@ -25,7 +27,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         Bottom = 1 << 5
     }
 
-    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, ISerializePreferences
+    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, IUsesSetTooltipVisibility,
+        IUsesSetHighlight, ISerializePreferences, IUsesFunctionalityInjection
     {
         [SerializeField]
         protected GameObject m_LeftHandProxyPrefab;
@@ -112,6 +115,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Dictionary<Transform, Transform> previewOrigins { get; set; }
         public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
 
+#if !FI_AUTOFILL
+        IProvidesSetTooltipVisibility IFunctionalitySubscriber<IProvidesSetTooltipVisibility>.provider { get; set; }
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
+#endif
+
         public void FakeActivate()
         {
             m_FakeActive = true;
@@ -155,11 +164,15 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 { m_LeftProxyNode.rayOrigin, m_LeftProxyNode.fieldGrabOrigin },
                 { m_RightProxyNode.rayOrigin, m_RightProxyNode.fieldGrabOrigin }
             };
+
+            hidden = true;
         }
 
         protected virtual IEnumerator Start()
         {
-            hidden = true;
+            this.InjectFunctionalitySingle(m_LeftProxyNode);
+            this.InjectFunctionalitySingle(m_RightProxyNode);
+
             while (!active)
                 yield return null;
 
@@ -218,7 +231,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        public void ClearFeedbackRequests(IRequestFeedback caller)
+        public void ClearFeedbackRequests(IUsesRequestFeedback caller)
         {
             // Check for null in order to prevent MissingReferenceException when exiting EXR
             if (m_LeftProxyNode && m_RightProxyNode)

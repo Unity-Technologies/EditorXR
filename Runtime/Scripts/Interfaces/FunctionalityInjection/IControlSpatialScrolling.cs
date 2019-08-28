@@ -1,4 +1,5 @@
 ﻿using System;
+using Unity.Labs.EditorXR.Interfaces;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 

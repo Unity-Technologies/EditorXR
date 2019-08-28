@@ -1,3 +1,4 @@
+using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI

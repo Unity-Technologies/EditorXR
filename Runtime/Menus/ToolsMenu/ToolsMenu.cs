@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -11,9 +13,9 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics,
-        IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin,
-        IRequestFeedback
+    sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IUsesConnectInterfaces, IInstantiateUI, IUsesControlHaptics,
+        IUsesViewerScale, IControlSpatialScrolling, IUsesControlSpatialHinting, IUsesRayVisibilitySettings, IUsesRayOrigin,
+        IUsesRequestFeedback, IUsesFunctionalityInjection
     {
         const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
         const int k_MaxButtonCount = 16;
@@ -29,7 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         ToolsMenuUI m_ToolsMenuPrefab;
 
         [SerializeField]
-        ToolsMenuButton _mToolsMenuButtonTemplate;
+        ToolsMenuButton m_ToolsMenuButtonTemplate;
 
         [SerializeField]
         HapticPulse m_ButtonClickPulse;
@@ -79,6 +81,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+        IProvidesControlSpatialHinting IFunctionalitySubscriber<IProvidesControlSpatialHinting>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
+
         void Awake()
         {
             setButtonForType = CreateToolsMenuButton;
@@ -126,9 +139,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (buttons.Count >= k_MaxButtonCount) // Return if tool type already occupies a tool button
                 return;
 
-            var buttonTransform = EditorXRUtils.Instantiate(_mToolsMenuButtonTemplate.gameObject, m_ToolsMenuUI.buttonContainer, false).transform;
+            var buttonTransform = EditorXRUtils.Instantiate(m_ToolsMenuButtonTemplate.gameObject, m_ToolsMenuUI.buttonContainer, false).transform;
             var button = buttonTransform.GetComponent<ToolsMenuButton>();
             this.ConnectInterfaces(button);
+            this.InjectFunctionalitySingle(button);
 
             button.rayOrigin = rayOrigin;
             button.toolType = toolType; // Assign Tool Type before assigning order
@@ -175,9 +189,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (toolslMenuInput.show.wasJustReleased)
                 HideScrollFeedback();
 
+            var alternateMenuOriginPosition = alternateMenuOrigin.position;
             if (spatialScrollData == null && (toolslMenuInput.show.wasJustPressed || toolslMenuInput.show.isHeld) && toolslMenuInput.select.wasJustPressed)
             {
-                m_SpatialScrollStartPosition = alternateMenuOrigin.position;
+                m_SpatialScrollStartPosition = alternateMenuOriginPosition;
                 m_AllowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
                 this.SetSpatialHintControlNode(node);
                 m_ToolsMenuUI.spatiallyScrolling = true; // Triggers the display of the directional hint arrows
@@ -185,7 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 consumeControl(toolslMenuInput.select);
 
                 // Assign initial SpatialScrollData; begin scroll
-                spatialScrollData = this.PerformSpatialScroll(node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
+                spatialScrollData = this.PerformSpatialScroll(node, m_SpatialScrollStartPosition, alternateMenuOriginPosition, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
 
                 HideScrollFeedback();
                 ShowMenuFeedback();
@@ -212,14 +227,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 // normalized input should loop after reaching the 0.15f length
                 buttonCount -= 1; // Decrement to disallow cycling through the main menu button
-                spatialScrollData = this.PerformSpatialScroll(node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
+                spatialScrollData = this.PerformSpatialScroll(node, m_SpatialScrollStartPosition, alternateMenuOriginPosition, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
                 var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
                 if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
                 {
                     if (!m_ToolsMenuUI.allButtonsVisible)
                     {
                         m_ToolsMenuUI.spatialDragDistance = spatialScrollData.dragDistance;
-                        this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.CenteredScrolling);
+                        this.SetSpatialHintState(SpatialHintState.CenteredScrolling);
                         m_ToolsMenuUI.allButtonsVisible = true;
                     }
                     else if (spatialScrollData.spatialDirection != null)
@@ -261,7 +276,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void OnButtonClick()
         {
             this.Pulse(node, m_ButtonClickPulse);
-            this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
+            this.SetSpatialHintState(SpatialHintState.Hidden);
         }
 
         void OnButtonHover()
@@ -269,18 +284,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             this.Pulse(node, m_ButtonHoverPulse);
         }
 
-        void OnButtonSelected(Transform rayOrigin, Type buttonType)
+        void OnButtonSelected(Transform selectingRayOrigin, Type buttonType)
         {
             if (buttonType != typeof(SelectionTool) && buttonType == activeButtonType)
                 return;
 
             activeButtonType = buttonType;
-            this.SelectTool(rayOrigin, buttonType, false);
+            this.SelectTool(selectingRayOrigin, buttonType, false);
         }
 
         void CloseMenu()
         {
-            this.ClearFeedbackRequests();
+            this.ClearFeedbackRequests(this);
             this.Pulse(node, m_HidingPulse);
             this.EndSpatialScroll(); // Free the spatial scroll data owned by this object
         }
@@ -295,7 +310,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.node = node;
                     request.control = id;
                     request.priority = 1;

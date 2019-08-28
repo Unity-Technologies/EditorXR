@@ -1,4 +1,6 @@
 ﻿using TMPro;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -34,6 +36,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public Transform leftHand { private get; set; }
         public Transform rightHand { private get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
 
         void Awake()
         {

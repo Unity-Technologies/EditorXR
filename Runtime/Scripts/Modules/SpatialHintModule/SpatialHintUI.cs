@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -6,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    public class SpatialHintUI : MonoBehaviour, IUsesViewerScale, IControlHaptics, IRayToNode
+    public class SpatialHintUI : MonoBehaviour, IUsesViewerScale, IUsesControlHaptics, IRayToNode
     {
         readonly Color k_PrimaryArrowColor = Color.white;
 
@@ -182,6 +184,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         /// If FALSE, draw scroll hint line visuals along the line the user is defining
         /// </summary>
         public bool centeredScrolling { get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+#endif
 
         void Awake()
         {

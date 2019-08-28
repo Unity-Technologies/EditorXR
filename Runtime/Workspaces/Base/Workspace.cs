@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -9,8 +11,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces,
-        IUsesViewerScale, IControlHaptics, IRayToNode
+    abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IUsesConnectInterfaces,
+        IUsesViewerScale, IUsesControlHaptics, IRayToNode, IUsesFunctionalityInjection
     {
         const float k_MaxFrameSize = 100f; // Because BlendShapes cap at 100, our workspace maxes out at 100m wide
         protected const float k_DoubleFaceMargin = FaceMargin * 2;
@@ -93,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             get
             {
                 const float outerBoundsCenterOffset = 0.09275f; //Amount to extend the bounds to include frame
-                return new Bounds(contentBounds.center + Vector3.down * outerBoundsCenterOffset * 0.5f,
+                return new Bounds(contentBounds.center + outerBoundsCenterOffset * 0.5f * Vector3.down,
                     new Vector3(
                         contentBounds.size.x,
                         contentBounds.size.y + outerBoundsCenterOffset,
@@ -161,12 +163,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected Node leftNode { get; set; }
         protected Node rightNode { get; set; }
 
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
+
         public virtual void Setup()
         {
             var baseObject = this.InstantiateUI(m_BasePrefab, transform, false);
 
             m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
             this.ConnectInterfaces(m_WorkspaceUI);
+            this.InjectFunctionalitySingle(m_WorkspaceUI);
             m_WorkspaceUI.closeClicked += OnCloseClicked;
             m_WorkspaceUI.resetSizeClicked += OnResetClicked;
             m_WorkspaceUI.buttonHovered += OnButtonHovered;
@@ -196,7 +206,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var startingBounds = m_CustomStartingBounds ?? DefaultBounds;
 
             //Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
-            m_ContentBounds = new Bounds(Vector3.up * startingBounds.y * 0.5f, startingBounds); // If custom bounds have been set, use them as the initial bounds
+            m_ContentBounds = new Bounds(startingBounds.y * 0.5f * Vector3.up, startingBounds); // If custom bounds have been set, use them as the initial bounds
             UpdateBounds();
 
             this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());

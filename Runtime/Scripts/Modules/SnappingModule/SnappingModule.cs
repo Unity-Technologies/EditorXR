@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -14,8 +15,9 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
-    sealed class SnappingModule : ScriptableSettings<SnappingModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
-        IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences, IRaycast, IStandardIgnoreList
+    public sealed class SnappingModule : ScriptableSettings<SnappingModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
+        IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences, IStandardIgnoreList, IUsesSceneRaycast,
+        IProvidesSnapping
     {
         const float k_GroundPlaneScale = 1000f;
 
@@ -276,7 +278,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        bool groundSnappingEnabled
+        public bool groundSnappingEnabled
         {
             get { return m_Preferences.groundSnappingEnabled; }
             set
@@ -373,6 +375,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
 
+#if !FI_AUTOFILL
+        IProvidesSceneRaycast IFunctionalitySubscriber<IProvidesSceneRaycast>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
+
         // Local method use only -- created here to reduce garbage collection
         readonly List<GameObject> m_CombinedIgnoreList = new List<GameObject>();
         Transform[] m_SingleTransformArray = new Transform[1];
@@ -382,10 +389,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_ButtonHighlightMaterialClone = Instantiate(m_ButtonHighlightMaterial);
 
             widgetEnabled = true;
-
-            IUsesSnappingMethods.manipulatorSnap = ManipulatorSnap;
-            IUsesSnappingMethods.directSnap = DirectSnap;
-            IUsesSnappingMethods.clearSnappingState = ClearSnappingState;
         }
 
         public void UnloadModule() { }
@@ -1000,5 +1003,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var snappingSubscriber = obj as IFunctionalitySubscriber<IProvidesSnapping>;
+            if (snappingSubscriber != null)
+                snappingSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }

@@ -1,14 +1,20 @@
 ﻿using System;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Delete", ActionMenuItemAttribute.DefaultActionSectionName, 7)]
     [SpatialMenuItem("Delete", "Actions", "Delete the selected object")]
-    sealed class Delete : BaseAction, IDeleteSceneObject
+    sealed class Delete : BaseAction, IUsesDeleteSceneObject
     {
         public Action<GameObject> addToSpatialHash { private get; set; }
         public Action<GameObject> removeFromSpatialHash { private get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesDeleteSceneObject IFunctionalitySubscriber<IProvidesDeleteSceneObject>.provider { get; set; }
+#endif
 
         public override void ExecuteAction()
         {

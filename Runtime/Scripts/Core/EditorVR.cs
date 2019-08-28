@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.InputNew;
 
 #if UNITY_EDITOR
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
@@ -14,41 +14,19 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class DeviceData
-    {
-        public IProxy proxy;
-        public InputDevice inputDevice;
-        public Node node;
-        public Transform rayOrigin;
-        public readonly Stack<ToolData> toolData = new Stack<ToolData>();
-        public IMainMenu mainMenu;
-        public ITool currentTool;
-        public IMenu customMenu;
-        public IToolsMenu toolsMenu;
-        public readonly List<IAlternateMenu> alternateMenus = new List<IAlternateMenu>();
-        public IAlternateMenu alternateMenu;
-        public SpatialMenu spatialMenu;
-        public readonly Dictionary<IMenu, MenuHideData> menuHideData = new Dictionary<IMenu, MenuHideData>();
-    }
-
 #if UNITY_2018_3_OR_NEWER
 #if UNITY_EDITOR
     [RequiresTag(VRPlayerTag)]
 #endif
     [ModuleOrder(ModuleOrders.EditorVRLoadOrder)]
-    sealed class EditorVR : IEditor, IConnectInterfaces, IModuleDependency<EditorXRMiniWorldModule>, IModuleDependency<EditorXRToolModule>,
-        IInterfaceConnector
+    sealed class EditorVR : IEditor, IModule, IUsesConnectInterfaces
     {
         const HideFlags k_DefaultHideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
         internal const string VRPlayerTag = "VRPlayer";
         const string k_PreserveLayout = "EditorVR.PreserveLayout";
         const string k_IncludeInBuilds = "EditorVR.IncludeInBuilds";
 
-        event Action selectionChanged;
-
         static bool s_IsInitialized;
-        EditorXRMiniWorldModule m_MiniWorldModule;
-        EditorXRToolModule m_ToolModule;
 
         internal static bool preserveLayout
         {
@@ -68,7 +46,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static Type[] HiddenTypes { get; set; }
         internal static Action UpdateInputManager { private get; set; }
 
-        public int connectInterfaceOrder { get { return 0; } }
+#if !FI_AUTOFILL
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
 
         internal static void ResetPreferences()
         {
@@ -88,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 s_IsInitialized = true;
 
 #if UNITY_EDITOR
-                if (!PlayerSettings.virtualRealitySupported)
+                if (!PlayerSettings.GetVirtualRealitySupported(BuildTargetGroup.Standalone))
                     Debug.Log("<color=orange>EditorXR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->XR Settings</color>");
 #endif
             }
@@ -112,8 +92,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal void Initialize()
         {
-            Selection.selectionChanged += OnSelectionChanged;
-
             if (UpdateInputManager != null)
                 UpdateInputManager();
 
@@ -128,9 +106,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomCuratedLightGradient();
             UnityBrandColorScheme.saturatedSessionGradient = UnityBrandColorScheme.GetRandomCuratedGradient();
-
-            // In case we have anything selected at start, set up manipulators, inspector, etc.
-            EditorApplication.delayCall += OnSelectionChanged;
 
             var delayedInitializationModules = new List<IDelayedInitializationModule>();
             foreach (var module in ModuleLoaderCore.instance.modules)
@@ -184,12 +159,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 #endif
 
-        void OnSelectionChanged()
-        {
-            if (selectionChanged != null)
-                selectionChanged();
-        }
-
         internal void Shutdown()
         {
             var delayedInitializationModules = new List<IDelayedInitializationModule>();
@@ -207,43 +176,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 module.Shutdown();
             }
 
-            Selection.selectionChanged -= OnSelectionChanged;
-
-            // Suppress MissingReferenceException in tests
-            EditorApplication.delayCall -= OnSelectionChanged;
-
 #if UNITY_EDITOR
             DrivenRectTransformTracker.StartRecordingUndo();
 #endif
-        }
-
-        internal void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
-        {
-            m_MiniWorldModule.UpdateMiniWorlds();
-
-            foreach (var device in m_ToolModule.deviceData)
-            {
-                if (!device.proxy.active)
-                    continue;
-
-                foreach (var toolData in device.toolData)
-                {
-                    var process = toolData.tool as IProcessInput;
-                    if (process != null && ((MonoBehaviour)toolData.tool).enabled
-                        && processedInputs.Add(process)) // Only process inputs for an instance of a tool once (e.g. two-handed tools)
-                        process.ProcessInput(toolData.input, consumeControl);
-                }
-            }
-        }
-
-        public void ConnectDependency(EditorXRMiniWorldModule dependency)
-        {
-            m_MiniWorldModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRToolModule dependency)
-        {
-            m_ToolModule = dependency;
         }
 
         public void LoadModule() { }
@@ -255,20 +190,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (activeView)
                 activeView.Close();
 #endif
-        }
-
-        public void ConnectInterface(object target, object userData = null)
-        {
-            var selectionChanged = target as ISelectionChanged;
-            if (selectionChanged != null)
-                this.selectionChanged += selectionChanged.OnSelectionChanged;
-        }
-
-        public void DisconnectInterface(object target, object userData = null)
-        {
-            var selectionChanged = target as ISelectionChanged;
-            if (selectionChanged != null)
-                this.selectionChanged -= selectionChanged.OnSelectionChanged;
         }
     }
 #else

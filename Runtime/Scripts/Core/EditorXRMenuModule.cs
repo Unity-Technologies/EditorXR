@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -21,10 +22,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
     [ModuleOrder(ModuleOrders.MenuModuleLoadOrder)]
     [ModuleBehaviorCallbackOrder(ModuleOrders.MenuModuleBehaviorOrder)]
-    class EditorXRMenuModule : MonoBehaviour, IModuleDependency<EditorXRToolModule>, IModuleDependency<EditorXRRayModule>,
-        IModuleDependency<EditorXRViewerModule>, IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRUIModule>,
-        IModuleDependency<EditorXRDirectSelectionModule>, IInterfaceConnector, IConnectInterfaces, IDelayedInitializationModule,
-        IModuleBehaviorCallbacks
+    class EditorXRMenuModule : MonoBehaviour, IModuleDependency<EditorXRRayModule>,
+        IModuleDependency<DeviceInputModule>, IInterfaceConnector, IUsesConnectInterfaces,
+        IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesIsMainMenuVisible, IProvidesInstantiateMenuUI,
+        IInstantiateUI, IUsesViewerScale
     {
         const float k_MainMenuAutoHideDelay = 0.125f;
         const float k_MainMenuAutoShowDelay = 0.25f;
@@ -36,18 +37,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
         readonly Dictionary<Transform, IMainMenu> m_MainMenus = new Dictionary<Transform, IMainMenu>();
         readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider>();
         readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider>();
-        List<Type> m_MainMenuTools;
 
+        EditorXRToolModule m_ToolModule;
         EditorXRRayModule m_RayModule;
-        EditorXRViewerModule m_ViewerModule;
         DeviceInputModule m_DeviceInputModule;
         EditorXRDirectSelectionModule m_DirectSelectionModule;
-        EditorXRUIModule m_UIModule;
-        EditorXRToolModule m_ToolModule;
 
-        public int initializationOrder { get { return 1; } }
-        public int shutdownOrder { get { return 0; } }
+        internal List<Type> mainMenuTools { private get; set; }
         public int connectInterfaceOrder { get { return 0; } }
+
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<DeviceData> k_ActiveDeviceData = new List<DeviceData>();
@@ -55,19 +58,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         static readonly List<GradientButton> k_ButtonComponents = new List<GradientButton>();
         static readonly Collider[] k_ColliderOverlaps = new Collider[k_PossibleOverlaps];
 
-        public void ConnectDependency(EditorXRToolModule dependency)
-        {
-            m_ToolModule = dependency;
-        }
-
         public void ConnectDependency(EditorXRRayModule dependency)
         {
             m_RayModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRViewerModule dependency)
-        {
-            m_ViewerModule = dependency;
         }
 
         public void ConnectDependency(DeviceInputModule dependency)
@@ -75,35 +68,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_DeviceInputModule = dependency;
         }
 
-        public void ConnectDependency(EditorXRDirectSelectionModule dependency)
-        {
-            m_DirectSelectionModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRUIModule dependency)
-        {
-            m_UIModule = dependency;
-        }
-
         public void LoadModule()
         {
-            IInstantiateMenuUIMethods.instantiateMenuUI = InstantiateMenuUI;
-            IIsMainMenuVisibleMethods.isMainMenuVisible = IsMainMenuVisible;
             IUsesCustomMenuOriginsMethods.getCustomMenuOrigin = GetCustomMenuOrigin;
             IUsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
+
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            m_DirectSelectionModule = moduleLoaderCore.GetModule<EditorXRDirectSelectionModule>();
+            m_ToolModule = moduleLoaderCore.GetModule<EditorXRToolModule>();
         }
 
         public void UnloadModule() { }
-
-        public void Initialize()
-        {
-            m_MainMenuTools = m_ToolModule.allTools.Where(t =>
-            {
-                return !EditorXRToolModule.IsDefaultTool(t) && !EditorVR.HiddenTypes.Contains(t);
-            }).ToList(); // Don't show tools that can't be selected/toggled
-        }
-
-        public void Shutdown() { }
 
         public void ConnectInterface(object target, object userData = null)
         {
@@ -133,7 +108,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var mainMenu = target as IMainMenu;
             if (mainMenu != null && rayOrigin != null)
             {
-                mainMenu.menuTools = m_MainMenuTools;
+                mainMenu.menuTools = mainMenuTools;
                 mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes.Where(t => !EditorVR.HiddenTypes.Contains(t)).ToList();
                 mainMenu.settingsMenuProviders = m_SettingsMenuProviders;
                 mainMenu.settingsMenuItemProviders = m_SettingsMenuItemProviders;
@@ -201,6 +176,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void AddAlternateMenu(IAlternateMenu alternateMenu, Transform rayOrigin)
         {
+            if (m_ToolModule == null)
+                return;
+
             foreach (var device in m_ToolModule.deviceData)
             {
                 if (device.rayOrigin != rayOrigin)
@@ -219,6 +197,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void RemoveAlternateMenu(IAlternateMenu alternateMenu)
         {
+            if (m_ToolModule == null)
+                return;
+
             foreach (var device in m_ToolModule.deviceData)
             {
                 device.alternateMenus.Remove(alternateMenu);
@@ -409,7 +390,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
         void CheckDirectSelection(DeviceData deviceData, Dictionary<IMenu, MenuHideData> menuHideData, bool alternateMenuVisible)
         {
-            var viewerScale = m_ViewerModule.GetViewerScale();
+            if (m_DirectSelectionModule == null)
+                return;
+
+            var viewerScale = this.GetViewerScale();
             var rayOrigin = deviceData.rayOrigin;
             var rayOriginPosition = rayOrigin.position;
             var heldObjects = m_DirectSelectionModule.GetHeldObjects(rayOrigin);
@@ -459,7 +443,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var hoveringCollider = false;
             var menuTransform = menu.menuContent.transform;
             var menuRotation = menuTransform.rotation;
-            var viewerScale = m_ViewerModule.GetViewerScale();
+            var viewerScale = this.GetViewerScale();
             var center = menuTransform.position + menuRotation * menuBounds.center * viewerScale;
             if (Physics.OverlapBoxNonAlloc(center, menuBounds.extents * viewerScale, k_ColliderOverlaps, menuRotation) > 0)
             {
@@ -488,11 +472,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 menuHideData.hideFlags |= MenuHideFlags.OverWorkspace;
         }
 
-        internal bool IsValidHover(MultipleRayInputModule.RaycastSource source)
+        internal bool IsValidHover(IRaycastSource source)
         {
-            var go = source.draggedObject;
+            var eventData = source.eventData;
+            var currentRaycast = eventData.pointerCurrentRaycast;
+            var go = eventData.pointerDrag;
             if (!go)
-                go = source.hoveredObject;
+                go = currentRaycast.gameObject;
 
             if (!go)
                 return true;
@@ -500,9 +486,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (go == gameObject)
                 return true;
 
-            var eventData = source.eventData;
             var rayOrigin = eventData.rayOrigin;
-
             DeviceData deviceData = null;
             foreach (var currentDevice in m_ToolModule.deviceData)
             {
@@ -518,7 +502,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (go.transform.IsChildOf(deviceData.rayOrigin)) // Don't let UI on this hand block the menu
                     return false;
 
-                var scaledPointerDistance = eventData.pointerCurrentRaycast.distance / m_ViewerModule.GetViewerScale();
+                var scaledPointerDistance = currentRaycast.distance / this.GetViewerScale();
                 var menuHideFlags = deviceData.menuHideData;
                 var mainMenu = deviceData.mainMenu;
                 IMenu openMenu = mainMenu;
@@ -619,7 +603,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
+        public GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
         {
             GameObject go = null;
             m_RayModule.ForEachProxyDevice(deviceData =>
@@ -633,7 +617,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     {
                         if (deviceData.customMenu == null)
                         {
-                            go = m_UIModule.InstantiateUI(prefab.gameObject, menuOrigin, false);
+                            go = this.InstantiateUI(prefab.gameObject, menuOrigin, false);
 
                             var customMenu = go.GetComponent<IMenu>();
                             deviceData.customMenu = customMenu;
@@ -655,11 +639,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             var spawnedMenu = (IMenu)EditorXRUtils.AddComponent(menuType, gameObject);
             this.ConnectInterfaces(spawnedMenu, rayOrigin);
+            this.InjectFunctionalitySingle(spawnedMenu);
 
             return spawnedMenu;
         }
 
-        bool IsMainMenuVisible(Transform rayOrigin)
+        public bool IsMainMenuVisible(Transform rayOrigin)
         {
             foreach (var deviceData in m_ToolModule.deviceData)
             {
@@ -684,6 +669,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var isMainMenuVisibleSubscriber = obj as IFunctionalitySubscriber<IProvidesIsMainMenuVisible>;
+            if (isMainMenuVisibleSubscriber != null)
+                isMainMenuVisibleSubscriber.provider = this;
+
+            var instantiateMenuUISubscriber = obj as IFunctionalitySubscriber<IProvidesInstantiateMenuUI>;
+            if (instantiateMenuUISubscriber != null)
+                instantiateMenuUISubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif

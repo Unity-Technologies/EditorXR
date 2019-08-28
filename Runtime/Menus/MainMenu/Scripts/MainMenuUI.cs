@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -9,7 +11,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class MainMenuUI : MonoBehaviour, IInstantiateUI, IConnectInterfaces, IRayEnterHandler, IRayExitHandler
+    sealed class MainMenuUI : MonoBehaviour, IInstantiateUI, IUsesConnectInterfaces, IRayEnterHandler, IRayExitHandler
     {
         public class ButtonData
         {
@@ -169,6 +171,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public Bounds localBounds { get; private set; }
         public bool hovering { get; private set; }
+
+#if !FI_AUTOFILL
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
 
         void Awake()
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -7,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// The main menu that can be shown on device proxies
     /// </summary>
-    public interface IMainMenu : IMenu, ISelectTool, IPreviewInToolsMenuButton
+    public interface IMainMenu : IMenu, IUsesSelectTool, IUsesPreviewInToolsMenuButton
     {
         /// <summary>
         /// The menu tools that will populate the menu

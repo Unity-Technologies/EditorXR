@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -12,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     using VisibilityControlType = ProxyAffordanceMap.VisibilityControlType;
     using VRControl = VRInputDevice.VRControl;
 
-    class ProxyNode : MonoBehaviour, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
+    class ProxyNode : MonoBehaviour, IUsesSetTooltipVisibility, IUsesSetHighlight, IUsesConnectInterfaces, IUsesFunctionalityInjection
     {
         class AffordanceData
         {
@@ -89,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     var key = (int)control;
 
                     if (m_AffordanceVisibilityStates.ContainsKey(key))
-                        Debug.LogWarning("Multiple affordaces added to " + this + " for " + control);
+                        Debug.LogWarning("Multiple affordances added to " + this + " for " + control);
 
                     m_AffordanceVisibilityStates[key] = new VisibilityState(renderer, tooltips, definition, material);
 
@@ -409,6 +411,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// </summary>
         public Transform fieldGrabOrigin { get { return m_FieldGrabOrigin; } }
 
+#if !FI_AUTOFILL
+        IProvidesSetTooltipVisibility IFunctionalitySubscriber<IProvidesSetTooltipVisibility>.provider { get; set; }
+        IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
+
         void Awake()
         {
             // Don't allow setup if affordances are invalid
@@ -491,7 +500,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         void Start()
         {
             if (m_ProxyAnimator)
+            {
                 this.ConnectInterfaces(m_ProxyAnimator, rayOrigin);
+                this.InjectFunctionalitySingle(m_ProxyAnimator);
+            }
 
             AddFeedbackRequest(k_ShakeFeedbackRequest);
         }
@@ -751,7 +763,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        public void ClearFeedbackRequests(IRequestFeedback caller)
+        public void ClearFeedbackRequests(IUsesRequestFeedback caller)
         {
             k_FeedbackRequestsCopy.Clear();
             foreach (var request in m_FeedbackRequests)

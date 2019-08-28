@@ -90,6 +90,8 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         protected virtual HandleEventData GetHandleEventData(RayEventData eventData)
         {
             k_HandleEventData.rayOrigin = eventData.rayOrigin;
+            k_HandleEventData.camera = eventData.camera;
+            k_HandleEventData.position = eventData.position;
             k_HandleEventData.direct = UIUtils.IsDirectEvent(eventData);
             return k_HandleEventData;
         }
@@ -157,15 +159,16 @@ namespace UnityEditor.Experimental.EditorVR.Handles
             // because the pointer wasn't close enough to the handle
             if (selectionFlags == SelectionFlags.Direct)
             {
-                if (!handleEventData.direct && m_HoverSources.Remove(eventData.rayOrigin))
+                var rayOrigin = eventData.rayOrigin;
+                if (!handleEventData.direct && m_HoverSources.Remove(rayOrigin))
                 {
                     OnHandleHoverEnded(handleEventData);
                     return;
                 }
 
-                if (handleEventData.direct && !m_HoverSources.Contains(eventData.rayOrigin))
+                if (handleEventData.direct && !m_HoverSources.Contains(rayOrigin))
                 {
-                    m_HoverSources.Add(eventData.rayOrigin);
+                    m_HoverSources.Add(rayOrigin);
                     OnHandleHoverStarted(handleEventData);
                 }
             }

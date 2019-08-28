@@ -45,6 +45,12 @@ namespace UnityEditor.Experimental.EditorVR
                 var go = activeGameObject;
                 return go ? go.transform : null;
             }
+            set
+            {
+                var oldObjects = s_Objects;
+                s_Objects = value ? new[] { value.gameObject } : null;
+                CheckSelectionChanged(oldObjects);
+            }
         }
 
         public static GameObject[] gameObjects

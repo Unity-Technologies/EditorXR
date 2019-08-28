@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Threading;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEngine;
 
@@ -100,8 +102,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             base.Setup();
 
-            var contentPrefab = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
-            m_PolyUI = contentPrefab.GetComponent<PolyUI>();
+            var content = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+            m_PolyUI = content.GetComponent<PolyUI>();
+            foreach (var behavior in content.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                this.InjectFunctionalitySingle(behavior);
+            }
 
             var gridView = m_PolyUI.gridView;
             this.ConnectInterfaces(gridView);

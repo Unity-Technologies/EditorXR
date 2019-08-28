@@ -7,6 +7,7 @@ using Unity.Labs.Utils;
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Utilities;
 #endif
@@ -18,21 +19,23 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 #if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class PolyModule : IDelayedInitializationModule, IWeb
+    public class PolyModule : IDelayedInitializationModule, IUsesFunctionalityInjection, IProvidesPoly
     {
         class RequestHandler
         {
             List<PolyGridAsset> m_Assets;
             Transform m_Container;
             Action<string> m_ListCallback;
+            PolyModule m_PolyModule;
 
             public RequestHandler(PolyOrderBy orderBy, PolyMaxComplexityFilter complexity, PolyFormatFilter? format,
                 PolyCategory category, int requestSize, List<PolyGridAsset> assets, Transform container,
-                Action<string> listCallback, string nextPageToken = null)
+                Action<string> listCallback, PolyModule polyModule, string nextPageToken = null)
             {
                 m_Assets = assets;
                 m_Container = container;
                 m_ListCallback = listCallback;
+                m_PolyModule = polyModule;
 
                 var request = new PolyListAssetsRequest
                 {
@@ -66,6 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (!k_AssetCache.TryGetValue(name, out polyGridAsset))
                     {
                         polyGridAsset = new PolyGridAsset(asset, m_Container);
+                        m_PolyModule.InjectFunctionalitySingle(polyGridAsset);
                         k_AssetCache[name] = polyGridAsset;
                     }
 
@@ -83,11 +87,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
 
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
+
         public void LoadModule()
         {
             PolyApi.Init(new PolyAuthConfig(Encoding.UTF8.GetString(Convert.FromBase64String(k_APIKey)), "", ""));
-
-            IPolyMethods.getAssetList = GetAssetList;
         }
 
         public void UnloadModule()
@@ -112,8 +118,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             PolyCategory category, int requestSize, List<PolyGridAsset> assets, Action<string> listCallback,
             string nextPageToken = null)
         {
-            new RequestHandler(orderBy, complexity, format,category, requestSize, assets, m_Container, listCallback, nextPageToken);
+            new RequestHandler(orderBy, complexity, format,category, requestSize, assets, m_Container, listCallback, this, nextPageToken);
         }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var polySubscriber = obj as IFunctionalitySubscriber<IProvidesPoly>;
+            if (polySubscriber != null)
+                polySubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif

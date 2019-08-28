@@ -21,8 +21,6 @@ namespace UnityEditor.Experimental.EditorVR.Input
         const int k_AxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
         const float k_DeadZone = 0.05f;
 
-        List<XRNodeState> m_NodeStates = new List<XRNodeState>();
-
         float[,] m_LastAxisValues = new float[k_ControllerCount, k_AxisCount];
         Vector3[] m_LastPositionValues = new Vector3[k_ControllerCount];
         Quaternion[] m_LastRotationValues = new Quaternion[k_ControllerCount];
@@ -33,9 +31,14 @@ namespace UnityEditor.Experimental.EditorVR.Input
             VRInputDevice.VRControl.LeftStickButton
         };
 
-#if UNITY_2018_3
+#if UNITY_2019_1_OR_NEWER
+        XRNodeState m_LeftHandNodeState;
+        XRNodeState m_RightHandNodeState;
+#endif
+
         void Awake()
         {
+#if UNITY_2018_3
             var match = Regex.Match(Application.unityVersion, @"([.](\d+))+");
             if (match.Groups.Count > 0)
             {
@@ -44,10 +47,24 @@ namespace UnityEditor.Experimental.EditorVR.Input
                 if (int.TryParse(group.Value, out minor) && minor < 12)
                     Debug.LogError("Unity 2018.3.12f1 or greater is required to have full input capabilities");
             }
-        }
 #endif
 
-        public void Update()
+#if UNITY_2019_1_OR_NEWER
+            var nodeStates = new List<XRNodeState>();
+            InputTracking.GetNodeStates(nodeStates);
+            foreach (var nodeState in nodeStates)
+            {
+                if (nodeState.nodeType == XRNode.LeftHand)
+                    m_LeftHandNodeState = nodeState;
+
+                if (nodeState.nodeType == XRNode.RightHand)
+                    m_RightHandNodeState = nodeState;
+            }
+#endif
+        }
+
+
+            public void Update()
         {
             var deviceActive = false;
             foreach (var device in UnityEngine.Input.GetJoystickNames())
@@ -187,18 +204,18 @@ namespace UnityEditor.Experimental.EditorVR.Input
 
         void SendTrackingEvents(VRInputDevice.Handedness hand, int deviceIndex)
         {
+#if UNITY_2019_1_OR_NEWER
+            var node = hand == VRInputDevice.Handedness.Left ? m_LeftHandNodeState : m_RightHandNodeState;
+            Vector3 localPosition;
+            node.TryGetPosition(out localPosition);
+
+            Quaternion localRotation;
+            node.TryGetRotation(out localRotation);
+#else
             XRNode node = hand == VRInputDevice.Handedness.Left ? XRNode.LeftHand : XRNode.RightHand;
-
-            InputTracking.GetNodeStates(m_NodeStates);
-
-//            foreach (var nodeState in m_NodeStates)
-//            {
-//                if (nodeState.nodeType == node && !nodeState.tracked)
-//                    return;
-//            }
-
             var localPosition = InputTracking.GetLocalPosition(node);
             var localRotation = InputTracking.GetLocalRotation(node);
+#endif
 
             if (localPosition == m_LastPositionValues[(int)hand] && localRotation == m_LastRotationValues[(int)hand])
                 return;

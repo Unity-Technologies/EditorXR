@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -9,9 +10,9 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IDelayedInitializationModule,
-        IModuleBehaviorCallbacks, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
-        IGetVRPlayerObjects, IInterfaceConnector
+    sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
+        IUsesGameObjectLocking, IUsesGetVRPlayerObjects, IInterfaceConnector, IProvidesSceneRaycast,
+        IProvidesControlInputIntersection,IProvidesContainsVRPlayerCompletely, IProvidesCheckSphere, IProvidesCheckBounds
     {
         class RayIntersection
         {
@@ -54,6 +55,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         SpatialHashModule m_SpatialHashModule;
 
+#if !FI_AUTOFILL
+        IProvidesGameObjectLocking IFunctionalitySubscriber<IProvidesGameObjectLocking>.provider { get; set; }
+        IProvidesGetVRPlayerObjects IFunctionalitySubscriber<IProvidesGetVRPlayerObjects>.provider { get; set; }
+#endif
+
         // Local method use only -- created here to reduce garbage collection
         readonly List<Renderer> m_Intersections = new List<Renderer>();
         readonly List<SortableRenderer> m_SortedIntersections = new List<SortableRenderer>();
@@ -64,20 +70,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public float distance;
         }
 
-        public void ConnectDependency(SpatialHashModule dependency)
-        {
-            m_SpatialHashModule = dependency;
-        }
-
         public void LoadModule()
         {
-            IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
-            IControlInputIntersectionMethods.setRayOriginEnabled = SetRayOriginEnabled;
+            IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in LoadModule because it is destroyed on scene load
 
-            IRaycastMethods.raycast = Raycast;
-            ICheckBoundsMethods.checkBounds = CheckBounds;
-            ICheckSphereMethods.checkSphere = CheckSphere;
-            IContainsVRPlayerCompletelyMethods.containsVRPlayerCompletely = ContainsVRPlayerCompletely;
+            m_SpatialHashModule = ModuleLoaderCore.instance.GetModule<SpatialHashModule>();
         }
 
         public void UnloadModule() { }
@@ -87,7 +84,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var moduleParent = ModuleLoaderCore.instance.GetModuleParent();
             m_CollisionTester = EditorXRUtils.CreateGameObjectWithComponent<MeshCollider>(moduleParent.transform);
 
-            m_SpatialHash = m_SpatialHashModule.spatialHash;
+            if (m_SpatialHashModule != null)
+                m_SpatialHash = m_SpatialHashModule.spatialHash;
+
             m_IntersectedObjects.Clear();
             m_Testers.Clear();
             m_RaycastGameObjects.Clear();
@@ -240,7 +239,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return null;
         }
 
-        internal void SetRayOriginEnabled(Transform rayOrigin, bool enabled)
+        public void SetRayOriginEnabled(Transform rayOrigin, bool enabled)
         {
             m_RayoriginEnabled[rayOrigin] = enabled;
         }
@@ -254,6 +253,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             RaycastHit hit;
             Raycast(new Ray(rayOrigin.position, rayOrigin.forward), out hit, out go, distance);
 
+            // TODO: check enabled before doing raycast
             if (!m_RayoriginEnabled[rayOrigin])
             {
                 go = null;
@@ -263,7 +263,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_RaycastGameObjects[rayOrigin] = new RayIntersection { go = go, distance = hit.distance };
         }
 
-        internal bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null)
+        public bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null)
         {
             obj = null;
             hit = new RaycastHit();
@@ -303,7 +303,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return result;
         }
 
-        internal bool CheckBounds(Bounds bounds, List<GameObject> objects, List<GameObject> ignoreList = null)
+        public bool CheckBounds(Bounds bounds, List<GameObject> objects, List<GameObject> ignoreList = null)
         {
             var result = false;
             m_Intersections.Clear();
@@ -330,11 +330,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return result;
         }
 
-        internal bool CheckSphere(Vector3 center, float radius, List<GameObject> objects, List<GameObject> ignoreList = null)
+        public bool CheckSphere(Vector3 center, float radius, List<GameObject> objects, List<GameObject> ignoreList = null)
         {
             var result = false;
             m_Intersections.Clear();
-            var bounds = new Bounds(center, Vector3.one * radius * 2);
+            var bounds = new Bounds(center, radius * 2 * Vector3.one);
             if (m_SpatialHash.GetIntersections(m_Intersections, bounds))
             {
                 for (var i = 0; i < m_Intersections.Count; i++)
@@ -358,10 +358,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return result;
         }
 
-        internal bool ContainsVRPlayerCompletely(GameObject obj)
+        public bool ContainsVRPlayerCompletely(GameObject obj)
         {
+            var vrPlayerObjects = this.GetVRPlayerObjects();
+            if (vrPlayerObjects.Count == 0)
+                return false;
+
             var objectBounds = BoundsUtils.GetBounds(obj.transform);
-            var playerBounds = BoundsUtils.GetBounds(this.GetVRPlayerObjects());
+            var playerBounds = BoundsUtils.GetBounds(vrPlayerObjects);
             playerBounds.extents += m_PlayerBoundsMargin;
             return objectBounds.ContainsCompletely(playerBounds);
         }
@@ -376,5 +380,34 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         public void DisconnectInterface(object target, object userData = null) { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var raycastSubscriber = obj as IFunctionalitySubscriber<IProvidesSceneRaycast>;
+            if (raycastSubscriber != null)
+                raycastSubscriber.provider = this;
+
+            var controlInputIntersectionSubscriber = obj as IFunctionalitySubscriber<IProvidesControlInputIntersection>;
+            if (controlInputIntersectionSubscriber != null)
+                controlInputIntersectionSubscriber.provider = this;
+
+            var containsVRPlayerCompletelySubscriber = obj as IFunctionalitySubscriber<IProvidesContainsVRPlayerCompletely>;
+            if (containsVRPlayerCompletelySubscriber != null)
+                containsVRPlayerCompletelySubscriber.provider = this;
+
+            var checkSphereSubscriber = obj as IFunctionalitySubscriber<IProvidesCheckSphere>;
+            if (checkSphereSubscriber != null)
+                checkSphereSubscriber.provider = this;
+
+            var checkBoundsSubscriber = obj as IFunctionalitySubscriber<IProvidesCheckBounds>;
+            if (checkBoundsSubscriber != null)
+                checkBoundsSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -11,7 +12,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     public sealed class AdaptivePositionModule : ScriptableSettings<AdaptivePositionModule>, IDelayedInitializationModule,
-        IModuleBehaviorCallbacks, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics, IInterfaceConnector
+        IModuleBehaviorCallbacks, IUsesDetectGazeDivergence, IUsesViewerScale, IUsesControlHaptics, IInterfaceConnector
     {
 #pragma warning disable 649
         [SerializeField]
@@ -33,7 +34,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public int shutdownOrder { get { return 0; } }
         public int connectInterfaceOrder { get { return 0; } }
 
-        public void LoadModule() { }
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesDetectGazeDivergence IFunctionalitySubscriber<IProvidesDetectGazeDivergence>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+#endif
+
+        public void LoadModule()
+        {
+            m_GazeTransform = CameraUtils.GetMainCamera().transform;
+            m_WorldspaceAnchorTransform = m_GazeTransform.parent;
+        }
 
         public void UnloadModule() { }
 

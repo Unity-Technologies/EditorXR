@@ -1,3 +1,5 @@
+
+using Unity.Labs.EditorXR.Interfaces;
 #if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
 using Unity.Labs.ModuleLoader;

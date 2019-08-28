@@ -1,6 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.HighlightModuleBehaviorOrder)]
     sealed class HighlightModule : ScriptableSettings<HighlightModule>, IModuleBehaviorCallbacks, IUsesGameObjectLocking,
-        IInterfaceConnector
+        IProvidesCustomHighlight, IProvidesSetHighlight
     {
         struct HighlightData
         {
@@ -40,18 +40,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Material m_RayHighlightMaterialCopy;
         Transform m_ModuleParent;
 
+#if !FI_AUTOFILL
+        IProvidesGameObjectLocking IFunctionalitySubscriber<IProvidesGameObjectLocking>.provider { get; set; }
+#endif
+
         // Local method use only -- created here to reduce garbage collection
         static readonly List<KeyValuePair<Material, GameObject>> k_HighlightsToRemove = new List<KeyValuePair<Material, GameObject>>();
         static readonly List<MeshFilter> k_MeshFilters = new List<MeshFilter>();
         static readonly List<SkinnedMeshRenderer> k_SkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
 
-        public event Func<GameObject, Material, bool> customHighlight
-        {
-            add { m_CustomHighlightFuncs.Add(value); }
-            remove { m_CustomHighlightFuncs.Remove(value); }
-        }
-
-        readonly List<Func<GameObject, Material, bool>> m_CustomHighlightFuncs = new List<Func<GameObject, Material, bool>>();
+        readonly List<OnHighlightMethod> m_CustomHighlightMethods = new List<OnHighlightMethod>();
 
         public Color highlightColor
         {
@@ -72,9 +70,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_RayHighlightMaterialCopy.color = PlayerSettings.colorSpace == ColorSpace.Gamma ? selectionColor : selectionColor.gamma;
             }
 #endif
-
-            ISetHighlightMethods.setHighlight = SetHighlight;
-            ISetHighlightMethods.setBlinkingHighlight = SetBlinkingHighlight;
 
             m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
         }
@@ -103,9 +98,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     }
 
                     var shouldHighlight = true;
-                    for (int i = 0; i < m_CustomHighlightFuncs.Count; i++)
+                    for (int i = 0; i < m_CustomHighlightMethods.Count; i++)
                     {
-                        var func = m_CustomHighlightFuncs[i];
+                        var func = m_CustomHighlightMethods[i];
                         if (func(go, material))
                             shouldHighlight = false;
                     }
@@ -242,7 +237,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        IEnumerator SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin,
+        public IEnumerator SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin,
             Material material, bool force, float dutyPercent, float cycleLength)
         {
             if (!active)
@@ -281,20 +276,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void ConnectInterface(object target, object userData = null)
-        {
-            var customHighlight = target as ICustomHighlight;
-            if (customHighlight != null)
-                this.customHighlight += customHighlight.OnHighlight;
-        }
-
-        public void DisconnectInterface(object target, object userData = null)
-        {
-            var customHighlight = target as ICustomHighlight;
-            if (customHighlight != null)
-                this.customHighlight -= customHighlight.OnHighlight;
-        }
-
         public void OnBehaviorAwake() { }
 
         public void OnBehaviorEnable() { }
@@ -304,5 +285,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var customHighlightSubscriber = obj as IFunctionalitySubscriber<IProvidesCustomHighlight>;
+            if (customHighlightSubscriber != null)
+                customHighlightSubscriber.provider = this;
+
+            var setHighlightSubscriber = obj as IFunctionalitySubscriber<IProvidesSetHighlight>;
+            if (setHighlightSubscriber != null)
+                setHighlightSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
+
+        public void SubscribeToOnHighlight(OnHighlightMethod highlightMethod) { m_CustomHighlightMethods.Add(highlightMethod); }
+
+        public void UnsubscribeFromOnHighlight(OnHighlightMethod highlightMethod) { m_CustomHighlightMethods.Remove(highlightMethod); }
     }
 }

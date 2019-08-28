@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -10,8 +11,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class WorkspaceModule : IModuleDependency<DeviceInputModule>, IConnectInterfaces, ISerializePreferences,
-        IInterfaceConnector
+    sealed class WorkspaceModule : IModuleDependency<DeviceInputModule>, IUsesConnectInterfaces, ISerializePreferences,
+        IInterfaceConnector, IUsesFunctionalityInjection, IProvidesResetWorkspaces, IProvidesCreateWorkspace
     {
         [Serializable]
         class Preferences
@@ -97,6 +98,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public int connectInterfaceOrder { get { return 0; } }
 
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
+
         static WorkspaceModule()
         {
             workspaceTypes = new List<Type>();
@@ -112,8 +118,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             preserveWorkspaces = Core.EditorVR.preserveLayout;
 
-            ICreateWorkspaceMethods.createWorkspace = CreateWorkspace;
-            IResetWorkspacesMethods.resetWorkspaceRotations = ResetWorkspaceRotations;
             IUpdateInspectorsMethods.updateInspectors = UpdateInspectors;
         }
 
@@ -162,7 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_Preferences = (Preferences)obj;
         }
 
-        internal void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
+        public void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
         {
             if (!typeof(IWorkspace).IsAssignableFrom(t))
                 return;
@@ -178,10 +182,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             var cameraTransform = CameraUtils.GetMainCamera().transform;
 
-            var workspace = (IWorkspace)EditorXRUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
+            var workspaceComponent = EditorXRUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
+            var workspace = (IWorkspace)workspaceComponent;
             m_Workspaces.Add(workspace);
             workspace.destroyed += OnWorkspaceDestroyed;
             this.ConnectInterfaces(workspace);
+            this.InjectFunctionalitySingle(workspace);
 
             var evrWorkspace = workspace as Workspace;
             if (evrWorkspace != null)
@@ -217,7 +223,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 workspaceDestroyed(workspace);
         }
 
-        internal void ResetWorkspaceRotations()
+        public void ResetWorkspaceRotations()
         {
             var cameraTransform = CameraUtils.GetMainCamera().transform;
             foreach (var ws in workspaces)
@@ -301,5 +307,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
         }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var resetSubscriber = obj as IFunctionalitySubscriber<IProvidesResetWorkspaces>;
+            if (resetSubscriber != null)
+                resetSubscriber.provider = this;
+
+            var createWorkspaceSubscriber = obj as IFunctionalitySubscriber<IProvidesCreateWorkspace>;
+            if (createWorkspaceSubscriber != null)
+                createWorkspaceSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }

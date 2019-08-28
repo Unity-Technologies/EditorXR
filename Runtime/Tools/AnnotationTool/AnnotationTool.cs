@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -15,10 +17,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     [MainMenuItem("Annotation", "Create", "Draw in 3D")]
     [SpatialMenuItem("Annotation", "Tools", "Draw in 3D")]
-    public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
-        IInstantiateUI, IInstantiateMenuUI, IUsesMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
-        IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISerializePreferences, ILinkedObject,
-        IUsesNode, IRequestFeedback, IConnectInterfaces, ISelectTool
+    public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesRayVisibilitySettings,
+        IInstantiateUI, IUsesInstantiateMenuUI, IUsesMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
+        IUsesIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISerializePreferences, ILinkedObject,
+        IUsesNode, IUsesRequestFeedback, IUsesConnectInterfaces, IUsesSelectTool
     {
         [Serializable]
         public class Preferences
@@ -73,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const int k_InitialListSize = 1024; // Pre-allocate lists to avoid GC
 
         const string k_GroupFormatString = "Group {0}";
-        const string k_AnnotationFormatStrig = "Annotation {0}";
+        const string k_AnnotationFormatString = "Annotation {0}";
         const string k_MainHolderName = "Annotations";
         const string k_MeshName = "Annotation";
 
@@ -148,6 +150,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public List<ILinkedObject> linkedObjects { private get; set; }
         public Node node { private get; set; }
 
+#if !FI_AUTOFILL
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+        IProvidesIsHoveringOverUI IFunctionalitySubscriber<IProvidesIsHoveringOverUI>.provider { get; set; }
+        IProvidesInstantiateMenuUI IFunctionalitySubscriber<IProvidesInstantiateMenuUI>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
+
         void OnDestroy()
         {
             if (m_Preferences != null && m_Preferences.meshGroupingMode)
@@ -170,7 +183,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (m_AnnotationPointer)
                 UnityObjectUtils.Destroy(m_AnnotationPointer.gameObject);
 
-            this.ClearFeedbackRequests();
+            this.ClearFeedbackRequests(this);
         }
 
         void Close()
@@ -190,7 +203,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (child.childCount > 0)
                     child.name = string.Format(k_GroupFormatString, groupCount++);
                 else
-                    child.name = string.Format(k_AnnotationFormatStrig, annotationCount++);
+                    child.name = string.Format(k_AnnotationFormatString, annotationCount++);
             }
         }
 
@@ -230,7 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     foreach (var id in control.Value)
                     {
-                        var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                        var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                         request.node = node;
                         request.control = id;
                         request.priority = 1;
@@ -331,7 +344,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_Widths.Clear();
             m_Length = 0;
 
-            var go = new GameObject(string.Format(k_AnnotationFormatStrig, m_AnnotationHolder.childCount));
+            var go = new GameObject(string.Format(k_AnnotationFormatString, m_AnnotationHolder.childCount));
 #if UNITY_EDITOR
             Undo.RegisterCreatedObjectUndo(go, "Annotation");
 #endif
@@ -632,6 +645,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
+            if (m_Preferences == null)
+                return;
+
             var annotationInput = (AnnotationInput)input;
 
             var draw = annotationInput.draw;

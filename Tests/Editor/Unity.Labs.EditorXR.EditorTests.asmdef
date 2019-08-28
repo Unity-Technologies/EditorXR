@@ -1,0 +1,22 @@
+{
+    "name": "Unity.Labs.EditorXR.EditorTests",
+    "references": [
+        "Unity.Labs.EditorXR",
+        "Unity.Labs.Utils",
+        "Unity.Labs.Utils.Editor",
+        "Unity.Labs.EditorXR.Interfaces",
+        "Unity.Labs.ModuleLoader.Interfaces"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}

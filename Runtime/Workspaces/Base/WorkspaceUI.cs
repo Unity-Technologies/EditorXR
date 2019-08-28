@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -13,7 +15,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IUsesPointer, IRequestFeedback
+    sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IUsesPointer, IUsesRequestFeedback
     {
         [Flags]
         enum ResizeDirection
@@ -113,8 +115,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     var extents = bounds.extents;
                     var absRight = Mathf.Abs(positionOffsetRight);
                     var absForward = Mathf.Abs(positionOffsetForward);
-                    var positionOffset = transform.right * (absRight - (currentExtents.x - extents.x)) * Mathf.Sign(positionOffsetRight)
-                        + transform.forward * (absForward - (currentExtents.z - extents.z)) * Mathf.Sign(positionOffsetForward);
+                    var positionOffset = (absRight - (currentExtents.x - extents.x)) * Mathf.Sign(positionOffsetRight) * transform.right
+                        + (absForward - (currentExtents.z - extents.z)) * Mathf.Sign(positionOffsetForward) * transform.forward;
 
                     m_WorkspaceUI.transform.parent.position = m_PositionStart + positionOffset * viewerScale;
                     m_WorkspaceUI.OnResizing(rayOrigin);
@@ -441,6 +443,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public Transform rightRayOrigin { private get; set; }
 
         public event Action<Bounds> resize;
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+#endif
 
         void Awake()
         {
@@ -987,7 +994,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.node = node;
                     request.control = id;
                     request.priority = priority;

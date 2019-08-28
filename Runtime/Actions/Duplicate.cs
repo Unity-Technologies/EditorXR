@@ -1,4 +1,6 @@
-﻿using Unity.Labs.Utils;
+﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -8,6 +10,11 @@ namespace UnityEditor.Experimental.EditorVR.Actions
     [SpatialMenuItem("Duplicate", "Actions", "Duplicate the selected object at the currently focused position")]
     sealed class Duplicate : BaseAction, IUsesSpatialHash, IUsesViewerScale
     {
+#if !FI_AUTOFILL
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
+
         public override void ExecuteAction()
         {
 #if UNITY_EDITOR

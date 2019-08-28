@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -9,8 +10,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class KeyboardModule : ScriptableSettings<KeyboardModule>, IModuleBehaviorCallbacks, IRayVisibilitySettings, IForEachRayOrigin,
-        IConnectInterfaces
+    sealed class KeyboardModule : ScriptableSettings<KeyboardModule>, IModuleBehaviorCallbacks, IUsesRayVisibilitySettings, IForEachRayOrigin,
+        IUsesConnectInterfaces
     {
 #pragma warning disable 649
         [SerializeField]
@@ -28,6 +29,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         KeyboardUI m_StandardKeyboard;
 
         ForEachRayOriginCallback m_UpdateKeyboardMallets;
+
+#if !FI_AUTOFILL
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
 
         public void LoadModule()
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -6,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// Gives decorated class Tools Menu functionality
     /// </summary>
-    public interface IToolsMenu : IUsesMenuOrigins, ICustomActionMap, IUsesNode, ISelectTool
+    public interface IToolsMenu : IUsesMenuOrigins, ICustomActionMap, IUsesNode, IUsesSelectTool
     {
         /// <summary>
         /// Bool denoting that the alternate menu (radial menu, etc) is currently visible

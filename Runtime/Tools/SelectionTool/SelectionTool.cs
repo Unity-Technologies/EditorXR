@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -14,12 +16,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     [SpatialMenuItem("Selection", "Tools", "Select & manipulate objects in the scene")]
     sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
-        ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-        ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
-        IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility,
-        IUsesDeviceType, IMenuIcon, IUsesPointer, IRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
-        ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction, IRequestFeedback,
-        IGetVRPlayerObjects
+        IUsesSetHighlight, IUsesSelectObject, IUsesSetManipulatorsVisible, IUsesIsHoveringOverUI, IUsesDirectSelection,
+        ILinkedObject, IUsesCanGrabObject, IUsesGetManipulatorDragState, IUsesNode, IUsesGetRayVisibility,
+        IUsesIsMainMenuVisible, IUsesIsInMiniWorld, IRayToNode, IUsesGetDefaultRayColor, IUsesSetDefaultRayColor,
+        ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,IUsesDeviceType, IMenuIcon, IUsesPointer,
+        IUsesRayVisibilitySettings, IUsesViewerScale, IUsesCheckSphere, ISettingsMenuItemProvider, ISerializePreferences,
+        IStandardIgnoreList, IUsesBlockUIInteraction, IUsesRequestFeedback, IUsesGetVRPlayerObjects, IUsesCheckBounds
     {
         [Serializable]
         class Preferences
@@ -153,6 +155,30 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             }
         }
 
+#if !FI_AUTOFILL
+        IProvidesRaycastResults IFunctionalitySubscriber<IProvidesRaycastResults>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesSetTooltipVisibility IFunctionalitySubscriber<IProvidesSetTooltipVisibility>.provider { get; set; }
+        IProvidesDirectSelection IFunctionalitySubscriber<IProvidesDirectSelection>.provider { get; set; }
+        IProvidesSetManipulatorsVisible IFunctionalitySubscriber<IProvidesSetManipulatorsVisible>.provider { get; set; }
+        IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
+        IProvidesSetDefaultRayColor IFunctionalitySubscriber<IProvidesSetDefaultRayColor>.provider { get; set; }
+        IProvidesGetDefaultRayColor IFunctionalitySubscriber<IProvidesGetDefaultRayColor>.provider { get; set; }
+        IProvidesSelectObject IFunctionalitySubscriber<IProvidesSelectObject>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+        IProvidesIsMainMenuVisible IFunctionalitySubscriber<IProvidesIsMainMenuVisible>.provider { get; set; }
+        IProvidesIsInMiniWorld IFunctionalitySubscriber<IProvidesIsInMiniWorld>.provider { get; set; }
+        IProvidesIsHoveringOverUI IFunctionalitySubscriber<IProvidesIsHoveringOverUI>.provider { get; set; }
+        IProvidesGetVRPlayerObjects IFunctionalitySubscriber<IProvidesGetVRPlayerObjects>.provider { get; set; }
+        IProvidesGetRayVisibility IFunctionalitySubscriber<IProvidesGetRayVisibility>.provider { get; set; }
+        IProvidesGetManipulatorDragState IFunctionalitySubscriber<IProvidesGetManipulatorDragState>.provider { get; set; }
+        IProvidesCheckSphere IFunctionalitySubscriber<IProvidesCheckSphere>.provider { get; set; }
+        IProvidesCheckBounds IFunctionalitySubscriber<IProvidesCheckBounds>.provider { get; set; }
+        IProvidesCanGrabObject IFunctionalitySubscriber<IProvidesCanGrabObject>.provider { get; set; }
+        IProvidesBlockUIInteraction IFunctionalitySubscriber<IProvidesBlockUIInteraction>.provider { get; set; }
+#endif
+
         // Local method use only -- created here to reduce garbage collection
         static readonly Dictionary<Transform, GameObject> k_TempHovers = new Dictionary<Transform, GameObject>();
 
@@ -169,7 +195,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
             }
 
-            m_NormalRayColor = this.GetDefaultRayColor(rayOrigin);
+            if (this.HasProvider<IProvidesGetDefaultRayColor>())
+                m_NormalRayColor = this.GetDefaultRayColor(rayOrigin);
+
             m_MultiselectRayColor = m_NormalRayColor;
             m_MultiselectRayColor = MaterialUtils.HueShift(m_MultiselectRayColor, k_MultiselectHueShift);
 
@@ -191,7 +219,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         {
             UnityObjectUtils.Destroy(m_BlockSelectCube);
             UnityObjectUtils.Destroy(m_BlockSelectSphere);
-            this.ClearFeedbackRequests();
+            this.ClearFeedbackRequests(this);
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -406,7 +434,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 var visualsTransform = visuals.transform;
                 if (m_Preferences.sphereMode)
                 {
-                    visualsTransform.localScale = Vector3.one * distance * 2;
+                    visualsTransform.localScale = distance * 2 * Vector3.one;
                     visualsTransform.position = m_SelectStartPosition;
                     this.CheckSphere(m_SelectStartPosition, distance, m_BlockSelectHoverGameObjects, ignoreList);
                 }
@@ -536,8 +564,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_HoverGameObjects.Clear();
         }
 
-        public void OnResetDirectSelectionState() { }
-
         public object OnSerializePreferences()
         {
             if (this.IsSharedUpdater(this))
@@ -596,7 +622,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.node = node;
                     request.control = id;
                     request.tooltipText = tooltipText;

@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -16,7 +18,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     /// The SpatialMenu's UI/View-controller
     /// Drives the SpatialMenu visuals elements
     /// </summary>
-    public sealed class SpatialMenuUI : SpatialUIView, IAdaptPosition, IDetectGazeDivergence, IConnectInterfaces, IUsesRaycastResults
+    public sealed class SpatialMenuUI : SpatialUIView, IAdaptPosition, IUsesDetectGazeDivergence, IUsesConnectInterfaces,
+        IUsesRaycastResults, IUsesFunctionalityInjection
     {
         const float k_AllowedGazeDivergence = 45f;
         const float k_AllowedMaxHMDDistanceDivergence = 0.95f; // Distance at which the menu will move towards
@@ -268,6 +271,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
+#if !FI_AUTOFILL
+        IProvidesRaycastResults IFunctionalitySubscriber<IProvidesRaycastResults>.provider { get; set; }
+        IProvidesDetectGazeDivergence IFunctionalitySubscriber<IProvidesDetectGazeDivergence>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
+
         void Awake()
         {
             m_Visible = true;
@@ -418,6 +428,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             foreach (var data in spatialMenuData)
             {
                 var instantiatedPrefabTransform = EditorXRUtils.Instantiate(m_SectionTitleElementPrefab).transform as RectTransform;
+                foreach (var mb in instantiatedPrefabTransform.GetComponentsInChildren<MonoBehaviour>(true))
+                {
+                    this.InjectFunctionalitySingle(mb);
+                }
+
                 var providerMenuElement = instantiatedPrefabTransform.GetComponent<SpatialMenuElement>();
                 this.ConnectInterfaces(instantiatedPrefabTransform);
                 providerMenuElement.Setup(homeMenuElementParent, () => { }, data.spatialMenuName, null);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -12,8 +13,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [ModuleOrder(ModuleOrders.DeviceInputModuleOrder)]
     [ModuleBehaviorCallbackOrder(ModuleOrders.DeviceInputModuleBehaviorOrder)]
-    sealed class DeviceInputModule : ScriptableSettings<DeviceInputModule>, IModuleDependency<Core.EditorVR>,
-        IModuleDependency<EditorXRToolModule>, IInterfaceConnector, IDelayedInitializationModule, IModuleBehaviorCallbacks
+    public sealed class DeviceInputModule : ScriptableSettings<DeviceInputModule>, IInterfaceConnector, IDelayedInitializationModule,
+        IModuleBehaviorCallbacks
     {
         class InputProcessor
         {
@@ -32,6 +33,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         PlayerHandle m_PlayerHandle;
 
+        EditorXRToolModule m_ToolModule;
+        EditorXRMiniWorldModule m_MiniWorldModule;
+
         readonly HashSet<InputControl> m_LockedControls = new HashSet<InputControl>();
         readonly Dictionary<ActionMapInput, ICustomActionMap> m_IgnoreLocking = new Dictionary<ActionMapInput, ICustomActionMap>();
 
@@ -45,7 +49,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public TrackedObject trackedObjectInput { get; private set; }
         public Action<HashSet<IProcessInput>, ConsumeControlDelegate> processInput;
-        public Action<List<ActionMapInput>> updatePlayerHandleMaps;
         public Func<Transform, InputDevice> inputDeviceForRayOrigin;
 
         public int initializationOrder { get { return -1; } }
@@ -61,24 +64,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly List<InputControl> k_RemoveList = new List<InputControl>();
         ConsumeControlDelegate m_ConsumeControl;
 
-        // TODO: Make EditorVR an IProcessInput
-        public void ConnectDependency(Core.EditorVR dependency)
-        {
-            processInput = dependency.ProcessInput;
-        }
-
-        public void ConnectDependency(EditorXRToolModule dependency)
-        {
-            updatePlayerHandleMaps = dependency.UpdatePlayerHandleMaps;
-            inputDeviceForRayOrigin = rayOrigin =>
-                (from deviceData in dependency.deviceData
-                    where deviceData.rayOrigin == rayOrigin
-                    select deviceData.inputDevice).FirstOrDefault();
-        }
-
         public void LoadModule()
         {
             m_ConsumeControl = ConsumeControl;
+
+            m_ToolModule = ModuleLoaderCore.instance.GetModule<EditorXRToolModule>();
+            if (m_ToolModule != null)
+            {
+                inputDeviceForRayOrigin = rayOrigin =>
+                    (from deviceData in m_ToolModule.deviceData
+                        where deviceData.rayOrigin == rayOrigin
+                        select deviceData.inputDevice).FirstOrDefault();
+            }
+
+            m_MiniWorldModule = ModuleLoaderCore.instance.GetModule<EditorXRMiniWorldModule>();
         }
 
         public void Initialize()
@@ -152,8 +151,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 processor.processor.ProcessInput(processor.input, m_ConsumeControl);
             }
 
-            if (processInput != null)
-                processInput(m_ProcessedInputs, m_ConsumeControl);
+            if (m_MiniWorldModule != null)
+                m_MiniWorldModule.UpdateMiniWorlds();
+
+            if (m_ToolModule == null)
+                return;
+
+            foreach (var device in m_ToolModule.deviceData)
+            {
+                if (!device.proxy.active)
+                    continue;
+
+                foreach (var toolData in device.toolData)
+                {
+                    var process = toolData.tool as IProcessInput;
+                    if (process != null && ((MonoBehaviour)toolData.tool).enabled
+                        && m_ProcessedInputs.Add(process)) // Only process inputs for an instance of a tool once (e.g. two-handed tools)
+                        process.ProcessInput(toolData.input, ConsumeControl);
+                }
+            }
         }
 
         void CreateDefaultActionMapInputs()
@@ -239,8 +255,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             maps.Add(trackedObjectInput);
 
-            if (updatePlayerHandleMaps != null)
-                updatePlayerHandleMaps(maps);
+            if (m_ToolModule != null)
+                m_ToolModule.UpdatePlayerHandleMaps(maps);
         }
 
         static bool IsValidActionMapForDevice(ActionMap actionMap, InputDevice device)
@@ -338,7 +354,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return Node.None;
         }
 
-        public void AddInputProcessor(IProcessInput processInput, object userData)
+        void AddInputProcessor(IProcessInput processInput, object userData)
         {
             var rayOrigin = userData as Transform;
             var inputDevice = inputDeviceForRayOrigin(rayOrigin);

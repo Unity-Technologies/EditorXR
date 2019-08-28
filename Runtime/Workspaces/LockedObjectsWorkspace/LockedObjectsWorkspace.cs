@@ -1,5 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,6 +19,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         string m_BaseSearchQuery;
         string m_CachedSearchQuery;
+
+#if !FI_AUTOFILL
+        IProvidesGameObjectLocking IFunctionalitySubscriber<IProvidesGameObjectLocking>.provider { get; set; }
+#endif
 
         public override string searchQuery
         {
@@ -55,6 +61,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 foreach (var mb in unlockAllUI.GetComponentsInChildren<MonoBehaviour>())
                 {
                     this.ConnectInterfaces(mb);
+                    this.InjectFunctionalitySingle(mb);
                 }
 
                 unlockAllUI.GetComponentInChildren<Button>(true).onClick.AddListener(UnlockAll);

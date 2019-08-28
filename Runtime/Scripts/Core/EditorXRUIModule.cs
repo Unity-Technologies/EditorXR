@@ -1,18 +1,21 @@
 #if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.UIModuleBehaviorOrder)]
-    class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<MultipleRayInputModule>,
-        IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRRayModule>, IModuleDependency<KeyboardModule>,
-        IInterfaceConnector, IConnectInterfaces, IDelayedInitializationModule, IModuleBehaviorCallbacks
+    class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<FunctionalityInjectionModule>,
+        IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<EditorXRViewerModule>,
+        IInterfaceConnector, IUsesConnectInterfaces, IDelayedInitializationModule,IModuleBehaviorCallbacks,
+        IUsesFunctionalityInjection, IProvidesSetManipulatorsVisible, IProvidesRequestStencilRef, IProvidesGetManipulatorDragState
     {
         const byte k_MinStencilRef = 2;
 
@@ -39,52 +42,40 @@ namespace UnityEditor.Experimental.EditorVR.Core
         Camera m_EventCamera;
 
         readonly List<IManipulatorController> m_ManipulatorControllers = new List<IManipulatorController>();
-        readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
-        MultipleRayInputModule m_MultipleRayInputModule;
+        readonly HashSet<IUsesSetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<IUsesSetManipulatorsVisible>();
+        FunctionalityInjectionModule m_FIModule;
         EditorXRViewerModule m_ViewerModule;
-        EditorXRRayModule m_RayModule;
+
         KeyboardModule m_KeyboardModule;
 
+        MultipleRayInputModule m_InputModule;
+
         Transform m_ModuleParent;
+        GameObject m_NewEventSystem;
+        MultipleRayInputModule m_NewInputModule;
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
         public int connectInterfaceOrder { get { return 0; } }
 
-        public void ConnectDependency(MultipleRayInputModule dependency)
-        {
-            m_MultipleRayInputModule = dependency;
-        }
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
 
-        public void ConnectDependency(EditorXRViewerModule dependency)
-        {
-            m_ViewerModule = dependency;
-        }
+        public void ConnectDependency(FunctionalityInjectionModule dependency) { m_FIModule = dependency; }
+        public void ConnectDependency(EditorXRViewerModule dependency) { m_ViewerModule = dependency; }
 
-        public void ConnectDependency(EditorXRRayModule dependency)
-        {
-            m_RayModule = dependency;
-        }
-
-        public void ConnectDependency(KeyboardModule dependency)
-        {
-            m_KeyboardModule = dependency;
-        }
+        // Unused dependency to ensure IUsesPointer is satisfied
+        public void ConnectDependency(EditorXRDirectSelectionModule dependency) { }
 
         public void LoadModule()
         {
             IInstantiateUIMethods.instantiateUI = InstantiateUI;
-            IRequestStencilRefMethods.requestStencilRef = RequestStencilRef;
-            ISetManipulatorsVisibleMethods.setManipulatorsVisible = SetManipulatorsVisible;
-            IGetManipulatorDragStateMethods.getManipulatorDragState = GetManipulatorDragState;
 
-            var customPreviewCamera = m_ViewerModule.customPreviewCamera;
-            if (customPreviewCamera != null)
-                m_MultipleRayInputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
-
-            m_MultipleRayInputModule.preProcessRaycastSource = m_RayModule.PreProcessRaycastSource;
-
-            m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            m_ModuleParent = moduleLoaderCore.GetModuleParent().transform;
+            m_KeyboardModule = moduleLoaderCore.GetModule<KeyboardModule>();
         }
 
         public void UnloadModule() { }
@@ -126,15 +117,60 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Initialize()
         {
+            var eventSystem = FindObjectOfType<EventSystem>();
+            if (eventSystem)
+            {
+                m_InputModule = eventSystem.GetComponent<MultipleRayInputModule>();
+                if (!m_InputModule)
+                {
+                    m_NewInputModule = eventSystem.gameObject.AddComponent<MultipleRayInputModule>();
+                    m_InputModule = m_NewInputModule;
+                }
+            }
+            else
+            {
+                m_NewEventSystem = new GameObject("EventSystem");
+                m_InputModule = m_NewEventSystem.AddComponent<MultipleRayInputModule>();
+            }
+
+#if UNITY_EDITOR
+            m_InputModule.StartRunInEditMode();
+#endif
+
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            var activeIsland = m_FIModule.activeIsland;
+            activeIsland.AddProviders(new List<IFunctionalityProvider> { m_InputModule });
+            moduleLoaderCore.InjectFunctionalityInModules(activeIsland);
+
+            this.InjectFunctionalitySingle(m_InputModule);
+            this.ConnectInterfaces(m_InputModule);
+
+            var customPreviewCamera = m_ViewerModule.customPreviewCamera;
+            if (customPreviewCamera != null)
+                m_InputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
+
+            var rayModule = moduleLoaderCore.GetModule<EditorXRRayModule>();
+            if (rayModule != null)
+                m_InputModule.preProcessRaycastSource = rayModule.PreProcessRaycastSource;
+
             m_EventCamera = EditorXRUtils.Instantiate(m_EventCameraPrefab.gameObject, m_ModuleParent).GetComponent<Camera>();
             m_EventCamera.enabled = false;
-            m_MultipleRayInputModule.eventCamera = m_EventCamera;
+            m_InputModule.eventCamera = m_EventCamera;
         }
 
         public void Shutdown()
         {
             if (m_EventCamera)
                 UnityObjectUtils.Destroy(m_EventCamera.gameObject);
+
+            if (m_NewInputModule)
+                DestroyImmediate(m_NewInputModule);
+
+            if (m_NewEventSystem)
+                DestroyImmediate(m_NewEventSystem);
+
+            m_FIModule.activeIsland.RemoveProviders(new List<IFunctionalityProvider> { m_InputModule });
+            m_InputModule.ShutDown();
         }
 
         internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)
@@ -152,12 +188,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
 
             foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
+            {
                 this.ConnectInterfaces(mb, rayOrigin);
+                this.InjectFunctionalitySingle(mb);
+            }
 
             return go;
         }
 
-        void SetManipulatorsVisible(ISetManipulatorsVisible setter, bool visible)
+        public void SetManipulatorsVisible(IUsesSetManipulatorsVisible setter, bool visible)
         {
             if (visible)
                 m_ManipulatorsHiddenRequests.Remove(setter);
@@ -165,7 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 m_ManipulatorsHiddenRequests.Add(setter);
         }
 
-        bool GetManipulatorDragState()
+        public bool GetManipulatorDragState()
         {
             foreach (var currentController in m_ManipulatorControllers)
             {
@@ -185,7 +224,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        byte RequestStencilRef()
+        public byte RequestStencilRef()
         {
             return stencilRef++;
         }
@@ -204,6 +243,27 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var manipulatorVisibilitySubscriber = obj as IFunctionalitySubscriber<IProvidesSetManipulatorsVisible>;
+            if (manipulatorVisibilitySubscriber != null)
+                manipulatorVisibilitySubscriber.provider = this;
+
+            var requestStencilRefSubscriber = obj as IFunctionalitySubscriber<IProvidesRequestStencilRef>;
+            if (requestStencilRefSubscriber != null)
+                requestStencilRefSubscriber.provider = this;
+
+            var getManipulatorDragStateSubscriber = obj as IFunctionalitySubscriber<IProvidesGetManipulatorDragState>;
+            if (getManipulatorDragStateSubscriber != null)
+                getManipulatorDragStateSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif

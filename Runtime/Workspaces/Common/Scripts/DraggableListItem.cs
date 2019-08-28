@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ListView;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -9,11 +11,11 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class DraggableListItem<TData, TIndex> : EditorXRListViewItem<TData, TIndex>, IGetPreviewOrigin, IUsesViewerScale, IRayToNode
-        where TData : IListViewItemData<TIndex>
+    class DraggableListItem<TData, TIndex> : EditorXRListViewItem<TData, TIndex>, IUsesGetPreviewOrigin, IUsesViewerScale,
+        IRayToNode where TData : IListViewItemData<TIndex>
     {
         const float k_MagnetizeDuration = 0.5f;
-        protected const float k_DragDeadzone = 0.025f;
+        protected const float k_DragDeadZone = 0.025f;
 
         protected Transform m_DragObject;
 
@@ -26,6 +28,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public Action<TIndex, Transform, bool> setRowGrabbed { protected get; set; }
         public Func<Transform, ListViewItem<TData, TIndex>> getGrabbedRow { protected get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesGetPreviewOrigin IFunctionalitySubscriber<IProvidesGetPreviewOrigin>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
 
         protected virtual void OnDragStarted(BaseHandle handle, HandleEventData eventData)
         {
@@ -83,18 +90,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     return;
 
                 var rayOrigin = eventData.rayOrigin;
-                var dragStart = m_DragStarts[rayOrigin];
-                var dragVector = rayOrigin.position - dragStart;
+                var directDragStart = m_DragStarts[rayOrigin];
+                var dragVector = rayOrigin.position - directDragStart;
                 var distance = dragVector.magnitude;
 
-                if (m_DragObject == null && distance > k_DragDeadzone * this.GetViewerScale())
+                if (m_DragObject == null && distance > k_DragDeadZone * this.GetViewerScale())
                 {
                     m_DragObject = handle.transform;
-                    OnDragStarted(handle, eventData, dragStart);
+                    OnDragStarted(handle, eventData, directDragStart);
                 }
 
                 if (m_DragObject)
-                    OnDragging(handle, eventData, dragStart);
+                    OnDragging(handle, eventData, directDragStart);
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers

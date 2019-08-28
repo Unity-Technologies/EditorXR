@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ListView;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -57,6 +59,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public byte stencilRef { get; set; }
 
         public event Action<List<InspectorData>, PropertyData> arraySizeChanged;
+
+#if !FI_AUTOFILL
+        IProvidesGameObjectLocking IFunctionalitySubscriber<IProvidesGameObjectLocking>.provider { get; set; }
+#endif
 
         protected override void Start()
         {

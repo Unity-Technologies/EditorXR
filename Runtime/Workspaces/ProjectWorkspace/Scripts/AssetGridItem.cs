@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -16,8 +18,8 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class AssetGridItem : DraggableListItem<AssetData, int>, IPlaceSceneObject, IUsesSpatialHash, ISetHighlight,
-        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesDirectSelection, IUsesRaycastResults, IUpdateInspectors
+    sealed class AssetGridItem : DraggableListItem<AssetData, int>, IUsesPlaceSceneObject, IUsesSpatialHash, IUsesSetHighlight,
+        IUsesViewerBody, IUsesRayVisibilitySettings, IUsesRequestFeedback, IUsesDirectSelection, IUsesRaycastResults, IUpdateInspectors
     {
         const float k_PreviewDuration = 0.1f;
         const float k_MinPreviewScale = 0.01f;
@@ -185,7 +187,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public float scaleFactor { private get; set; }
 
-        public override void Setup(AssetData listData, bool firstTime)
+#if !FI_AUTOFILL
+        IProvidesRaycastResults IFunctionalitySubscriber<IProvidesRaycastResults>.provider { get; set; }
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
+        IProvidesPlaceSceneObject IFunctionalitySubscriber<IProvidesPlaceSceneObject>.provider { get; set; }
+        IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
+        IProvidesDirectSelection IFunctionalitySubscriber<IProvidesDirectSelection>.provider { get; set; }
+        IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+#endif
+
+        public override void Setup(AssetData listData, bool firstTime = false)
         {
             base.Setup(listData, firstTime);
 
@@ -864,7 +877,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void ShowGrabFeedback(Node node)
         {
-            var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+            var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
             request.control = VRInputDevice.VRControl.Trigger1;
             request.node = node;
             request.tooltipText = "Grab";
@@ -873,9 +886,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void HideGrabFeedback()
         {
-            this.ClearFeedbackRequests();
+            this.ClearFeedbackRequests(this);
         }
-
-        public void OnResetDirectSelectionState() {}
     }
 }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -12,9 +14,9 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace,
-        ICustomActionMap, IUsesMenuOrigins, IUsesDeviceType, IControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin,
-        IRequestFeedback, INodeToRay, ISpatialMenuProvider
+    sealed class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, IUsesCreateWorkspace,
+        ICustomActionMap, IUsesMenuOrigins, IUsesDeviceType, IUsesControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin,
+        IUsesRequestFeedback, INodeToRay, ISpatialMenuProvider
     {
         const string k_SettingsMenuSectionName = "Settings";
         const float k_MaxFlickDuration = 0.3f;
@@ -123,15 +125,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     if (visible)
                         ShowFeedback();
                     else
-                        this.ClearFeedbackRequests();
+                        this.ClearFeedbackRequests(this);
                 }
             }
         }
 
+#if !FI_AUTOFILL
+        IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesPreviewInToolMenuButton IFunctionalitySubscriber<IProvidesPreviewInToolMenuButton>.provider { get; set; }
+        IProvidesCreateWorkspace IFunctionalitySubscriber<IProvidesCreateWorkspace>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+#endif
+
         void OnEnable()
         {
             m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
-            this.ConnectInterfaces(m_MainMenuUI);
             m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
             m_MainMenuUI.menuOrigin = menuOrigin;
             m_MainMenuUI.Setup();
@@ -265,7 +274,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         if (targetRayOrigin)
                         {
                             this.SelectTool(targetRayOrigin, selectedType,
-                                hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
+                                hideMenu: typeof(IUsesInstantiateMenuUI).IsAssignableFrom(selectedType));
                             UpdateToolButtons();
                         }
                     });
@@ -279,7 +288,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     m_ToolsSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer(buttonData.name, buttonData.description, node =>
                     {
                         this.SelectTool(this.RequestRayOriginFromNode(node), selectedType,
-                            hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
+                            hideMenu: typeof(IUsesInstantiateMenuUI).IsAssignableFrom(selectedType));
                     }));
 
                     UpdateToolButtons();
@@ -350,7 +359,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void OnButtonClicked(Transform rayOrigin)
         {
             this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
-            this.ClearToolMenuButtonPreview();
+            this.ClearToolsMenuButtonPreview();
         }
 
         void OnButtonHovered(Transform rayOrigin, Type buttonType, string buttonDescription)
@@ -360,10 +369,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             // Pass the pointer which is over us, so this information can supply context (e.g. selecting a tool for a different hand)
             // Enable preview-mode on a Tools Menu button; Display on the opposite proxy device by evaluating the entering RayOrigin
             // Disable any existing previews being displayed in ToolsMenus
-            this.ClearToolMenuButtonPreview();
+            this.ClearToolsMenuButtonPreview();
 
             if (buttonType != null && rayOrigin != null)
-                this.PreviewInToolMenuButton(rayOrigin, buttonType, buttonDescription);
+                this.PreviewInToolsMenuButton(rayOrigin, buttonType, buttonDescription);
         }
 
         void OnToggleHovered(Transform rayOrigin)
@@ -474,7 +483,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in controls)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.control = id;
                     request.node = node;
                     request.tooltipText = tooltipText;
