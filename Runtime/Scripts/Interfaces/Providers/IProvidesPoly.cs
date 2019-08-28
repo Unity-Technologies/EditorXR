@@ -1,8 +1,11 @@
+using Unity.Labs.ModuleLoader;
+
+#if INCLUDE_POLY_TOOLKIT
 using System;
 using System.Collections.Generic;
-using PolyToolkit;
-using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Workspaces;
+using PolyToolkit;
+#endif
 
 namespace Unity.Labs.EditorXR.Interfaces
 {
