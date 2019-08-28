@@ -1,30 +1,37 @@
 ﻿using Unity.Labs.EditorXR.Interfaces;
-using UnityEditor;
-using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
-[CustomEditor(typeof(MainMenu))]
-public class MainMenuEditor : Editor
+namespace UnityEditor.Experimental.EditorVR.UI
 {
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(MainMenu))]
+    public class MainMenuEditor : Editor
     {
-        base.OnInspectorGUI();
-
-        var mainMenu = (MainMenu)target;
-
-        EditorGUILayout.LabelField("Tools", EditorStyles.boldLabel);
-        foreach (var tool in mainMenu.menuTools)
+        public override void OnInspectorGUI()
         {
-            if (GUILayout.Button(tool.Name))
-                mainMenu.SelectTool(mainMenu.rayOrigin, tool);
-        }
+            base.OnInspectorGUI();
 
-        EditorGUILayout.LabelField("Workspaces", EditorStyles.boldLabel);
-        foreach (var workspace in mainMenu.menuWorkspaces)
-        {
-            if (GUILayout.Button(workspace.Name))
-                mainMenu.CreateWorkspace(workspace);
+            var mainMenu = (MainMenu) target;
+
+            EditorGUILayout.LabelField("Tools", EditorStyles.boldLabel);
+            if (mainMenu.menuTools != null)
+            {
+                foreach (var tool in mainMenu.menuTools)
+                {
+                    if (GUILayout.Button(tool.Name))
+                        mainMenu.SelectTool(mainMenu.rayOrigin, tool);
+                }
+            }
+
+            EditorGUILayout.LabelField("Workspaces", EditorStyles.boldLabel);
+            if (mainMenu.menuWorkspaces != null)
+            {
+                foreach (var workspace in mainMenu.menuWorkspaces)
+                {
+                    if (GUILayout.Button(workspace.Name))
+                        mainMenu.CreateWorkspace(workspace);
+                }
+            }
         }
     }
 }
