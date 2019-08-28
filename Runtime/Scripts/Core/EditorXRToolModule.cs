@@ -208,7 +208,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return defaultTools.Contains(type);
         }
 
-        public void SpawnDefaultTools(IProxy proxy)
+        internal void SpawnDefaultTools(IProxy proxy)
         {
             var defaultTools = EditorVR.DefaultTools;
             if (defaultTools == null)
