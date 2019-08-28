@@ -1,13 +1,15 @@
-﻿#if UNITY_2018_3_OR_NEWER
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-    sealed class HapticPulseEditor : EditorWindow
+    class HapticPulsesSettingsProvider : EditorXRSettingsProvider
     {
+        const string HapticPulsesPath = k_Path + "/Haptic Pulses";
+
         class Pulse
         {
             public HapticPulse pulse;
@@ -21,17 +23,35 @@ namespace UnityEditor.Experimental.EditorVR.UI
         Vector2 m_Scroll;
         float m_Multiplier = 1;
 
-        [MenuItem("Edit/Project Settings/EditorXR/Haptic Pulses")]
-        static void Init()
+        protected HapticPulsesSettingsProvider(string path, SettingsScope scope = SettingsScope.Project)
+            : base(path, scope) { }
+
+        [SettingsProvider]
+        public static SettingsProvider CreateHapticPulsesSettingsProvider()
         {
-            GetWindow<HapticPulseEditor>("Haptic Pulse Editor").Show();
+            var provider = new HapticPulsesSettingsProvider(HapticPulsesPath);
+            return provider;
         }
 
-        void OnEnable()
+        public override void OnActivate(string searchContext, VisualElement rootElement)
         {
+            base.OnActivate(searchContext, rootElement);
             Reset();
 
             Undo.undoRedoPerformed += OnUndoRedo;
+        }
+
+        public override void OnDeactivate()
+        {
+            base.OnDeactivate();
+
+            Undo.undoRedoPerformed -= OnUndoRedo;
+        }
+
+        void OnUndoRedo()
+        {
+            Reset();
+            Repaint();
         }
 
         void Reset()
@@ -55,18 +75,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
             }
         }
 
-        void OnDisable()
+        public override void OnGUI(string searchContext)
         {
-            Undo.undoRedoPerformed -= OnUndoRedo;
-        }
-
-        void OnGUI()
-        {
-            if (Event.current.Equals(Event.KeyboardEvent("^w")))
-            {
-                Close();
-                GUIUtility.ExitGUI();
-            }
+            base.OnGUI(searchContext);
 
             const float nameColumnWidth = 250f;
             const float floatFieldColumnWidth = 60f;
@@ -121,18 +132,5 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
             GUILayout.EndScrollView();
         }
-
-        void OnUndoRedo()
-        {
-            Reset();
-            Repaint();
-        }
-
-        void OnProjectChange()
-        {
-            Reset();
-            Repaint();
-        }
     }
 }
-#endif

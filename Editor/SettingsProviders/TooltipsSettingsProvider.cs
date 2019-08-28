@@ -4,28 +4,33 @@ using System.Reflection;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.Utils;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-    sealed class TooltipsEditor : EditorWindow
+    class TooltipsSettingsProvider : EditorXRSettingsProvider
     {
+        const string HapticPulsesPath = k_Path + "/Tooltips";
+
         readonly Dictionary<Type, ITooltip> m_TooltipAttributes = new Dictionary<Type, ITooltip>();
         readonly List<Type> m_TooltipClasses = new List<Type>();
         readonly Dictionary<ITooltip, GameObject> m_TooltipsInPrefabs = new Dictionary<ITooltip, GameObject>();
 
         Vector2 m_Scroll;
-        GUIStyle m_ButtonStyle;
 
-        [MenuItem("Edit/Project Settings/EditorXR/Tooltips")]
-        static void Init()
+        protected TooltipsSettingsProvider(string path, SettingsScope scope = SettingsScope.Project)
+            : base(path, scope) { }
+
+        [SettingsProvider]
+        public static SettingsProvider CreateHapticPulsesSettingsProvider()
         {
-            GetWindow<TooltipsEditor>("Tooltip Editor").Show();
+            var provider = new TooltipsSettingsProvider(HapticPulsesPath);
+            return provider;
         }
 
-        void OnEnable()
+        public override void OnActivate(string searchContext, VisualElement rootElement)
         {
-            m_ButtonStyle = new GUIStyle(EditorStyles.miniButton);
-            m_ButtonStyle.alignment = TextAnchor.MiddleLeft;
+            base.OnActivate(searchContext, rootElement);
             m_TooltipsInPrefabs.Clear();
 
             foreach (var path in AssetDatabase.GetAllAssetPaths())
@@ -67,15 +72,12 @@ namespace UnityEditor.Experimental.EditorVR.UI
             }
         }
 
-        void OnGUI()
+        public override void OnGUI(string searchContext)
         {
-            if (Event.current.Equals(Event.KeyboardEvent("^w")))
-            {
-                Close();
-                GUIUtility.ExitGUI();
-            }
+            base.OnGUI(searchContext);
 
             const float columnWidth = 250f;
+            const float buttonWidth = 40;
             EditorGUIUtility.labelWidth = columnWidth;
 
             m_Scroll = GUILayout.BeginScrollView(m_Scroll);
@@ -89,7 +91,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
                 var mb = (MonoBehaviour)tooltip;
 
                 var label = string.Format("{0}/{1}", prefab.name, mb.name);
-                if (GUILayout.Button(label, m_ButtonStyle, GUILayout.Width(columnWidth)))
+                GUILayout.Label(label, GUILayout.Width(columnWidth));
+
+                if (GUILayout.Button("Ping", GUILayout.Width(buttonWidth)))
                     EditorGUIUtility.PingObject(prefab);
 
                 try

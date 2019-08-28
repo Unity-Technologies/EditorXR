@@ -452,7 +452,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (e.type == EventType.Repaint)
                 {
                     var renderTexture = customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_TargetTexture;
-                    GUI.DrawTexture(guiRect, renderTexture, ScaleMode.StretchToFill, false);
+
+                    // TODO: Investigate texture flip issue in 2019.x
+#if UNITY_2019_1_OR_NEWER
+                    if (customPreviewCamera == null)
+                    {
+                        rect.y = height;
+                        rect.height = -height;
+                    }
+#endif
+
+                    GUI.DrawTexture(rect, renderTexture, ScaleMode.StretchToFill, false);
                 }
             }
 

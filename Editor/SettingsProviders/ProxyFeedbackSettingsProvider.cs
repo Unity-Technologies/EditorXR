@@ -1,35 +1,38 @@
-﻿#if UNITY_2018_3_OR_NEWER
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-    sealed class ProxyFeedbackEditor : EditorWindow
+    class ProxyFeedbackSettingsProvider : EditorXRSettingsProvider
     {
+        const string ProxyFeedbackPath = k_Path + "/Proxy Feedback";
+
         readonly Dictionary<Type, SerializedProxyFeedback> m_SerializedFeedback = new Dictionary<Type, SerializedProxyFeedback>();
         Vector2 m_Scroll;
 
-        [MenuItem("Edit/Project Settings/EditorXR/Proxy Feedback")]
-        static void Init()
+        protected ProxyFeedbackSettingsProvider(string path, SettingsScope scope = SettingsScope.Project)
+            : base(path, scope) { }
+
+        [SettingsProvider]
+        public static SettingsProvider CreateHapticPulsesSettingsProvider()
         {
-            GetWindow<ProxyFeedbackEditor>("Proxy Feedback Editor").Show();
+            var provider = new ProxyFeedbackSettingsProvider(ProxyFeedbackPath);
+            return provider;
         }
 
-        void OnEnable()
+        public override void OnActivate(string searchContext, VisualElement rootElement)
         {
+            base.OnActivate(searchContext, rootElement);
             Refresh();
         }
 
-        void OnGUI()
+        public override void OnGUI(string searchContext)
         {
-            if (Event.current.Equals(Event.KeyboardEvent("^w")))
-            {
-                Close();
-                GUIUtility.ExitGUI();
-            }
+            base.OnGUI(searchContext);
 
             if (GUILayout.Button("Reload Data"))
                 Refresh();
@@ -134,4 +137,3 @@ namespace UnityEditor.Experimental.EditorVR.UI
         }
     }
 }
-#endif
