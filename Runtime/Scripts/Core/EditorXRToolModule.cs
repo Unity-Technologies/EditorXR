@@ -14,7 +14,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    public class ToolData
+    class ToolData
     {
         public ITool tool;
         public ActionMapInput input;
@@ -321,7 +321,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         /// <param name="rayOrigin">The ray origin on which to spawn th tool</param>
         /// <param name="deviceInputModule">The device input module, if it exists</param>
         /// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
-        public ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device, Transform rayOrigin,
+        ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device, Transform rayOrigin,
             DeviceInputModule deviceInputModule)
         {
             usedDevices = new HashSet<InputDevice>();
