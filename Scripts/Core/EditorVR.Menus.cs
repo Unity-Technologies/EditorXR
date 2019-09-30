@@ -1,4 +1,4 @@
-#if UNITY_2018_4_OR_NEWER
+#if ENABLE_EDITORXR
 using System;
 using System.Collections.Generic;
 using System.Linq;

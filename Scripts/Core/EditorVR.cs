@@ -11,8 +11,9 @@ using UnityEngine;
 using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
+[assembly: OptionalDependency("UnityEditor.Experimental.EditorVR.Core.EditorVR", "ENABLE_EDITORXR")]
 
-#if UNITY_2018_4_OR_NEWER
+#if ENABLE_EDITORXR
 [assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 #endif
 
@@ -21,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
     [InitializeOnLoad]
 #endif
-#if UNITY_2018_4_OR_NEWER
+#if UNITY_2018_4_OR_NEWER || UNITY_2019_1_OR_NEWER
     [RequiresTag(k_VRPlayerTag)]
     sealed partial class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces
     {
@@ -563,7 +564,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
             {
-                var message = "EditorXR requires Unity 2018.4 or above.";
+                var message = "EditorXR requires Unity 2018.4 or the latest, non-beta version of Unity.";
                 var result = EditorUtility.DisplayDialogComplex("Update Unity", message, "Download", "Ignore", "Remind Me Again");
                 switch (result)
                 {

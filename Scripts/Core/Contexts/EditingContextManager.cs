@@ -149,7 +149,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Selection.activeObject = settings;
         }
 
-#if UNITY_2018_4_OR_NEWER
+#if ENABLE_EDITORXR
         [SettingsProvider]
         static SettingsProvider CreateSettingsProvider()
         {

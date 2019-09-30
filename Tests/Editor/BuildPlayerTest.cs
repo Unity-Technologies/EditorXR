@@ -1,4 +1,4 @@
-﻿#if UNITY_2018_4_OR_NEWER
+﻿#if ENABLE_EDITORXR
 #if !UNITY_CLOUD_BUILD
 using NUnit.Framework;
 
