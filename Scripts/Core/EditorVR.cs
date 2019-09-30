@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
-[assembly: OptionalDependency("UnityEditor.Experimental.EditorVR.Core.EditorVR", "ENABLE_EDITORXR")]
+[assembly: OptionalDependency("UnityEditor.Experimental.EditorVR.Core.EditorXRRequirementsMet", "ENABLE_EDITORXR")]
 
 #if ENABLE_EDITORXR
 [assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
@@ -19,10 +19,14 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
+#if UNITY_2018_4_OR_NEWER || UNITY_2019_1_OR_NEWER
+    class EditorXRRequirementsMet { }
+#endif
+
 #if UNITY_EDITOR
     [InitializeOnLoad]
 #endif
-#if UNITY_2018_4_OR_NEWER || UNITY_2019_1_OR_NEWER
+#if ENABLE_EDITORXR
     [RequiresTag(k_VRPlayerTag)]
     sealed partial class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces
     {
