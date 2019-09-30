@@ -272,6 +272,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         // HACK: Because we don't get mouse input through action maps, just use Update
         void Update()
         {
+#if UNITY_2018_4_OR_NEWER
             var mouseDelta = VRView.MouseDelta;
 
             if (VRView.LeftMouseButtonHeld)
@@ -316,6 +317,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             }
 
             m_MouseWasHeld = VRView.LeftMouseButtonHeld;
+#endif
         }
 
         bool DoFlying(ConsumeControlDelegate consumeControl)
@@ -770,7 +772,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                 if (worldResetHeld && otherWorldResetHeld)
                                 {
                                     m_AllowScaling = false;
+#if UNITY_2018_4_OR_NEWER
                                     cameraRig.position = VRView.headCenteredOrigin;
+#endif
                                     cameraRig.rotation = Quaternion.identity;
 
                                     ResetViewerScale();
@@ -841,7 +845,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             var offset = cameraRig.position - CameraUtils.GetMainCamera().transform.position;
             offset.y = 0;
+#if UNITY_2018_4_OR_NEWER
             offset += VRView.headCenteredOrigin * this.GetViewerScale();
+#endif
 
             targetPosition += offset;
             const float kTargetDuration = 0.05f;

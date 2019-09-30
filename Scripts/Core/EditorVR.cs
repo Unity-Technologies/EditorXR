@@ -12,6 +12,10 @@ using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 
+#if UNITY_2018_4_OR_NEWER
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
+#endif
+
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 #if UNITY_EDITOR
@@ -578,3 +582,29 @@ namespace UnityEditor.Experimental.EditorVR.Core
     }
 #endif
 }
+
+#if !INCLUDE_TEXT_MESH_PRO
+namespace TMPro
+{
+    public class TextMeshPro
+    {
+        public string text;
+        public Color color;
+        public bool enabled;
+    }
+
+    public class TextMeshProUGUI : MonoBehaviour
+    {
+        public string text;
+        public Color color;
+        public Font font;
+        public Material fontMaterial;
+        public RectTransform rectTransform;
+
+        public virtual Material GetModifiedMaterial(Material baseMaterial)
+        {
+            return null;
+        }
+    }
+}
+#endif

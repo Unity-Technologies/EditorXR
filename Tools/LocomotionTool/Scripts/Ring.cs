@@ -111,8 +111,10 @@ public class Ring : MonoBehaviour
         m_EleveationText.color = new Color(1f, 1f, 1f, m_IntensityCore);
         m_CoordinatesText.color = new Color(1f, 1f, 1f, Mathf.Max(m_IntensityCore, m_Intensity));
 
+#if UNITY_2018_4_OR_NEWER
         if (VRView.MiddleMouseButtonHeld && !m_MouseWasHeld)
             m_CoordinatesText.enabled = !m_CoordinatesText.enabled;
+#endif
 
         m_MouseWasHeld = VRView.MiddleMouseButtonHeld;
 

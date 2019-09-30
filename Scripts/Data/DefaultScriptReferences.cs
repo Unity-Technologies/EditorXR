@@ -104,8 +104,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
+#if UNITY_2018_4_OR_NEWER
             defaultScriptReferences.m_ScriptPrefab = PrefabUtility.SaveAsPrefabAsset(prefabsRoot, Path.ChangeExtension(k_Path, "prefab"));
             defaultScriptReferences.m_EditingContexts = EditingContextManager.GetEditingContextAssets().ConvertAll(ec => (ScriptableObject)ec);
+#endif
 
             AssetDatabase.CreateAsset(defaultScriptReferences, k_Path);
 

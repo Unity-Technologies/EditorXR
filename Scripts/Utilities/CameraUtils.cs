@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (!camera)
                 camera = UnityObject.FindObjectOfType<Camera>();
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_2018_4_OR_NEWER
             var viewerCamera = VRView.viewerCamera;
             if (!Application.isPlaying && viewerCamera)
                 camera = viewerCamera;
@@ -32,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             {
                 var rig = camera.transform.parent;
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_2018_4_OR_NEWER
                 if (!Application.isPlaying)
                 {
                     if (VRView.cameraRig)

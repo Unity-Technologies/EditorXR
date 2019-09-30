@@ -244,7 +244,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             UpdateArrow(expanded);
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_2018_4_OR_NEWER
             var isPrefab = gameObject && PrefabUtility.GetPrefabInstanceStatus(gameObject) == PrefabInstanceStatus.Connected;
 #else
             var isPrefab = false;
