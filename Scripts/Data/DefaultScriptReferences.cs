@@ -62,7 +62,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             }
         }
 
-#if UNITY_2018_3_OR_NEWER
 #if UNITY_EDITOR
         [MenuItem("Assets/Create/EditorXR/Default Script References")]
         static void UpdateScriptReferences()
@@ -114,7 +113,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
             AssetDatabase.SaveAssets();
         }
-#endif
 #endif
     }
 }

@@ -1,4 +1,4 @@
-#if UNITY_2018_3_OR_NEWER
+#if UNITY_2018_4_OR_NEWER
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;

@@ -30,20 +30,6 @@ namespace UnityEditor.Experimental.EditorVR.Input
             VRInputDevice.VRControl.LeftStickButton
         };
 
-#if UNITY_2018_3
-        void Awake()
-        {
-            var match = Regex.Match(Application.unityVersion, @"([.](\d+))+");
-            if (match.Groups.Count > 0)
-            {
-                int minor;
-                var group = match.Groups[2];
-                if (int.TryParse(group.Value, out minor) && minor < 12)
-                    Debug.LogError("Unity 2018.3.12f1 or greater is required to have full input capabilities");
-            }
-        }
-#endif
-
         public void Update()
         {
             var deviceActive = false;

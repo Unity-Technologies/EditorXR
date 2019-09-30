@@ -1,4 +1,4 @@
-﻿#if UNITY_2018_3_OR_NEWER
+﻿#if UNITY_2018_4_OR_NEWER
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     partial class EditorVR

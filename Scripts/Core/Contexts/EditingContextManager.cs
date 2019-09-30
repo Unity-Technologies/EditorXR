@@ -1,3 +1,4 @@
+#if UNITY_2018_4_OR_NEWER
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -149,7 +150,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Selection.activeObject = settings;
         }
 
-#if UNITY_2018_3_OR_NEWER
         [SettingsProvider]
         static SettingsProvider CreateSettingsProvider()
         {
@@ -202,7 +202,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             return provider;
         }
-#endif
 
         static void OnAutoOpenStateChanged()
         {
@@ -550,3 +549,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
+#endif

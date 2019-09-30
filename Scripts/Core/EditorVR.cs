@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
     [InitializeOnLoad]
 #endif
-#if UNITY_2018_3_OR_NEWER
+#if UNITY_2018_4_OR_NEWER
     [RequiresTag(k_VRPlayerTag)]
     sealed partial class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces
     {
@@ -559,7 +559,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
             {
-                var message = "EditorVR requires Unity 2018.3.12 or above.";
+                var message = "EditorXR requires Unity 2018.4 or above.";
                 var result = EditorUtility.DisplayDialogComplex("Update Unity", message, "Download", "Ignore", "Remind Me Again");
                 switch (result)
                 {
