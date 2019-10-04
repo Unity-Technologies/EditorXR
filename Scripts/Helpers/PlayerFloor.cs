@@ -46,7 +46,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_FloorPosition.x = m_Camera.position.x + k_XOffset * currentScale;
             m_FloorPosition.z = m_Camera.position.z - k_ZOffset * currentScale;
             m_FloorPosition.y = m_CameraRig.transform.position.y;
+#if ENABLE_EDITORXR
             m_FloorPosition -= VRView.headCenteredOrigin * currentScale;
+#endif
             transform.position = m_FloorPosition;
             m_CameraForwardTarget = m_Camera.transform.XZForward();
             m_CameraForwardCurrent = Vector3.Lerp(m_CameraForwardCurrent, m_CameraForwardTarget, Time.unscaledDeltaTime * kLerpMultiplier);

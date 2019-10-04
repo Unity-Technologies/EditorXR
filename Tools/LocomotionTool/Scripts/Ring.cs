@@ -1,3 +1,4 @@
+
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -114,9 +115,9 @@ public class Ring : MonoBehaviour
 #if ENABLE_EDITORXR
         if (VRView.MiddleMouseButtonHeld && !m_MouseWasHeld)
             m_CoordinatesText.enabled = !m_CoordinatesText.enabled;
-#endif
 
         m_MouseWasHeld = VRView.MiddleMouseButtonHeld;
+#endif
 
         var ringEnabled = !Mathf.Approximately(m_Intensity, 0f);
         m_RingRenderer.enabled = ringEnabled;

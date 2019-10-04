@@ -1,5 +1,4 @@
-﻿#if ENABLE_EDITORXR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -11,6 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [CreateAssetMenu(menuName = "EditorXR/Editing Context")]
     class EditorXRContext : ScriptableObject, IEditingContext
     {
+#if ENABLE_EDITORXR
         static EditorVR s_Instance; // Used only by PreferencesGUI
 
 #pragma warning disable 649
@@ -167,6 +167,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             EditorGUILayout.EndVertical();
         }
 #endif
+#endif // ENABLE_EDITORXR
     }
 }
-#endif
