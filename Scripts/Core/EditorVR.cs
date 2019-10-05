@@ -560,11 +560,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
     }
 #else
-    class NoEditorVR
+    class EditorVR
     {
         const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
 
-        static NoEditorVR()
+        static EditorVR()
         {
             if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
             {
