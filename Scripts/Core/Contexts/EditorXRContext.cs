@@ -10,7 +10,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [CreateAssetMenu(menuName = "EditorXR/Editing Context")]
     class EditorXRContext : ScriptableObject, IEditingContext
     {
-#if ENABLE_EDITORXR
+#if !ENABLE_EDITORXR
+        public bool copyMainCameraSettings { get; }
+        public bool copyMainCameraImageEffectsToHMD { get; }
+        public bool copyMainCameraImageEffectsToPresentationCamera { get; }
+        public bool instanceExists { get; }
+        public void Setup()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+#else
         static EditorVR s_Instance; // Used only by PreferencesGUI
 
 #pragma warning disable 649
@@ -167,6 +181,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             EditorGUILayout.EndVertical();
         }
 #endif
-#endif // ENABLE_EDITORXR
+#endif // !ENABLE_EDITORXR
     }
 }
