@@ -1,4 +1,3 @@
-#if ENABLE_EDITORXR
 using System.Collections.Generic;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -23,4 +22,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif

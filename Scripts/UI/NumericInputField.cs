@@ -248,7 +248,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
                 if (!float.TryParse(m_Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out floatVal))
                 {
-#if UNITY_EDITOR && ENABLE_EDITORXR
+#if UNITY_EDITOR
                     ExpressionEvaluator.Evaluate<float>(m_Text, out floatVal);
 #endif
                 }
@@ -263,7 +263,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
                 int intVal;
                 if (!int.TryParse(m_Text, out intVal))
                 {
-#if UNITY_EDITOR && ENABLE_EDITORXR
+#if UNITY_EDITOR
                     ExpressionEvaluator.Evaluate<int>(m_Text, out intVal);
                     m_Text = intVal.ToString(k_IntFieldFormatString);
 #endif

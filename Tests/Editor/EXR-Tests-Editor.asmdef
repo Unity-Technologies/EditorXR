@@ -2,8 +2,8 @@
     "name": "EXR-Tests-Editor",
     "references": [
         "EXR-Tests",
-        "EXR-Utilities-Editor",
-        "EXR"
+        "EXR",
+        "Unity.Labs.EditorXR.Sentinel"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"
@@ -12,5 +12,11 @@
         "Editor"
     ],
     "excludePlatforms": [],
-    "allowUnsafeCode": false
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "ENABLE_EDITORXR"
+    ]
 }

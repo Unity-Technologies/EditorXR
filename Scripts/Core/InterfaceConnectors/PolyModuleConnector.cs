@@ -1,4 +1,3 @@
-#if ENABLE_EDITORXR
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Modules;
 
@@ -18,5 +17,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif
 #endif

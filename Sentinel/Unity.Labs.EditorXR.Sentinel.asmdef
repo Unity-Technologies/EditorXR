@@ -1,14 +1,14 @@
 {
-    "name": "EXR-Dependencies",
+    "name": "Unity.Labs.EditorXR.Sentinel",
     "references": [],
     "optionalUnityReferences": [],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [
-        "ENABLE_EDITORXR"
-    ]
+    "defineConstraints": []
 }

@@ -15,6 +15,7 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": []
+    "defineConstraints": [
+        "ENABLE_EDITORXR"
+    ]
 }

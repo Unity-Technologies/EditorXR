@@ -1,4 +1,3 @@
-#if ENABLE_EDITORXR
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -557,4 +556,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif

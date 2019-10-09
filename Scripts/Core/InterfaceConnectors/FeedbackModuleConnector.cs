@@ -1,5 +1,4 @@
-﻿#if ENABLE_EDITORXR
-namespace UnityEditor.Experimental.EditorVR.Core
+﻿namespace UnityEditor.Experimental.EditorVR.Core
 {
     partial class EditorVR
     {
@@ -21,4 +20,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif

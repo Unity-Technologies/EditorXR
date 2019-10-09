@@ -1,4 +1,3 @@
-#if ENABLE_EDITORXR
 using System;
 using System.Linq;
 using UnityEngine;
@@ -56,4 +55,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif

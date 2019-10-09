@@ -1,5 +1,4 @@
-﻿#if ENABLE_EDITORXR
-#if !UNITY_CLOUD_BUILD
+﻿#if !UNITY_CLOUD_BUILD
 using NUnit.Framework;
 
 namespace UnityEditor.Experimental.EditorVR.Tests
@@ -59,5 +58,4 @@ namespace UnityEditor.Experimental.EditorVR.Tests
         }
     }
 }
-#endif
 #endif

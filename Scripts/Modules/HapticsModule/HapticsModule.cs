@@ -1,5 +1,4 @@
-﻿#if ENABLE_EDITORXR
-using System;
+﻿using System;
 using System.IO;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -147,4 +146,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

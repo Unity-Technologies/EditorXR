@@ -11,22 +11,13 @@ using UnityEngine;
 using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
-[assembly: OptionalDependency("UnityEditor.Experimental.EditorVR.Core.EditorXRRequirementsMet", "ENABLE_EDITORXR")]
-
-#if ENABLE_EDITORXR
 [assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
-#endif
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-#if UNITY_2018_4_OR_NEWER || UNITY_2019_1_OR_NEWER
-    class EditorXRRequirementsMet { }
-#endif
-
 #if UNITY_EDITOR
     [InitializeOnLoad]
 #endif
-#if ENABLE_EDITORXR
     [RequiresTag(k_VRPlayerTag)]
     sealed partial class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces
     {
@@ -559,33 +550,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 #endif
     }
-#else
-    class EditorVR
-    {
-        const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
-
-        static EditorVR()
-        {
-            if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
-            {
-                var message = "EditorXR requires Unity 2018.4 or the latest, non-beta version of Unity.";
-                var result = EditorUtility.DisplayDialogComplex("Update Unity", message, "Download", "Ignore", "Remind Me Again");
-                switch (result)
-                {
-                    case 0:
-                        Application.OpenURL("https://unity3d.com/get-unity/download");
-                        break;
-                    case 1:
-                        EditorPrefs.SetBool(k_ShowCustomEditorWarning, false);
-                        break;
-                    case 2:
-                        Debug.Log("<color=orange>" + message + "</color>");
-                        break;
-                }
-            }
-        }
-    }
-#endif
 }
 
 #if !INCLUDE_TEXT_MESH_PRO

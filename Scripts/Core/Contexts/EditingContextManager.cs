@@ -17,7 +17,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
     sealed class EditingContextManager : MonoBehaviour
     {
-#if ENABLE_EDITORXR
 #pragma warning disable 649
         [SerializeField]
         UnityObject m_DefaultContext;
@@ -150,7 +149,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Selection.activeObject = settings;
         }
 
-#if ENABLE_EDITORXR
         [SettingsProvider]
         static SettingsProvider CreateSettingsProvider()
         {
@@ -282,7 +280,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     EditorApplication.delayCall += ShowEditorVR;
             }
         }
-#endif
 
 #if UNITY_EDITOR
         static void OnPlayModeStateChanged(PlayModeStateChange stateChange)
@@ -549,6 +546,5 @@ namespace UnityEditor.Experimental.EditorVR.Core
             ObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
             ObjectUtils.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
         }
-#endif // ENABLE_EDITORXR
     }
 }

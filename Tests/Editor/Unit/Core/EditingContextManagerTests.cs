@@ -1,5 +1,4 @@
-﻿#if ENABLE_EDITORXR
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -174,4 +173,3 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
     {
     }
 }
-#endif
