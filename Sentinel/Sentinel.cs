@@ -3,7 +3,7 @@ using System.Diagnostics;
 using UnityEditor.Experimental.EditorVR.Sentinel;
 using UnityEngine;
 
-[assembly: OptionalDependency("UnityEditor.Experimental.EditorVR.Core.EditorXRRequirementsMet", "ENABLE_EDITORXR")]
+[assembly: OptionalDependency("UnityEditor.Experimental.EditorVR.Sentinel.EditorXRRequirementsMet", "ENABLE_EDITORXR")]
 
 namespace UnityEditor.Experimental.EditorVR.Sentinel
 {
