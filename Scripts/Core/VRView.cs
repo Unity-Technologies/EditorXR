@@ -2,17 +2,26 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.SpatialTracking;
 using UnityEngine.XR;
 using InputTracking = UnityEngine.XR.InputTracking;
 using TrackingSpaceType = UnityEngine.XR.TrackingSpaceType;
 
+#if INCLUDE_SPATIAL_TRACKING
+using UnityEngine.SpatialTracking;
+#endif
+
+[assembly: OptionalDependency("UnityEngine.SpatialTracking.TrackedPoseDriver", "INCLUDE_SPATIAL_TRACKING")]
+
 namespace UnityEditor.Experimental.EditorVR.Core
 {
+#if UNITY_EDITOR
+    [InitializeOnLoad]
+#endif
     sealed class VRView
 #if UNITY_EDITOR
         : EditorWindow
@@ -67,6 +76,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         Rect m_ToggleDeviceViewRect = new Rect(5, 0, 140, 20); // Width will be set based on window size
         Rect m_PresentationCameraRect = new Rect(0, 0, 165, 20); // Y position and width will be set based on window size
+
+#if !INCLUDE_SPATIAL_TRACKING && UNITY_2019_1_OR_NEWER
+        static VRView()
+        {
+            PackageManager.Client.Add("com.unity.xr.legacyinputhelpers");
+        }
+#endif
 
         public static Transform cameraRig
         {
@@ -211,11 +227,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (Application.isPlaying)
             {
+#if INCLUDE_SPATIAL_TRACKING
                 var tpd = camera.GetComponent<TrackedPoseDriver>();
                 if (!tpd)
                     tpd = camera.gameObject.AddComponent<TrackedPoseDriver>();
 
                 tpd.UseRelativeTransform = false;
+#endif
             }
             else
             {

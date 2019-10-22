@@ -23,10 +23,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
     class EditorXRRequirementsMet { }
 #endif
 
+#if ENABLE_EDITORXR
 #if UNITY_EDITOR
     [InitializeOnLoad]
 #endif
-#if ENABLE_EDITORXR
     [RequiresTag(k_VRPlayerTag)]
     sealed partial class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces
     {
@@ -559,7 +559,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 #endif
     }
-#else
+#elif !(UNITY_2018_4_OR_NEWER || UNITY_2019_1_OR_NEWER)
+#if UNITY_EDITOR
+    [InitializeOnLoad]
+#endif
     class EditorVR
     {
         const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
