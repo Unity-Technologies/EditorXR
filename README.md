@@ -29,6 +29,8 @@ If you're a developer, we recommend that you take a look at the [Getting Started
 
 ### Project Asset Dependencies
 - [Textmesh Pro](https://docs.unity3d.com/Packages/com.unity.textmeshpro@1.2/manual/index.html#installation)
+- [Legacy Input Helpers](https://docs.unity3d.com/Packages/com.unity.xr.legacyinputhelpers@1.0/manual/index.html#installing-comunityxrlegacyinputhelpers) (2019.1+)
+  - Users of 2018.3 do not need Legacy Input Helpers
 
 ### Cloning
 1. Create a new Unity project or use an existing one
@@ -44,11 +46,11 @@ Optionally, you could add a [git hook for post-checkout](https://ttboj.wordpress
 If you plan on making changes to EditorXR and/or contributing back, then you'll need to set the `Asset Serialization` property under Edit->Project Settings->Editor to `Force Text`.
 
 ### Assembly Definitions
-In order to support a variety of platform configurations, and to optionally strip its code out of player builds, EditorXR uses assembly definitions. The EditorXR assembly definition must reference both platform SDK packages (SteamVR or Oculus VR) from the Asset Store. These packages do not include assembly definitions in their current forms, so after importing EditorXR, you must add them.
+In order to support a variety of platform configurations, and to optionally strip its code out of player builds, EditorXR uses assembly definitions. Some of EditorXR's dependencies do not include assembly definitions in their current forms, so after importing EditorXR (in Unity 2018.3 and below), you must add them.
 
-For easy set-up, EditorXR includes a .unitypackage (`Patches/Dependencies_asmdef.unitypackage`) containing these assembly definitions in the locations they are likely to be needed. This package also contains an assembly definition for the PolyToolkit, which is also referenced by EditorXR.
+For easy set-up, EditorXR includes a .unitypackage (`Patches/Dependencies_asmdef.unitypackage`) containing an assembly definition for the PolyToolkit and UnityEngine.SpatialTracking, which are referenced by EditorXR. Simply import it via Assets > Import Package > Custom Package...
 
-This is not required for Unity versions 2019.1 and above.
+This is not required for Unity versions 2019.1 and above, though you will need to add an assembly definition in order to reference PolyToolkit.
 
 ## All contributions are subject to the [Unity Contribution Agreement (UCA)](https://unity3d.com/legal/licenses/Unity_Contribution_Agreement)
 By making a pull request, you are confirming agreement to the terms and conditions of the UCA, including that your Contributions are your original creation and that you have complete right and authority to make your Contributions.

@@ -26,9 +26,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             set { m_SizeFields = value; }
         }
 
-        public override void Setup(InspectorData data)
+        public override void Setup(InspectorData data, bool firstTime)
         {
-            base.Setup(data);
+            base.Setup(data, firstTime);
 
             UpdateInputFields();
         }

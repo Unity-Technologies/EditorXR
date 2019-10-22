@@ -47,9 +47,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         protected SerializedProperty m_SerializedProperty;
 
-        public override void Setup(InspectorData data)
+        public override void Setup(InspectorData data, bool firstTime = false)
         {
-            base.Setup(data);
+            base.Setup(data, firstTime);
 
             m_SerializedProperty = ((PropertyData)data).property;
 

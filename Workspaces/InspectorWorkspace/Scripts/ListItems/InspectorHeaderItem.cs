@@ -47,9 +47,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public Action<bool> setLocked;
 
-        public override void Setup(InspectorData data)
+        public override void Setup(InspectorData data, bool firstTime)
         {
-            base.Setup(data);
+            base.Setup(data, firstTime);
 
 #if UNITY_EDITOR
             var target = data.serializedObject.targetObject;
@@ -82,7 +82,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
 #endif
 
-        public void SetActive(bool active)
+        public void SetTargetGameObjectActive(bool active)
         {
             if (m_TargetGameObject != null && m_TargetGameObject.activeSelf != active)
                 m_TargetGameObject.SetActive(active);

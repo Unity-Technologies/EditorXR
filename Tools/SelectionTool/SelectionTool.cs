@@ -278,7 +278,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 foreach (var kvp in directSelection)
                 {
                     var directRayOrigin = kvp.Key;
-                    var directHoveredObject = kvp.Value;
+                    var directHoveredObject = kvp.Value.gameObject;
 
                     var directSelectionCandidate = this.GetSelectionCandidate(directHoveredObject, true);
 

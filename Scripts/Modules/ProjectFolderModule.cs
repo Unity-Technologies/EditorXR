@@ -1,3 +1,4 @@
+#if ENABLE_EDITORXR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -27,21 +28,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void OnEnable()
         {
-#if UNITY_2018_1_OR_NEWER
             EditorApplication.projectChanged += UpdateProjectFolders;
-#else
-            EditorApplication.projectWindowChanged += UpdateProjectFolders;
-#endif
             UpdateProjectFolders();
         }
 
         void OnDisable()
         {
-#if UNITY_2018_1_OR_NEWER
             EditorApplication.projectChanged -= UpdateProjectFolders;
-#else
-            EditorApplication.projectWindowChanged -= UpdateProjectFolders;
-#endif
         }
 
         public void AddConsumer(IUsesProjectFolderData consumer)
@@ -194,3 +187,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     }
 #endif
 }
+#endif

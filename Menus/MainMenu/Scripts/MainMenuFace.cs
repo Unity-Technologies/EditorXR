@@ -12,8 +12,6 @@ using UnityEngine.UI;
 using TMPro;
 #endif
 
-[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
-
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class MainMenuFace : MonoBehaviour

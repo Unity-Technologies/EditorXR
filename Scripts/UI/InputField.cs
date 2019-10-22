@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;

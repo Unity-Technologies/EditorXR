@@ -1,3 +1,4 @@
+#if ENABLE_EDITORXR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -86,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_WorkspaceUI.topHighlight.visible = true;
             m_WorkspaceUI.amplifyTopHighlight = false;
 
-            m_InspectorUI.listView.OnBeginScrolling();
+            m_InspectorUI.listView.OnScrollStarted();
         }
 
         void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -368,11 +369,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             Undo.postprocessModifications -= OnPostprocessModifications;
             Undo.undoRedoPerformed -= UpdateCurrentObject;
-#if UNITY_2018_1_OR_NEWER
             EditorApplication.hierarchyChanged -= UpdateCurrentObject;
-#else
-            EditorApplication.hierarchyWindowChanged -= UpdateCurrentObject;
-#endif
             base.OnDestroy();
         }
 #endif
@@ -401,3 +398,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     }
 #endif
 }
+#endif

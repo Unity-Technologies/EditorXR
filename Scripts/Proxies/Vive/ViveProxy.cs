@@ -24,9 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         protected override void Awake()
         {
-#if UNITY_2017_2_OR_NEWER
             m_IsOculus = XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
-#endif
 
             if (m_IsOculus)
             {

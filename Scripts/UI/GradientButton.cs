@@ -12,8 +12,6 @@ using UnityEngine.UI;
 using TMPro;
 #endif
 
-[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
-
 namespace UnityEditor.Experimental.EditorVR.UI
 {
     sealed class GradientButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
@@ -261,6 +259,11 @@ namespace UnityEditor.Experimental.EditorVR.UI
             else if (!string.IsNullOrEmpty(m_Text.text))
                 SetContent(m_Text.text);
 #endif
+        }
+
+        void OnDestroy()
+        {
+            ObjectUtils.Destroy(m_ButtonMaterial);
         }
 
         void OnEnable()

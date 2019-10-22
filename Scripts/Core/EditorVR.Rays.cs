@@ -1,3 +1,4 @@
+#if ENABLE_EDITORXR
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -374,7 +375,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     return go;
 
                 // If a raycast did not find an object use the spatial hash as a final test
-                var renderer = intersectionModule.GetIntersectedObjectForRayOrigin(rayOrigin);
+                var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
+                Vector3 collisionPoint;
+                var renderer = intersectionModule.GetIntersectedObjectForTester(tester, out collisionPoint);
                 if (renderer && !renderer.CompareTag(k_VRPlayerTag))
                     return renderer.gameObject;
 
@@ -383,7 +386,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     var miniWorldRay = kvp.Value;
                     if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
                     {
-                        renderer = intersectionModule.GetIntersectedObjectForRayOrigin(kvp.Key);
+                        tester = miniWorldRay.tester;
+                        if (!tester.active)
+                            continue;
+
+                        renderer = intersectionModule.GetIntersectedObjectForTester(tester, out collisionPoint);
                         if (renderer)
                             return renderer.gameObject;
                     }
@@ -550,3 +557,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
+#endif

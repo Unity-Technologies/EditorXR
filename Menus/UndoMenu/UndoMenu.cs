@@ -113,7 +113,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (!(engage.wasJustPressed || !m_TrackpadController && (engage.isHeld || m_StillEngagedAfterStickRelease)))
                 return;
 
-            consumeControl(engage);
+            if (!m_TrackpadController)
+                consumeControl(engage);
+
             m_UndoMenuUI.engaged = true;
 
             var navigateXControl = undoMenuInput.navigateX;
