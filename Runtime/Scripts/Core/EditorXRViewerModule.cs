@@ -1,3 +1,5 @@
+
+using Unity.Labs.SpatialHash;
 #if UNITY_2018_3_OR_NEWER
 using System;
 using System.Collections;
@@ -255,9 +257,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 m_VRPlayerObjects.Add(playerObject.gameObject);
             }
 
-            var intersectionModule = ModuleLoaderCore.instance.GetModule<IntersectionModule>();
-            if (intersectionModule != null)
-                intersectionModule.standardIgnoreList.AddRange(m_VRPlayerObjects);
+            var selectionModule = ModuleLoaderCore.instance.GetModule<SelectionModule>();
+            if (selectionModule != null)
+                selectionModule.standardIgnoreList.AddRange(m_VRPlayerObjects);
         }
 
         public bool IsOverShoulder(Transform rayOrigin)

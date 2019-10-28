@@ -1,4 +1,4 @@
-﻿using UnityEditor.Experimental.EditorVR.Extensions;
+﻿using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;

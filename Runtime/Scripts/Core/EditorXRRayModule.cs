@@ -1,3 +1,5 @@
+
+using Unity.Labs.SpatialHash;
 #if UNITY_2018_3_OR_NEWER
 using System;
 using System.Collections.Generic;
@@ -94,8 +96,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_DirectSelectionModule = moduleLoaderCore.GetModule<EditorXRDirectSelectionModule>();
             m_SerializedPreferences = moduleLoaderCore.GetModule<SerializedPreferencesModule>();
             m_IntersectionModule = moduleLoaderCore.GetModule<IntersectionModule>();
-            if (m_IntersectionModule != null)
-                ignoreList = m_IntersectionModule.standardIgnoreList;
+
+            var selectionModule = moduleLoaderCore.GetModule<SelectionModule>();
+            if (selectionModule != null)
+                ignoreList = selectionModule.standardIgnoreList;
 
             m_ModuleParent = moduleLoaderCore.GetModuleParent().transform;
         }

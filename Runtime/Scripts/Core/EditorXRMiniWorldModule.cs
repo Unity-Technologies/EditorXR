@@ -1,4 +1,7 @@
+
+using Unity.Labs.SpatialHash;
 #if UNITY_2018_3_OR_NEWER
+using Unity.Labs.SpatialHash.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Labs.EditorXR.Interfaces;

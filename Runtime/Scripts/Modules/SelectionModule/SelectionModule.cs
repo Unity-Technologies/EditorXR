@@ -21,6 +21,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         GameObject m_CurrentGroupRoot;
         readonly Dictionary<GameObject, GameObject> m_GroupMap = new Dictionary<GameObject, GameObject>(); // Maps objects to their group parent
+        readonly List<GameObject> m_StandardIgnoreList = new List<GameObject>();
+        public List<GameObject> standardIgnoreList { get { return m_StandardIgnoreList; } }
 
         event Action selectionChanged;
 
@@ -192,6 +194,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var selectionChanged = target as ISelectionChanged;
             if (selectionChanged != null)
                 this.selectionChanged += selectionChanged.OnSelectionChanged;
+
+            var standardIgnoreList = target as IStandardIgnoreList;
+            if (standardIgnoreList != null)
+                standardIgnoreList.ignoreList = this.standardIgnoreList;
         }
 
         public void DisconnectInterface(object target, object userData = null)
@@ -217,6 +223,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             // In case we have anything selected at start, set up manipulators, inspector, etc.
             EditorApplication.delayCall += OnSelectionChanged;
+
+            m_StandardIgnoreList.Clear();
         }
 
         public void Shutdown()

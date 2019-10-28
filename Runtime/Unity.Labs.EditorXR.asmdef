@@ -11,7 +11,9 @@
         "Unity.Labs.ModuleLoader.Interfaces",
         "Unity.Labs.ModuleLoader",
         "Unity.Labs.EditorXR.Interfaces",
-        "UnityEngine.SpatialTracking"
+        "UnityEngine.SpatialTracking",
+        "Unity.Labs.SpatialHash.Interfaces",
+        "Unity.Labs.SpatialHash"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],

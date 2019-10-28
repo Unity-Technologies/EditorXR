@@ -1,5 +1,6 @@
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.SpatialHash.Interfaces;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;

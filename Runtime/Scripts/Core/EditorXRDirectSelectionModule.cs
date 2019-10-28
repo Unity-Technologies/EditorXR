@@ -1,3 +1,6 @@
+
+using Unity.Labs.SpatialHash;
+using Unity.Labs.Utils;
 #if UNITY_2018_3_OR_NEWER
 using System;
 using System.Collections.Generic;

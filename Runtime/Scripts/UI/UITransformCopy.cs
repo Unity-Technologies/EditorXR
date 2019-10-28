@@ -1,4 +1,4 @@
-﻿using UnityEditor.Experimental.EditorVR.Extensions;
+﻿using Unity.Labs.Utils;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
