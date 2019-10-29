@@ -559,34 +559,28 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 #endif
     }
-#elif !(UNITY_2018_4_OR_NEWER || UNITY_2019_1_OR_NEWER)
-#if UNITY_EDITOR
-    [InitializeOnLoad]
-#endif
-    class EditorVR
+#else
+    sealed partial class EditorVR : MonoBehaviour
     {
-        const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
+#pragma warning disable 649
+        [SerializeField]
+        MonoBehaviour m_ProxyRayPrefab;
 
-        static EditorVR()
-        {
-            if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
-            {
-                var message = "EditorXR requires Unity 2018.4 or the latest, non-beta version of Unity.";
-                var result = EditorUtility.DisplayDialogComplex("Update Unity", message, "Download", "Ignore", "Remind Me Again");
-                switch (result)
-                {
-                    case 0:
-                        Application.OpenURL("https://unity3d.com/get-unity/download");
-                        break;
-                    case 1:
-                        EditorPrefs.SetBool(k_ShowCustomEditorWarning, false);
-                        break;
-                    case 2:
-                        Debug.Log("<color=orange>" + message + "</color>");
-                        break;
-                }
-            }
-        }
+        [SerializeField]
+        ScriptableObject m_ProxyExtras;
+
+        [SerializeField]
+        Camera m_EventCameraPrefab;
+
+        [SerializeField]
+        GameObject m_PlayerModelPrefab;
+
+        [SerializeField]
+        GameObject m_PlayerFloorPrefab;
+
+        [SerializeField]
+        GameObject m_PreviewCameraPrefab;
+#pragma warning restore 649
     }
 #endif
 }
