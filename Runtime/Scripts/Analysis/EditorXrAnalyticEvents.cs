@@ -1,6 +1,4 @@
-﻿
-using Unity.Labs.EditorXR.Editor;
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using UnityEngine;
 
