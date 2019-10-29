@@ -1,14 +1,18 @@
 ﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Editor
 {
+    [Serializable]
     abstract class EditorEventArgs
     {
         public string name;
+
         public override string ToString() { return name; }
     }
 
+    [Serializable]
     class ExrStartStopArgs : EditorEventArgs
     {
         public bool active;
@@ -23,6 +27,7 @@ namespace Unity.Labs.EditorXR.Editor
         public override string ToString() { return $"{name}, {active}, play mode: {play_mode}"; }
     }
 
+    [Serializable]
     class UiComponentArgs : EditorEventArgs
     {
         public string label;
@@ -37,6 +42,7 @@ namespace Unity.Labs.EditorXR.Editor
         public override string ToString() { return $"{name}, {label}, {active}"; }
     }
 
+    [Serializable]
     class SelectToolArgs : EditorEventArgs
     {
         public string label;
