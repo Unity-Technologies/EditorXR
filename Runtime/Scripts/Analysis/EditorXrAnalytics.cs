@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Analytics;
 using UnityEditor;
 
-namespace Unity.Labs.EditorXR.Editor
+namespace Unity.Labs.EditorXR
 {
     abstract class EditorXREvent
     {

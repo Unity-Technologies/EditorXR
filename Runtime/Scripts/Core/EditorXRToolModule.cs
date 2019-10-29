@@ -1,8 +1,9 @@
+
 #if UNITY_2018_3_OR_NEWER
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Labs.EditorXR.Editor;
+using Unity.Labs.EditorXR;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;

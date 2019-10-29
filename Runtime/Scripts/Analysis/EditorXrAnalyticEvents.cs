@@ -1,8 +1,10 @@
-﻿#if UNITY_EDITOR
+﻿
+using Unity.Labs.EditorXR.Editor;
+#if UNITY_EDITOR
 using System;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Editor
+namespace Unity.Labs.EditorXR
 {
     [Serializable]
     abstract class EditorEventArgs
