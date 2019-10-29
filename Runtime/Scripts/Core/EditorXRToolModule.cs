@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Editor;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
@@ -476,6 +477,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             });
 
+#if UNITY_EDITOR
+            EditorXREvents.ToolSelected.Send(new SelectToolArgs { label = toolType.Name });
+#endif
             return result;
         }
 

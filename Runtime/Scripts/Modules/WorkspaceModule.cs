@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Editor;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
@@ -166,6 +167,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_Preferences = (Preferences)obj;
         }
 
+        // TODO analytics this
         public void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
         {
             if (!typeof(IWorkspace).IsAssignableFrom(t))
@@ -211,6 +213,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             if (workspaceCreated != null)
                 workspaceCreated(workspace);
+
+#if UNITY_EDITOR
+            EditorXREvents.WorkspaceState.Send(new UiComponentArgs(t.Name, true));
+#endif
         }
 
         void OnWorkspaceDestroyed(IWorkspace workspace)
@@ -221,6 +227,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             if (workspaceDestroyed != null)
                 workspaceDestroyed(workspace);
+
+#if UNITY_EDITOR
+            EditorXREvents.WorkspaceState.Send(new UiComponentArgs(workspace.GetType().Name, false));
+#endif
         }
 
         public void ResetWorkspaceRotations()
