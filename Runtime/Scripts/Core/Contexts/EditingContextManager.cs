@@ -341,8 +341,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 SetEditingContext(defaultContext);
             }
-#endif
+
             EditorXREvents.StartStop.Send(new ExrStartStopArgs(true, Application.isPlaying));
+#endif
         }
 
         void OnDisable()
@@ -392,9 +393,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         behavior.StopRunInEditMode();
                 }
             }
-#endif
 
             EditorXREvents.StartStop.Send(new ExrStartStopArgs(false, Application.isPlaying));
+#endif
         }
 
         void Awake()
