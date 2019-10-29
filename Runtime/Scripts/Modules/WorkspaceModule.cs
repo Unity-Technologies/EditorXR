@@ -167,7 +167,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_Preferences = (Preferences)obj;
         }
 
-        // TODO analytics this
         public void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
         {
             if (!typeof(IWorkspace).IsAssignableFrom(t))
