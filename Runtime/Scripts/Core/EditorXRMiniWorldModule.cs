@@ -1,13 +1,12 @@
-
-using Unity.Labs.SpatialHash;
 #if UNITY_2018_3_OR_NEWER
-using Unity.Labs.SpatialHash.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.SpatialHash;
+using Unity.Labs.SpatialHash.Interfaces;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
