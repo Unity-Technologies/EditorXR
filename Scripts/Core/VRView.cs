@@ -436,6 +436,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (e.type == EventType.Repaint)
                 {
+#if UNITY_2019_1_OR_NEWER
+                    if (!customPreviewCamera)
+                        guiRect = new Rect(guiRect.position.x, guiRect.position.y + guiRect.height, guiRect.width, -guiRect.height);
+#endif
+
                     var renderTexture = customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_TargetTexture;
                     GUI.DrawTexture(guiRect, renderTexture, ScaleMode.StretchToFill, false);
                 }
