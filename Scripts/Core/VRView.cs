@@ -464,6 +464,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (!XRDevice.isPresent)
                 return;
 
+            if (!m_ShowDeviceView)
+                return;
+
             UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
             if (Event.current.type == EventType.Repaint)
             {
