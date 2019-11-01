@@ -1,4 +1,3 @@
-#if ENABLE_EDITORXR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -7,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-#if UNITY_EDITOR
+#if ENABLE_EDITORXR && UNITY_EDITOR
     [MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
     sealed class InspectorWorkspace : Workspace, ISelectionChanged, IInspectorWorkspace
     {
@@ -398,4 +397,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     }
 #endif
 }
-#endif

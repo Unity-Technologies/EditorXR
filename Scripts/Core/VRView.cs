@@ -319,9 +319,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (!m_Camera)
                 return;
 
+#pragma warning disable 618
             var cameraTransform = m_Camera.transform;
             cameraTransform.localPosition = InputTracking.GetLocalPosition(XRNode.Head);
             cameraTransform.localRotation = InputTracking.GetLocalRotation(XRNode.Head);
+#pragma warning restore 618
         }
 
         public void CreateCameraTargetTexture(ref RenderTexture renderTexture, Rect cameraRect, bool hdr)

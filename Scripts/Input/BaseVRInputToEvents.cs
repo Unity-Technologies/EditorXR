@@ -170,18 +170,11 @@ namespace UnityEditor.Experimental.EditorVR.Input
 
         void SendTrackingEvents(VRInputDevice.Handedness hand, int deviceIndex)
         {
+#pragma warning disable 618
             XRNode node = hand == VRInputDevice.Handedness.Left ? XRNode.LeftHand : XRNode.RightHand;
-
-            InputTracking.GetNodeStates(m_NodeStates);
-
-//            foreach (var nodeState in m_NodeStates)
-//            {
-//                if (nodeState.nodeType == node && !nodeState.tracked)
-//                    return;
-//            }
-
             var localPosition = InputTracking.GetLocalPosition(node);
             var localRotation = InputTracking.GetLocalRotation(node);
+#pragma warning restore 618
 
             if (localPosition == m_LastPositionValues[(int)hand] && localRotation == m_LastRotationValues[(int)hand])
                 return;
