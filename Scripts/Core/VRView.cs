@@ -371,7 +371,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             // Always render camera into a RT
             CreateCameraTargetTexture(ref m_TargetTexture, cameraRect, false);
             m_Camera.targetTexture = m_TargetTexture;
-            XRSettings.showDeviceView = m_ShowDeviceView;
+            //XRSettings.showDeviceView = m_ShowDeviceView;
+            //TODO: Fix GUI scaling bug
+            XRSettings.showDeviceView = true; // Always set to true to work around GUI scaling bug
         }
 
         void OnGUI()
@@ -469,9 +471,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return;
 
             if (!XRDevice.isPresent)
-                return;
-
-            if (!m_ShowDeviceView)
                 return;
 
             UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
