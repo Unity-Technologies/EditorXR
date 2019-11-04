@@ -10,8 +10,12 @@ namespace UnityEditor.Experimental.EditorVR.Extensions
         /// <param name="otherBounds">The bounds to compare with this one</param>
         public static bool ContainsCompletely(this Bounds bounds, Bounds otherBounds)
         {
-            return bounds.max.x >= otherBounds.max.x && bounds.max.y >= otherBounds.max.y && bounds.max.z >= otherBounds.max.z
-                   && bounds.min.x <= otherBounds.min.x && bounds.min.y <= otherBounds.min.y && bounds.min.z <= otherBounds.min.z;
+            var boundsMin = bounds.min;
+            var boundsMax = bounds.max;
+            var otherBoundsMin = otherBounds.min;
+            var otherBoundsMax = otherBounds.max;
+            return boundsMax.x >= otherBoundsMax.x && boundsMax.y >= otherBoundsMax.y && boundsMax.z >= otherBoundsMax.z
+                   && boundsMin.x <= otherBoundsMin.x && boundsMin.y <= otherBoundsMin.y && boundsMin.z <= otherBoundsMin.z;
         }
     }
 }
