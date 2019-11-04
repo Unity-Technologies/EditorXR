@@ -551,7 +551,7 @@ namespace UnityEditor.Experimental.EditorXR.LegacyInputHelpers
                     LoadExistingDataAndCheckAgainstNewData(inputManagerCurrentData, ref axisMap, ref currentInputData);
                     if (ApplyDataToInputManager(currentInputData, axisList, axisMap, ref inputManagerCurrentData))
                     {
-                        serializedObject.ApplyModifiedProperties();
+                        serializedObject.ApplyModifiedPropertiesWithoutUndo();
                         AssetDatabase.Refresh();
                     }
                 }
