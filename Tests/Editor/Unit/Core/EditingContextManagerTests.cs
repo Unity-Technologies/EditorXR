@@ -1,4 +1,4 @@
-﻿#if UNITY_2018_3_OR_NEWER
+﻿#if ENABLE_EDITORXR
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
