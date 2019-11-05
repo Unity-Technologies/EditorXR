@@ -319,9 +319,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (!m_Camera)
                 return;
 
+#pragma warning disable 618
             var cameraTransform = m_Camera.transform;
             cameraTransform.localPosition = InputTracking.GetLocalPosition(XRNode.Head);
             cameraTransform.localRotation = InputTracking.GetLocalRotation(XRNode.Head);
+#pragma warning restore 618
         }
 
         public void CreateCameraTargetTexture(ref RenderTexture renderTexture, Rect cameraRect, bool hdr)
@@ -369,7 +371,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             // Always render camera into a RT
             CreateCameraTargetTexture(ref m_TargetTexture, cameraRect, false);
             m_Camera.targetTexture = m_TargetTexture;
-            XRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
+            //XRSettings.showDeviceView = m_ShowDeviceView;
+            //TODO: Fix GUI scaling bug
+            XRSettings.showDeviceView = true; // Always set to true to work around GUI scaling bug
         }
 
         void OnGUI()
@@ -436,6 +440,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (e.type == EventType.Repaint)
                 {
+#if UNITY_2019_1_OR_NEWER
+                    if (!customPreviewCamera)
+                        guiRect = new Rect(guiRect.position.x, guiRect.position.y + guiRect.height, guiRect.width, -guiRect.height);
+#endif
+
                     var renderTexture = customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_TargetTexture;
                     GUI.DrawTexture(guiRect, renderTexture, ScaleMode.StretchToFill, false);
                 }

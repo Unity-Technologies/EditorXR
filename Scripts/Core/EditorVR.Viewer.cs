@@ -109,8 +109,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (cameraRig)
                     cameraRig.transform.parent = null;
 
-                ObjectUtils.Destroy(m_PlayerBody.gameObject);
                 ObjectUtils.Destroy(m_PlayerFloor);
+                if (m_PlayerBody)
+                    ObjectUtils.Destroy(m_PlayerBody.gameObject);
 
                 if (customPreviewCamera != null)
                     ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
