@@ -1,4 +1,3 @@
-using ListView;
 using UnityEngine;
 
 #if INCLUDE_POLY_TOOLKIT
@@ -7,7 +6,7 @@ using PolyToolkit;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class PolyGridViewController : ListViewController<PolyGridAsset, PolyGridItem, string>, IPoly
+    class PolyGridViewController : EditorXRListViewController<PolyGridAsset, PolyGridItem, string>, IPoly
     {
         const int k_RequestSize = 100;
 
@@ -74,9 +73,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        protected override void Setup()
+        protected override void Start()
         {
-            base.Setup();
+            base.Start();
 
             m_ScrollOffset = itemSize.z * 0.5f;
 
@@ -116,10 +115,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         protected override void ComputeConditions()
         {
+            m_ItemSize = GetObjectSize(m_Templates[0]);
+
             base.ComputeConditions();
 
-            var itemSize = m_ItemSize.Value;
-            m_NumPerRow = (int)(m_Size.x / itemSize.x);
+            m_NumPerRow = (int)(m_Size.x / m_ItemSize.x);
             if (m_NumPerRow < 1) // Early out if item size exceeds bounds size
                 return;
 
@@ -129,7 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_LastHiddenItemOffset = Mathf.Infinity;
             }
 
-            m_StartPosition = m_Extents.z * Vector3.forward + (m_Extents.x - itemSize.x * 0.5f) * Vector3.left;
+            m_StartPosition = m_Extents.z * Vector3.forward + (m_Extents.x - m_ItemSize.x * 0.5f) * Vector3.left;
 
             var spinnerGameObject = m_Spinner.gameObject;
             if (m_NextPageToken == null) // If no NextPageToken we are waiting on a list request
@@ -152,7 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_ScrollReturn = -listHeight + m_ScaleFactor;
 
                 if (m_Data.Count % m_NumPerRow == 0)
-                    m_ScrollReturn += itemSize.z;
+                    m_ScrollReturn += m_ItemSize.z;
             }
         }
 
@@ -210,17 +210,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void OnRecycleCompleted(PolyGridItem gridItem)
         {
             gridItem.gameObject.SetActive(false);
-            m_TemplateDictionary[gridItem.data.template].pool.Add(gridItem);
+            m_TemplateDictionary[gridItem.data.template].pool.Enqueue(gridItem);
         }
 
-        protected override void UpdateVisibleItem(PolyGridAsset data, int order, float offset, ref bool doneSettling)
+        protected override PolyGridItem UpdateVisibleItem(PolyGridAsset datum, int order, float offset, ref bool doneSettling)
         {
             PolyGridItem item;
-            if (!m_ListItems.TryGetValue(data.index, out item))
-                item = GetItem(data);
+            if (!m_ListItems.TryGetValue(datum.index, out item))
+                GetNewItem(datum, out item);
 
             if (item)
                 UpdateGridItem(item, order, (int)offset);
+
+            return item;
         }
 
         public override void OnScrollEnded()
@@ -244,7 +246,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             item.UpdateTransforms(m_ScaleFactor);
 
-            var itemSize = m_ItemSize.Value;
+            var itemSize = m_ItemSize;
             var t = item.transform;
             var zOffset = itemSize.z * (count / m_NumPerRow) + m_ScrollOffset;
             var xOffset = itemSize.x * (count % m_NumPerRow);
@@ -256,20 +258,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 t.SetSiblingIndex(order);
         }
 
-        protected override PolyGridItem GetItem(PolyGridAsset data)
+        protected override bool GetNewItem(PolyGridAsset data, out PolyGridItem item)
         {
             const float jitterMargin = 0.125f;
             if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * jitterMargin) // Avoid jitter while scrolling rows in and out of view
-                return null;
+            {
+                item = null;
+                return false;
+            }
 
-            var item = base.GetItem(data);
+            var instantiated = base.GetNewItem(data, out item);
 
             item.transform.localPosition = m_StartPosition;
 
             item.scaleFactor = m_ScaleFactor;
             item.SetVisibility(true);
 
-            return item;
+            return instantiated;
         }
     }
 }

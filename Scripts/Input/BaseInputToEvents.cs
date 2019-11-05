@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Input
 {
-    class BaseInputToEvents : MonoBehaviour, IInputToEvents
+    abstract class BaseInputToEvents : MonoBehaviour, IInputToEvents
     {
         public bool active
         {

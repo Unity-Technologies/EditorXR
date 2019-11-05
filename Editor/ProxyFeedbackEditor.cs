@@ -1,4 +1,4 @@
-﻿#if UNITY_2017_2_OR_NEWER
+﻿#if ENABLE_EDITORXR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;

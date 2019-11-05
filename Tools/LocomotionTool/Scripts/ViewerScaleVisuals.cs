@@ -7,8 +7,6 @@ using UnityEngine.UI;
 using TMPro;
 #endif
 
-[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
-
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class ViewerScaleVisuals : MonoBehaviour, IUsesViewerScale

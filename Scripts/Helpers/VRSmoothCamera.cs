@@ -95,11 +95,10 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         {
             m_SmoothCamera.CopyFrom(m_VRCamera); // This copies the transform as well
             var vrCameraTexture = m_VRCamera.targetTexture;
-#if UNITY_EDITOR
+#if UNITY_EDITOR && ENABLE_EDITORXR
             if (vrCameraTexture && (!m_RenderTexture || m_RenderTexture.width != vrCameraTexture.width || m_RenderTexture.height != vrCameraTexture.height))
             {
-                var guiRect = new Rect(0f, 0f, vrCameraTexture.width, vrCameraTexture.height);
-                var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
+                var cameraRect = new Rect(0f, 0f, vrCameraTexture.width, vrCameraTexture.height);
                 VRView.activeView.CreateCameraTargetTexture(ref m_RenderTexture, cameraRect, false);
                 m_RenderTexture.name = "Smooth Camera RT";
             }

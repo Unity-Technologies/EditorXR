@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if ENABLE_EDITORXR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -40,11 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void OnEnable()
         {
 #if UNITY_EDITOR
-#if UNITY_2018_1_OR_NEWER
             EditorApplication.hierarchyChanged += UpdateHierarchyData;
-#else
-            EditorApplication.hierarchyWindowChanged += UpdateHierarchyData;
-#endif
 #endif
             UpdateHierarchyData();
         }
@@ -52,11 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void OnDisable()
         {
 #if UNITY_EDITOR
-#if UNITY_2018_1_OR_NEWER
             EditorApplication.hierarchyChanged -= UpdateHierarchyData;
-#else
-            EditorApplication.hierarchyWindowChanged -= UpdateHierarchyData;
-#endif
 #endif
         }
 
@@ -130,6 +123,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     // If EVR is the last object, early out
                     if (instanceID == 0)
                         break;
+
+                    continue;
                 }
 
                 if (currentDepth <= lastDepth)
@@ -266,3 +261,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     }
 #endif
 }
+#endif

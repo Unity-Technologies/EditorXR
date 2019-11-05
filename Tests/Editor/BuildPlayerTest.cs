@@ -1,4 +1,5 @@
-﻿#if !UNITY_CLOUD_BUILD
+﻿#if ENABLE_EDITORXR
+#if !UNITY_CLOUD_BUILD
 using NUnit.Framework;
 
 namespace UnityEditor.Experimental.EditorVR.Tests
@@ -34,7 +35,6 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 
         static void TestBuildPlayer(BuildTarget target)
         {
-#if UNITY_2018_1_OR_NEWER
             var output = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, "Temp/" + target, target, BuildOptions.BuildScriptsOnly);
             if (output.steps.Length > 0)
             {
@@ -49,13 +49,6 @@ namespace UnityEditor.Experimental.EditorVR.Tests
             }
 
             Assert.AreEqual(0, output.summary.totalErrors);
-# else
-            string output = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, "Temp/" + target, target, BuildOptions.BuildScriptsOnly);
-            if (output.Contains("target is not supported"))
-                Assert.Inconclusive("Target platform {0} not installed", target);
-
-            Assert.IsFalse(output.Contains("error"));
-#endif
         }
 
         [TearDown]
@@ -66,4 +59,5 @@ namespace UnityEditor.Experimental.EditorVR.Tests
         }
     }
 }
+#endif
 #endif

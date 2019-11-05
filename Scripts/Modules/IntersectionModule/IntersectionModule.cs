@@ -8,12 +8,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class IntersectionModule : MonoBehaviour, ISystemModule, IUsesGameObjectLocking, IGetVRPlayerObjects
     {
+        class RayIntersection
+        {
+            public GameObject go;
+            public float distance;
+        }
+
+        class DirectIntersection
+        {
+            public Renderer renderer;
+            public Vector3 contactPoint;
+        }
+
         const int k_MaxTestsPerTester = 250;
 
         [SerializeField]
         Vector3 m_PlayerBoundsMargin = new Vector3(0.25f, 0.25f, 0.25f);
 
-        readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
+        readonly Dictionary<IntersectionTester, DirectIntersection> m_IntersectedObjects = new Dictionary<IntersectionTester, DirectIntersection>();
         readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
         readonly Dictionary<Transform, RayIntersection> m_RaycastGameObjects = new Dictionary<Transform, RayIntersection>(); // Stores which gameobject the proxies' ray origins are pointing at
         readonly Dictionary<Transform, bool> m_RayoriginEnabled = new Dictionary<Transform, bool>();
@@ -21,12 +33,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         SpatialHash<Renderer> m_SpatialHash;
         MeshCollider m_CollisionTester;
-
-        struct RayIntersection
-        {
-            public GameObject go;
-            public float distance;
-        }
 
         public bool ready { get { return m_SpatialHash != null; } }
 
@@ -72,10 +78,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var tester = m_Testers[i];
                 if (!tester.active)
                 {
-                    Renderer intersectedObject;
-                    if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
-                        OnIntersectionExit(tester);
-
+                    //Intersection Exit
+                    m_IntersectedObjects[tester].renderer = null;
                     continue;
                 }
 
@@ -131,26 +135,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                         for (int j = 0; j < m_SortedIntersections.Count; j++)
                         {
-                            var obj = m_SortedIntersections[j].renderer;
-                            if (IntersectionUtils.TestObject(m_CollisionTester, obj, tester))
+                            Vector3 contactPoint;
+                            var renderer = m_SortedIntersections[j].renderer;
+                            if (IntersectionUtils.TestObject(m_CollisionTester, renderer, tester, out contactPoint))
                             {
                                 intersectionFound = true;
-                                Renderer currentObject;
-                                if (m_IntersectedObjects.TryGetValue(tester, out currentObject))
+                                var intersection = m_IntersectedObjects[tester];
+                                if (intersection.renderer == renderer)
                                 {
-                                    if (currentObject == obj)
-                                    {
-                                        OnIntersectionStay(tester, obj);
-                                    }
-                                    else
-                                    {
-                                        OnIntersectionExit(tester);
-                                        OnIntersectionEnter(tester, obj);
-                                    }
+                                    // Intersection Stay
+                                    intersection.contactPoint = contactPoint;
                                 }
                                 else
                                 {
-                                    OnIntersectionEnter(tester, obj);
+                                    // Intersection Exit / Enter
+                                    intersection.renderer = renderer;
+                                    intersection.contactPoint = contactPoint;
                                 }
                             }
 
@@ -159,12 +159,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         }
                     }
 
+                    // Intersection Exit
                     if (!intersectionFound)
-                    {
-                        Renderer intersectedObject;
-                        if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
-                            OnIntersectionExit(tester);
-                    }
+                        m_IntersectedObjects[tester].renderer = null;
 
                     testerTransform.hasChanged = false;
                 }
@@ -173,44 +170,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         internal void AddTester(IntersectionTester tester)
         {
-            m_IntersectedObjects.Clear();
             m_Testers.Add(tester);
+            m_IntersectedObjects[tester] = new DirectIntersection();
         }
 
-        void OnIntersectionEnter(IntersectionTester tester, Renderer obj)
+        internal Renderer GetIntersectedObjectForTester(IntersectionTester tester, out Vector3 contactPoint)
         {
-            m_IntersectedObjects[tester] = obj;
-        }
-
-        void OnIntersectionStay(IntersectionTester tester, Renderer obj)
-        {
-            m_IntersectedObjects[tester] = obj;
-        }
-
-        void OnIntersectionExit(IntersectionTester tester)
-        {
-            m_IntersectedObjects.Remove(tester);
-        }
-
-        internal Renderer GetIntersectedObjectForRayOrigin(Transform rayOrigin)
-        {
-            if (!m_RayoriginEnabled.ContainsKey(rayOrigin))
-                m_RayoriginEnabled[rayOrigin] = true;
-
-            if (!m_RayoriginEnabled[rayOrigin])
-                return null;
-
-            var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-            Renderer obj = null;
-            if (tester)
-            {
-                if (!tester.active)
-                    return null;
-
-                m_IntersectedObjects.TryGetValue(tester, out obj);
-            }
-
-            return obj;
+            var intersection = m_IntersectedObjects[tester];
+            contactPoint = intersection.contactPoint;
+            return intersection.renderer;
         }
 
         internal GameObject GetFirstGameObject(Transform rayOrigin, out float distance)
