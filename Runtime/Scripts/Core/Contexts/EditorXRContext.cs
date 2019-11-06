@@ -1,5 +1,4 @@
-﻿#if UNITY_2018_3_OR_NEWER
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -177,18 +176,58 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void SetupMonoScriptTypeNames()
         {
+            const string warningString = "Could not get class for MonoScript: {0}";
             if (m_DefaultMainMenu)
-                m_DefaultMainMenuName = m_DefaultMainMenu.GetClass().AssemblyQualifiedName;
+            {
+                var defaultMenuType = m_DefaultMainMenu.GetClass();
+                if (defaultMenuType == null)
+                    Debug.LogWarningFormat(warningString, AssetDatabase.GetAssetPath(m_DefaultMainMenu));
+                else
+                    m_DefaultMainMenuName = defaultMenuType.AssemblyQualifiedName;
+            }
 
             if (m_DefaultAlternateMenu)
-                m_DefaultAlternateMenuName = m_DefaultAlternateMenu.GetClass().AssemblyQualifiedName;
+            {
+                var defaultAlternateMenuType = m_DefaultAlternateMenu.GetClass();
+                if (defaultAlternateMenuType == null)
+                    Debug.LogWarningFormat(warningString, AssetDatabase.GetAssetPath(m_DefaultAlternateMenu));
+                else
+                    m_DefaultAlternateMenuName = defaultAlternateMenuType.AssemblyQualifiedName;
+            }
 
             if (m_DefaultToolStack != null)
-                m_DefaultToolStackNames = m_DefaultToolStack.Select(ms => ms.GetClass().AssemblyQualifiedName).ToList();
+            {
+                m_DefaultToolStackNames = new List<string>();
+                foreach (var defaultToolType in m_DefaultToolStack)
+                {
+                    var defaultToolClass = defaultToolType.GetClass();
+                    if (defaultToolClass == null)
+                    {
+                        Debug.LogWarningFormat(warningString, AssetDatabase.GetAssetPath(defaultToolType));
+                        continue;
+                    }
+
+                    m_DefaultToolStackNames.Add(defaultToolClass.AssemblyQualifiedName);
+                }
+            }
 
             if (m_HiddenTypes != null)
-                m_HiddenTypeNames = m_HiddenTypes.Select(ms => ms.GetClass().AssemblyQualifiedName).ToList();
+            {
+                m_HiddenTypeNames = new List<string>();
+                foreach (var hiddenType in m_HiddenTypes)
+                {
+                    var hiddenTypeClass = hiddenType.GetClass();
+                    if (hiddenTypeClass == null)
+                    {
+                        Debug.LogWarningFormat(warningString, AssetDatabase.GetAssetPath(hiddenType));
+                        continue;
+                    }
+
+                    m_HiddenTypeNames.Add(hiddenTypeClass.AssemblyQualifiedName);
+                }
+            }
         }
+
 
         static void PreferencesGUI()
         {
@@ -279,4 +318,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
     }
 }
-#endif

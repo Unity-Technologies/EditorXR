@@ -8,7 +8,6 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Tests
 {
-    [InitializeOnLoad]
     public class CompilationTest
     {
         [Test]

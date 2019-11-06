@@ -3,10 +3,6 @@ using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.XR;
 
-#if UNITY_2018_3
-using System.Text.RegularExpressions;
-#endif
-
 namespace UnityEditor.Experimental.EditorVR.Input
 {
     abstract class BaseVRInputToEvents : BaseInputToEvents
@@ -29,23 +25,8 @@ namespace UnityEditor.Experimental.EditorVR.Input
             VRInputDevice.VRControl.Action2,
             VRInputDevice.VRControl.LeftStickButton
         };
-
-        void Awake()
-        {
-#if UNITY_2018_3
-            var match = Regex.Match(Application.unityVersion, @"([.](\d+))+");
-            if (match.Groups.Count > 0)
-            {
-                int minor;
-                var group = match.Groups[2];
-                if (int.TryParse(group.Value, out minor) && minor < 12)
-                    Debug.LogError("Unity 2018.3.12f1 or greater is required to have full input capabilities");
-            }
-#endif
-        }
-
-
-            public void Update()
+		
+		public void Update()
         {
             var deviceActive = false;
             foreach (var device in UnityEngine.Input.GetJoystickNames())

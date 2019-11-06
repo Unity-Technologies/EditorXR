@@ -18,10 +18,10 @@ Experimental means this:
 - As such, there is no guarantee that this will remain an actively supported project.
 
 ## Getting Started
-If you've made it here, but aren't accustomed to using GitHub, cloning repositories, etc. and are simply looking to give EditorXR a spin, then take a look at the [Getting Started Guide](https://docs.google.com/document/d/1RD0SAjWnXdtY6eOC4qHk_fcl7w2-aBGrF3rX5pk5KDo). Once you're up and running we recommend you join the discussion on the [EditorXR forum](https://forum.unity3d.com/forums/editorvr.126/).
+If you've made it here, but aren't accustomed to using GitHub, cloning repositories, etc. and are simply looking to give EditorXR a spin, then take a look at the [Getting Started Guide](https://docs.google.com/document/d/1Rymrri54MeUO1UE8pev0Tss9dMAcltECOF7NAAO5XuE). Once you're up and running we recommend you join the discussion on the [EditorXR forum](https://forum.unity3d.com/forums/editorvr.126/).
 
 ## For Software Developers
-If you're a developer, we recommend that you take a look at the [Getting Started Guide](https://docs.google.com/document/d/1RD0SAjWnXdtY6eOC4qHk_fcl7w2-aBGrF3rX5pk5KDo) *and* the companion document [Extending EditorXR](https://docs.google.com/document/d/1EGi9hKXAujfBMI2spErojdqRc0giqEnOu0NpwgBxtpg). You'll need to clone the repository into an existing project using the instructions below.
+If you're a developer, we recommend that you take a look at the [Getting Started Guide](https://docs.google.com/document/d/1Rymrri54MeUO1UE8pev0Tss9dMAcltECOF7NAAO5XuE) *and* the companion document [Extending EditorXR](https://docs.google.com/document/d/1EGi9hKXAujfBMI2spErojdqRc0giqEnOu0NpwgBxtpg). You'll need to clone the repository into an existing project using the instructions below.
 
 ### Git Dependencies
 - [git-lfs](https://git-lfs.github.com/)
@@ -30,7 +30,7 @@ If you're a developer, we recommend that you take a look at the [Getting Started
 ### Project Asset Dependencies
 - [Textmesh Pro](https://docs.unity3d.com/Packages/com.unity.textmeshpro@1.2/manual/index.html#installation)
 - [Legacy Input Helpers](https://docs.unity3d.com/Packages/com.unity.xr.legacyinputhelpers@1.0/manual/index.html#installing-comunityxrlegacyinputhelpers) (2019.1+)
-  - Users of 2018.3 do not need Legacy Input Helpers
+  - Users of 2018.4 do not need Legacy Input Helpers
 
 ### Cloning
 1. Create a new Unity project or use an existing one
@@ -46,11 +46,12 @@ Optionally, you could add a [git hook for post-checkout](https://ttboj.wordpress
 If you plan on making changes to EditorXR and/or contributing back, then you'll need to set the `Asset Serialization` property under Edit->Project Settings->Editor to `Force Text`.
 
 ### Assembly Definitions
-In order to support a variety of platform configurations, and to optionally strip its code out of player builds, EditorXR uses assembly definitions. Some of EditorXR's dependencies do not include assembly definitions in their current forms, so after importing EditorXR (in Unity 2018.3 and below), you must add them.
+In order to support a variety of platform configurations, and to optionally strip its code out of player builds, EditorXR uses assembly definitions. Some of EditorXR's dependencies do not include assembly definitions in their current forms, so after importing EditorXR (in Unity 2018.4), you must add them.
 
-For easy set-up, EditorXR includes a .unitypackage (`Patches/Dependencies_asmdef.unitypackage`) containing an assembly definition for the PolyToolkit and UnityEngine.SpatialTracking, which are referenced by EditorXR. Simply import it via Assets > Import Package > Custom Package...
+For easy set-up when cloning the repository, EditorXR includes two `.unitypackage` files (`Patches/PolyToolkit_asmdef.unitypackage` and `Patches/SpatialTracking_2018.4.unitypackage`) containing assembly definitions for the Google Poly Toolkit and UnityEngine.SpatialTracking, which are referenced by EditorXR. Simply import them via Assets > Import Package > Custom Package...
+- **For all Unity versions**: import the `PolyToolkit_asmdef` package to add assembly definitions to the PolyToolkit folder if you wish to integrate the PolyToolkit from the Asset Store
+- **For Unity 2018.4**: Import both the `PolyToolkit_asmdef` *and* `SpatialTracking_2018.4` packages to fix compile errors that occur due to missing package dependencies
 
-This is not required for Unity versions 2019.1 and above, though you will need to add an assembly definition in order to reference PolyToolkit.
-
+If you are using the release package, you will need to *delete* the `UnityEngine.SpatialTracking` assembly definition to prevent it from conflicting with the assembly definiton from the `Legacy Input Helpers` package, which will be automatically imported when you import EditorXR.
 ## All contributions are subject to the [Unity Contribution Agreement (UCA)](https://unity3d.com/legal/licenses/Unity_Contribution_Agreement)
 By making a pull request, you are confirming agreement to the terms and conditions of the UCA, including that your Contributions are your original creation and that you have complete right and authority to make your Contributions.

@@ -44,7 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
         {
             if (type == k_GameObjetTypeString)
             {
-#if UNITY_EDITOR && ENABLE_EDITORXR
+#if UNITY_EDITOR
                 switch (PrefabUtility.GetPrefabAssetType(asset))
                 {
                     case PrefabAssetType.Model:

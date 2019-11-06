@@ -1,5 +1,4 @@
-﻿#if ENABLE_EDITORXR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 // Copied from UnityEditor.XR.LegacyInputHelpers
 namespace UnityEditor.Experimental.EditorXR.LegacyInputHelpers
@@ -724,4 +723,3 @@ namespace UnityEditor.Experimental.EditorXR.LegacyInputHelpers
         #endregion
     }
 }
-#endif

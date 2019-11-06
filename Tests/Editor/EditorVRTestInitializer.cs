@@ -1,5 +1,4 @@
-﻿#if ENABLE_EDITORXR
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UnityEditor.Experimental.EditorVR.Core;
 
 namespace UnityEditor.Experimental.EditorVR.Tests.Core
@@ -29,4 +28,3 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         }
     }
 }
-#endif
