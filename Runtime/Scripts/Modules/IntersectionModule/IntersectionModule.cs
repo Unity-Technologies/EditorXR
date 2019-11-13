@@ -34,6 +34,9 @@ namespace Unity.Labs.SpatialHash
         readonly Dictionary<Transform, RayIntersection> m_RaycastGameObjects = new Dictionary<Transform, RayIntersection>(); // Stores which gameobject the proxies' ray origins are pointing at
         readonly Dictionary<Transform, bool> m_RayoriginEnabled = new Dictionary<Transform, bool>();
 
+        readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
+        Coroutine m_UpdateCoroutine;
+
         SpatialHash m_SpatialHash;
         MeshCollider m_CollisionTester;
 
@@ -45,7 +48,9 @@ namespace Unity.Labs.SpatialHash
 
         public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
 
-        public int initializationOrder { get { return 0; } }
+        public Func<GameObject, bool> shouldExcludeObject { private get; set; }
+
+        public int initializationOrder { get { return -3; } }
         public int shutdownOrder { get { return 0; } }
         public int connectInterfaceOrder { get { return 0; } }
 
@@ -56,9 +61,10 @@ namespace Unity.Labs.SpatialHash
         IProvidesGetVRPlayerObjects IFunctionalitySubscriber<IProvidesGetVRPlayerObjects>.provider { get; set; }
 #endif
 
-        // Local method use only -- created here to reduce garbage collection
+        // Local method use only -- created here to reduce garbage collection. Collections must be cleared before use
         readonly List<Renderer> m_Intersections = new List<Renderer>();
         readonly List<SortableRenderer> m_SortedIntersections = new List<SortableRenderer>();
+        static readonly HashSet<Renderer> k_Renderers = new HashSet<Renderer>();
 
         struct SortableRenderer
         {
@@ -69,7 +75,6 @@ namespace Unity.Labs.SpatialHash
         public void LoadModule()
         {
             IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in LoadModule because it is destroyed on scene load
-
             m_SpatialHashModule = ModuleLoaderCore.instance.GetModule<SpatialHashModule>();
         }
 
@@ -83,17 +88,96 @@ namespace Unity.Labs.SpatialHash
             m_CollisionTester = collisionTesterObject.AddComponent<MeshCollider>();
 
             if (m_SpatialHashModule != null)
+            {
+                m_SpatialHashModule.Clear();
                 m_SpatialHash = m_SpatialHashModule.spatialHash;
+            }
 
             m_IntersectedObjects.Clear();
             m_Testers.Clear();
             m_RaycastGameObjects.Clear();
             m_RayoriginEnabled.Clear();
+
+            shouldExcludeObject = go => go.transform.IsChildOf(moduleParent.transform);
+
+            SetupObjects();
+            m_UpdateCoroutine = EditorMonoBehaviour.instance.StartCoroutine(UpdateDynamicObjects());
+        }
+
+        void SetupObjects()
+        {
+            var meshFilters = FindObjectsOfType<MeshFilter>();
+            foreach (var meshFilter in meshFilters)
+            {
+                if (meshFilter.sharedMesh)
+                {
+                    if (shouldExcludeObject != null && shouldExcludeObject(meshFilter.gameObject))
+                        continue;
+
+                    var render = meshFilter.GetComponent<Renderer>();
+                    if (render)
+                        m_SpatialHash.AddObject(render, render.bounds);
+                }
+            }
+
+            var skinnedMeshRenderers = FindObjectsOfType<SkinnedMeshRenderer>();
+            foreach (var skinnedMeshRenderer in skinnedMeshRenderers)
+            {
+                if (skinnedMeshRenderer.sharedMesh)
+                {
+                    if (shouldExcludeObject != null && shouldExcludeObject(skinnedMeshRenderer.gameObject))
+                        continue;
+
+                    m_SpatialHash.AddObject(skinnedMeshRenderer, skinnedMeshRenderer.bounds);
+                }
+            }
+        }
+
+        IEnumerator UpdateDynamicObjects()
+        {
+            while (true)
+            {
+                m_ChangedObjects.Clear();
+
+                // TODO AE 9/21/16: Hook updates of new objects that are created
+                k_Renderers.Clear();
+                m_SpatialHash.GetObjects(k_Renderers);
+                foreach (var obj in k_Renderers)
+                {
+                    if (!obj)
+                    {
+                        m_ChangedObjects.Add(obj);
+                        continue;
+                    }
+
+                    if (obj.transform.hasChanged)
+                    {
+                        m_ChangedObjects.Add(obj);
+                        obj.transform.hasChanged = false;
+                    }
+                }
+
+                foreach (var changedObject in m_ChangedObjects)
+                {
+                    m_SpatialHash.RemoveObject(changedObject);
+
+                    if (changedObject)
+                        m_SpatialHash.AddObject(changedObject, changedObject.bounds);
+                }
+
+                m_SpatialHash.Trim();
+
+                yield return null;
+            }
         }
 
         public void Shutdown()
         {
-            if (m_CollisionTester)
+            EditorMonoBehaviour.instance.StopCoroutine(m_UpdateCoroutine);
+            if (m_SpatialHashModule != null)
+                m_SpatialHashModule.Clear();
+
+            if (m_CollisionTester != null)
                 UnityObjectUtils.Destroy(m_CollisionTester.gameObject);
         }
 
