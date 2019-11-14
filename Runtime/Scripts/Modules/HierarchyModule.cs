@@ -1,5 +1,4 @@
-﻿#if UNITY_2018_3_OR_NEWER
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Labs.ModuleLoader;
@@ -286,4 +285,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     }
 #endif
 }
-#endif

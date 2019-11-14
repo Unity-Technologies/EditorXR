@@ -245,6 +245,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
             m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * m_IconHighlightedLocalZOffset;
 
             m_Icon.color = m_NormalContentColor;
+            m_Text.color = m_NormalContentColor;
 
             // Clears/resets any non-sprite content(text) from being displayed if a sprite was set on this button
             if (m_OriginalIconSprite)

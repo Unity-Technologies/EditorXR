@@ -8,7 +8,6 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Tests
 {
-    [InitializeOnLoad]
     public class CompilationTest
     {
         [Test]
@@ -22,14 +21,6 @@ namespace UnityEditor.Experimental.EditorVR.Tests
         {
             var defines = EditorUserBuildSettings.activeScriptCompilationDefines.ToList();
             defines = defines.Except(ConditionalCompilationUtility.defines).ToList();
-            TestCompile(defines.ToArray());
-        }
-
-        [Test]
-        public void NoEditorVR()
-        {
-            var defines = EditorUserBuildSettings.activeScriptCompilationDefines.ToList();
-            defines.Remove("UNITY_2018_3_OR_NEWER");
             TestCompile(defines.ToArray());
         }
 

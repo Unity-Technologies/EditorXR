@@ -1,5 +1,4 @@
-﻿#if UNITY_2018_3_OR_NEWER
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 // Copied from UnityEditor.XR.LegacyInputHelpers
 namespace UnityEditor.Experimental.EditorXR.LegacyInputHelpers
@@ -551,7 +550,7 @@ namespace UnityEditor.Experimental.EditorXR.LegacyInputHelpers
                     LoadExistingDataAndCheckAgainstNewData(inputManagerCurrentData, ref axisMap, ref currentInputData);
                     if (ApplyDataToInputManager(currentInputData, axisList, axisMap, ref inputManagerCurrentData))
                     {
-                        serializedObject.ApplyModifiedProperties();
+                        serializedObject.ApplyModifiedPropertiesWithoutUndo();
                         AssetDatabase.Refresh();
                     }
                 }
@@ -724,4 +723,3 @@ namespace UnityEditor.Experimental.EditorXR.LegacyInputHelpers
         #endregion
     }
 }
-#endif

@@ -121,6 +121,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         protected override void ComputeConditions()
         {
+            m_ItemSize = GetObjectSize(m_Templates[0]);
+
             base.ComputeConditions();
 
             m_NumPerRow = (int)(m_Size.x / m_ItemSize.x);

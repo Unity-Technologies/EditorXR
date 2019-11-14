@@ -276,7 +276,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void CreateSerializedWorkspaces()
         {
-            if (!preserveWorkspaces)
+            if (!preserveWorkspaces || m_Preferences == null)
                 return;
 
             foreach (var workspaceLayout in m_Preferences.workspaceLayouts)

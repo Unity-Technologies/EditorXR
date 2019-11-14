@@ -1,11 +1,9 @@
-
-using UnityEditor.Experimental.EditorVR.Utilities;
-#if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
@@ -405,4 +403,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     }
 #endif
 }
-#endif

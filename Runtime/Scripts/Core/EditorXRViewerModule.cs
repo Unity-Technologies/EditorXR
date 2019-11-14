@@ -1,4 +1,3 @@
-#if UNITY_2018_3_OR_NEWER
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -472,4 +471,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void UnloadProvider() { }
     }
 }
-#endif

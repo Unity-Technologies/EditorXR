@@ -1,7 +1,5 @@
-
-using Unity.Labs.EditorXR.Interfaces;
-#if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Modules;
 
@@ -34,4 +32,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void UnloadModule() { }
     }
 }
-#endif
