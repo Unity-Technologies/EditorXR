@@ -283,7 +283,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 var layout = workspaceLayout;
                 var workspaceType = Type.GetType(workspaceLayout.name);
-                Debug.Log(workspaceType);
                 if (workspaceType != null)
                 {
                     if (Core.EditorVR.HiddenTypes.Contains(workspaceType))
