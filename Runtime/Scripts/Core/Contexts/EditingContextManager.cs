@@ -147,7 +147,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return PlayerSettings.GetVirtualRealitySupported(BuildTargetGroup.Standalone);
         }
 
-#if UNITY_2018_3_OR_NEWER
         [SettingsProvider]
         static SettingsProvider CreateSettingsProvider()
         {
@@ -227,7 +226,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             return provider;
         }
-#endif
 
         static void OnAutoOpenStateChanged()
         {
@@ -453,11 +451,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_ContextLabelRect.y = height;
 
             GUI.Label(m_ContextLabelRect, "Editing Context:");
-            m_SelectedContextIndex = EditorGUI.Popup(m_ContextPopupRect, m_SelectedContextIndex, m_ContextNames);
-            if (GUI.changed)
+            using (var check = new EditorGUI.ChangeCheckScope())
             {
-                SetEditingContext(s_AvailableContexts[m_SelectedContextIndex]);
-                GUIUtility.ExitGUI();
+                m_SelectedContextIndex = EditorGUI.Popup(m_ContextPopupRect, m_SelectedContextIndex, m_ContextNames);
+                if (check.changed)
+                {
+                    SetEditingContext(s_AvailableContexts[m_SelectedContextIndex]);
+                    GUIUtility.ExitGUI();
+                }
             }
         }
 #endif

@@ -1,5 +1,4 @@
-﻿#if UNITY_2018_3_OR_NEWER
-using System;
+﻿using System;
 using System.IO;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
@@ -171,4 +170,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void UnloadProvider() { }
     }
 }
-#endif

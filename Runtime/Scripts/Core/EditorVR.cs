@@ -14,7 +14,6 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-#if UNITY_2018_3_OR_NEWER
 #if UNITY_EDITOR
     [RequiresTag(VRPlayerTag)]
 #endif
@@ -192,34 +191,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
         }
     }
-#else
-#if UNITY_EDITOR
-    [InitializeOnLoad]
-#endif
-    class NoEditorVR
-    {
-        const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
-
-        static NoEditorVR()
-        {
-            if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
-            {
-                var message = "EditorVR requires Unity 2018.3.12 or above.";
-                var result = EditorUtility.DisplayDialogComplex("Update Unity", message, "Download", "Ignore", "Remind Me Again");
-                switch (result)
-                {
-                    case 0:
-                        Application.OpenURL("https://unity3d.com/get-unity/download");
-                        break;
-                    case 1:
-                        EditorPrefs.SetBool(k_ShowCustomEditorWarning, false);
-                        break;
-                    case 2:
-                        Debug.Log("<color=orange>" + message + "</color>");
-                        break;
-                }
-            }
-        }
-    }
-#endif
 }
