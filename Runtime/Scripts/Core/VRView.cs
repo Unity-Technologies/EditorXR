@@ -254,19 +254,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (viewEnabled != null)
                 viewEnabled();
-
-#if UNITY_2019_1_OR_NEWER
-            var nodeStates = new List<XRNodeState>();
-            InputTracking.GetNodeStates(nodeStates);
-            foreach (var nodeState in nodeStates)
-            {
-                if (nodeState.nodeType != XRNode.Head)
-                    continue;
-
-                m_HeadNode = nodeState;
-                break;
-            }
-#endif
         }
 
         static void CopyImagesEffectsToCamera(Camera targetCamera)
@@ -321,20 +308,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (!m_Camera)
                 return;
 
+#pragma warning disable 618
             var cameraTransform = m_Camera.transform;
-
-#if UNITY_2019_1_OR_NEWER
-            Vector3 localPosition;
-            if (m_HeadNode.TryGetPosition(out localPosition))
-                cameraTransform.localPosition = localPosition;
-
-            Quaternion rotation;
-            if (m_HeadNode.TryGetRotation(out rotation))
-                cameraTransform.localRotation = rotation;
-#else
             cameraTransform.localPosition = InputTracking.GetLocalPosition(XRNode.Head);
             cameraTransform.localRotation = InputTracking.GetLocalRotation(XRNode.Head);
-#endif
+#pragma warning restore 618
         }
 
         public void CreateCameraTargetTexture(ref RenderTexture renderTexture, Rect cameraRect, bool hdr)
@@ -448,6 +426,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (e.type == EventType.Repaint)
                 {
+#if UNITY_2019_1_OR_NEWER
+                    if (!customPreviewCamera)
+                        guiRect = new Rect(guiRect.position.x, guiRect.position.y + guiRect.height, guiRect.width, -guiRect.height);
+#endif
+
                     var renderTexture = customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_TargetTexture;
                     GUI.DrawTexture(guiRect, renderTexture, ScaleMode.StretchToFill, false);
                 }

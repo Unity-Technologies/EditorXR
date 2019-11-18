@@ -1,4 +1,3 @@
-#if UNITY_2018_3_OR_NEWER
 using System;
 using System.Linq;
 using Unity.Labs.EditorXR.Interfaces;
@@ -87,4 +86,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void UnloadProvider() { }
     }
 }
-#endif

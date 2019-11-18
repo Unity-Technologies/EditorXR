@@ -466,8 +466,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void RecycleTooltip(TooltipData tooltipData)
         {
             var tooltipUI = tooltipData.tooltipUI;
+            if (tooltipUI == null)
+                return;
+
             tooltipUI.becameVisible -= tooltipData.becameVisible;
             tooltipUI.gameObject.SetActive(false);
+
             if (tooltipUI.removeSelf != null)
                 tooltipUI.removeSelf(tooltipUI);
 

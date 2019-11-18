@@ -1,0 +1,1 @@
+Please refer to https://github.cds.internal.unity3d.com/unity/upm-ci-yamato-templates

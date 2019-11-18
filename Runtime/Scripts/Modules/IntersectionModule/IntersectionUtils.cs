@@ -7,6 +7,7 @@ namespace Unity.Labs.SpatialHash
     {
         // Local method use only -- created here to reduce garbage collection
         static readonly Vector3[] k_TriangleVertices = new Vector3[3];
+        static readonly Collider[] k_Colliders = new Collider[64];
         public static Mesh BakedMesh { private get; set; }
 
         /// <summary>
@@ -259,14 +260,20 @@ namespace Unity.Labs.SpatialHash
 
             testerTransform.localScale = objScale;
 
-            var overlaps = Physics.OverlapSphere(center, radius);
+            // HACK: Signal to the physics system that the collider has moved
+            collisionTester.enabled = false;
+            collisionTester.enabled = true;
+
+            var count = Physics.OverlapSphereNonAlloc(center, radius, k_Colliders);
 
             testerTransform.position = Vector3.zero;
             testerTransform.localScale = Vector3.one;
             testerTransform.rotation = Quaternion.identity;
 
-            foreach (var intersection in overlaps)
+            for (var i = 0; i < count; i++)
             {
+                var intersection = k_Colliders[i];
+
                 if (intersection.gameObject == collisionTester.gameObject)
                     return true;
             }
