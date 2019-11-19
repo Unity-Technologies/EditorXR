@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Unity.Labs.SpatialHash
+namespace Unity.Labs.EditorXR
 {
     public sealed class IntersectionTester : MonoBehaviour
     {

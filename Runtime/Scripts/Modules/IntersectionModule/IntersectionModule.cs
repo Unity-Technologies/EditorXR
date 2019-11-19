@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.SpatialHash;
 using Unity.Labs.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.SpatialHash
+namespace Unity.Labs.EditorXR
 {
     public sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
         IUsesGameObjectLocking, IUsesGetVRPlayerObjects, IProvidesSceneRaycast,
@@ -37,14 +38,14 @@ namespace Unity.Labs.SpatialHash
         readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
         Coroutine m_UpdateCoroutine;
 
-        SpatialHash m_SpatialHash;
+        SpatialHashContainer m_SpatialHashContainer;
         MeshCollider m_CollisionTester;
 
-        public bool ready { get { return m_SpatialHash != null; } }
+        public bool ready { get { return m_SpatialHashContainer != null; } }
 
         public List<IntersectionTester> testers { get { return m_Testers; } }
 
-        public Dictionary<Type, IEnumerable> allObjects { get { return m_SpatialHash == null ? null : m_SpatialHash.allObjects; } }
+        public Dictionary<Type, IEnumerable> allObjects { get { return m_SpatialHashContainer == null ? null : m_SpatialHashContainer.allObjects; } }
 
         public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
 
@@ -90,7 +91,7 @@ namespace Unity.Labs.SpatialHash
             if (m_SpatialHashModule != null)
             {
                 m_SpatialHashModule.Clear();
-                m_SpatialHash = m_SpatialHashModule.spatialHash;
+                m_SpatialHashContainer = m_SpatialHashModule.spatialHashContainer;
             }
 
             m_IntersectedObjects.Clear();
@@ -116,7 +117,7 @@ namespace Unity.Labs.SpatialHash
 
                     var render = meshFilter.GetComponent<Renderer>();
                     if (render)
-                        m_SpatialHash.AddObject(render, render.bounds);
+                        m_SpatialHashContainer.AddObject(render, render.bounds);
                 }
             }
 
@@ -128,7 +129,7 @@ namespace Unity.Labs.SpatialHash
                     if (shouldExcludeObject != null && shouldExcludeObject(skinnedMeshRenderer.gameObject))
                         continue;
 
-                    m_SpatialHash.AddObject(skinnedMeshRenderer, skinnedMeshRenderer.bounds);
+                    m_SpatialHashContainer.AddObject(skinnedMeshRenderer, skinnedMeshRenderer.bounds);
                 }
             }
         }
@@ -141,7 +142,7 @@ namespace Unity.Labs.SpatialHash
 
                 // TODO AE 9/21/16: Hook updates of new objects that are created
                 k_Renderers.Clear();
-                m_SpatialHash.GetObjects(k_Renderers);
+                m_SpatialHashContainer.GetObjects(k_Renderers);
                 foreach (var obj in k_Renderers)
                 {
                     if (!obj)
@@ -159,13 +160,13 @@ namespace Unity.Labs.SpatialHash
 
                 foreach (var changedObject in m_ChangedObjects)
                 {
-                    m_SpatialHash.RemoveObject(changedObject);
+                    m_SpatialHashContainer.RemoveObject(changedObject);
 
                     if (changedObject)
-                        m_SpatialHash.AddObject(changedObject, changedObject.bounds);
+                        m_SpatialHashContainer.AddObject(changedObject, changedObject.bounds);
                 }
 
-                m_SpatialHash.Trim();
+                m_SpatialHashContainer.Trim();
 
                 yield return null;
             }
@@ -189,7 +190,7 @@ namespace Unity.Labs.SpatialHash
 
         public void OnBehaviorUpdate()
         {
-            if (m_SpatialHash == null)
+            if (m_SpatialHashContainer == null)
                 return;
 
             if (m_Testers == null)
@@ -211,7 +212,7 @@ namespace Unity.Labs.SpatialHash
                     var intersectionFound = false;
                     m_Intersections.Clear();
                     var testerCollider = tester.collider;
-                    if (m_SpatialHash.GetIntersections(m_Intersections, testerCollider.bounds))
+                    if (m_SpatialHashContainer.GetIntersections(m_Intersections, testerCollider.bounds))
                     {
                         var testerBounds = testerCollider.bounds;
                         var testerBoundsCenter = testerBounds.center;
@@ -351,7 +352,7 @@ namespace Unity.Labs.SpatialHash
             var result = false;
             var distance = Mathf.Infinity;
             m_Intersections.Clear();
-            if (m_SpatialHash.GetIntersections(m_Intersections, ray, maxDistance))
+            if (m_SpatialHashContainer.GetIntersections(m_Intersections, ray, maxDistance))
             {
                 for (int i = 0; i < m_Intersections.Count; i++)
                 {
@@ -388,7 +389,7 @@ namespace Unity.Labs.SpatialHash
         {
             var result = false;
             m_Intersections.Clear();
-            if (m_SpatialHash.GetIntersections(m_Intersections, bounds))
+            if (m_SpatialHashContainer.GetIntersections(m_Intersections, bounds))
             {
                 for (var i = 0; i < m_Intersections.Count; i++)
                 {
@@ -416,7 +417,7 @@ namespace Unity.Labs.SpatialHash
             var result = false;
             m_Intersections.Clear();
             var bounds = new Bounds(center, radius * 2 * Vector3.one);
-            if (m_SpatialHash.GetIntersections(m_Intersections, bounds))
+            if (m_SpatialHashContainer.GetIntersections(m_Intersections, bounds))
             {
                 for (var i = 0; i < m_Intersections.Count; i++)
                 {

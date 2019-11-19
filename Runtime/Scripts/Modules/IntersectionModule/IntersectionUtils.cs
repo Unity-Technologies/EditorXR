@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Labs.Utils;
 
-namespace Unity.Labs.SpatialHash
+namespace Unity.Labs.EditorXR
 {
     static class IntersectionUtils
     {

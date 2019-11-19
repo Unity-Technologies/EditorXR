@@ -247,7 +247,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var renderer = m_PlayerBody.GetComponent<Renderer>();
             var spatialHashModule = ModuleLoaderCore.instance.GetModule<SpatialHashModule>();
             if (spatialHashModule != null)
-                spatialHashModule.spatialHash.AddObject(renderer, renderer.bounds);
+                spatialHashModule.spatialHashContainer.AddObject(renderer, renderer.bounds);
 
             var playerObjects = m_PlayerBody.GetComponentsInChildren<Renderer>(true);
             foreach (var playerObject in playerObjects)
