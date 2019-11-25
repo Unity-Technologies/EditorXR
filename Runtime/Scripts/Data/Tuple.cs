@@ -1,6 +1,6 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿namespace Unity.Labs.EditorXR
 {
-    public class Tuple<T1, T2>
+    class Tuple<T1, T2>
     {
         public T1 firstElement;
         public T2 secondElement;
@@ -12,7 +12,7 @@
         }
     }
 
-    public class Tuple<T1, T2, T3>
+    class Tuple<T1, T2, T3>
     {
         public T1 firstElement;
         public T2 secondElement;
@@ -26,7 +26,7 @@
         }
     }
 
-    public class Tuple<T1, T2, T3, T4>
+    class Tuple<T1, T2, T3, T4>
     {
         public T1 firstElement;
         public T2 secondElement;
@@ -42,7 +42,7 @@
         }
     }
 
-    public class Tuple<T1, T2, T3, T4, T5>
+    class Tuple<T1, T2, T3, T4, T5>
     {
         public T1 firstElement;
         public T2 secondElement;

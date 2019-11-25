@@ -1,6 +1,7 @@
-﻿using UnityEditor.UI;
+﻿using UnityEditor;
+using UnityEditor.UI;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     [CustomEditor(typeof(InputField))]
     [CanEditMultipleObjects]

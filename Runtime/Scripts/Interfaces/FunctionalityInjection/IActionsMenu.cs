@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Decorates a class that wants to receive menu actions

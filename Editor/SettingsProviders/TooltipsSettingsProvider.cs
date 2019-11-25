@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.Utils;
+using UnityEditor;
 using UnityEngine;
 
 #if UNITY_2019_1_OR_NEWER
@@ -11,7 +12,7 @@ using UnityEngine.UIElements;
 using UnityEngine.Experimental.UIElements;
 #endif
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     class TooltipsSettingsProvider : EditorXRSettingsProvider
     {

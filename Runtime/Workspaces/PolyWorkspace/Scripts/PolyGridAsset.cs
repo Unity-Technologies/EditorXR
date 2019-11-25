@@ -14,9 +14,9 @@ using UnityEngine.Networking;
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 #endif
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
-    public class PolyGridAsset : IListViewItemData<string>, IUsesWeb
+    class PolyGridAsset : IListViewItemData<string>, IUsesWeb
     {
         const int k_MaxPreviewComplexity = 2500;
         static readonly string k_TemplateName = "PolyGridItem";
@@ -143,14 +143,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 #if !INCLUDE_POLY_TOOLKIT
     // Stub classes to avoid too many #ifs
-    public class PolyAsset
+    class PolyAsset
     {
         public string name;
         public string displayName;
         public PolyThumbnail thumbnail;
     }
 
-    public class PolyThumbnail
+    class PolyThumbnail
     {
         public string url;
     }

@@ -1,9 +1,9 @@
 ﻿#if !UNITY_EDITOR
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
-    public class SerializedObject
+    class SerializedObject
     {
         public Object targetObject;
     }

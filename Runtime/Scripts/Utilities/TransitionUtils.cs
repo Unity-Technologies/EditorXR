@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Utilities
+namespace Unity.Labs.EditorXR.Utilities
 {
     /// <summary>
     /// Transition utilities

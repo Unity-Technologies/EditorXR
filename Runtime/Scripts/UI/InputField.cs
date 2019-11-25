@@ -2,17 +2,18 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils.GUI;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     abstract class InputField : Selectable, ISelectionFlags, IUsesViewerScale, IAllWorkspaces
     {
@@ -177,7 +178,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
             m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(keyboardOutOfRange));
 
 #if UNITY_EDITOR
-            Undo.IncrementCurrentGroup(); // Every time we open the keyboard is a new modification
+            UnityEditor.Undo.IncrementCurrentGroup(); // Every time we open the keyboard is a new modification
 #endif
         }
 

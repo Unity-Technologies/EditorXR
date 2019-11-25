@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Data;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     sealed class AssetGridViewController : EditorXRListViewController<AssetData, AssetGridItem, int>
     {

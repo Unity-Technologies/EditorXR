@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Handles
+namespace Unity.Labs.EditorXR.Handles
 {
     /// <summary>
     /// Event data for BaseHandle.DragEventCallback

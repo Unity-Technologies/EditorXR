@@ -1,8 +1,9 @@
 ﻿using Unity.Labs.EditorXR.Interfaces;
-using UnityEditor.Experimental.EditorVR.Menus;
+using Unity.Labs.EditorXR.Menus;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     [CustomEditor(typeof(MainMenu))]
     class MainMenuEditor : Editor

@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.EditorXR.Helpers;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Utilities
+namespace Unity.Labs.EditorXR.Utilities
 {
     /// <summary>
     /// Class defining the Unity brand color swatches & gradients
     /// </summary>
-    public static class UnityBrandColorScheme
+    static class UnityBrandColorScheme
     {
         /// <summary>
         /// Random used to aid in lack of repeating color choices

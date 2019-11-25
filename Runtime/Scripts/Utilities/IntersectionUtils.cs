@@ -1,8 +1,8 @@
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Modules;
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Modules;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Utilities
+namespace Unity.Labs.EditorXR.Utilities
 {
     static class IntersectionUtils
     {

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Helpers
+namespace Unity.Labs.EditorXR.Helpers
 {
 #if UNITY_EDITOR
     /// <summary>

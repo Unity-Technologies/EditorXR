@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Proxies
+namespace Unity.Labs.EditorXR.Proxies
 {
     /// <summary>
     /// Affordance model; data defining a proxy affordance (button/analog/etc)

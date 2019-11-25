@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Provides an icon/sprite to display on a menu item which represents this class

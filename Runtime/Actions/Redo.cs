@@ -1,4 +1,4 @@
-﻿namespace UnityEditor.Experimental.EditorVR.Actions
+﻿namespace Unity.Labs.EditorXR
 {
     [ActionMenuItem("Redo", ActionMenuItemAttribute.DefaultActionSectionName, 1)]
     [SpatialMenuItem("Redo", "Actions", "Redo the previously undone action")]

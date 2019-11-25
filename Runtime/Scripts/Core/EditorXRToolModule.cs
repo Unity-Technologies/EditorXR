@@ -2,16 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Menus;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Tools;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Menus;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Tools;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     class ToolData
     {
@@ -37,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public readonly Dictionary<IMenu, MenuHideData> menuHideData = new Dictionary<IMenu, MenuHideData>();
     }
 
-    public class EditorXRToolModule : MonoBehaviour,
+    class EditorXRToolModule : MonoBehaviour,
         IInterfaceConnector, IUsesConnectInterfaces, IDelayedInitializationModule,
         IUsesFunctionalityInjection, IProvidesSelectTool
     {
@@ -66,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
+            LinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
             m_RayModule = ModuleLoaderCore.instance.GetModule<EditorXRRayModule>();
         }
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     [AttributeUsage(AttributeTargets.Class)]
     sealed class EditorOnlyWorkspaceAttribute : Attribute

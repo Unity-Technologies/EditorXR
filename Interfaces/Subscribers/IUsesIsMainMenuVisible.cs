@@ -10,13 +10,17 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesIsMainMenuVisible
+    /// </summary>
     public static class UsesIsMainMenuVisibleMethods
     {
         /// <summary>
-        /// Returns whether the main menu is visible on the specified rayOrigin
+        /// Check if the main menu is visible on the specified rayOrigin
         /// </summary>
         /// <param name="user">The functionality user</param>
         /// <param name="rayOrigin">The rayOrigin that is being checked</param>
+        /// <returns>Whether the main menu is visible on the specified rayOrigin</returns>
         public static bool IsMainMenuVisible(this IUsesIsMainMenuVisible user, Transform rayOrigin)
         {
 #if FI_AUTOFILL

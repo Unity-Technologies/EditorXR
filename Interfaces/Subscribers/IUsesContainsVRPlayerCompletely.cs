@@ -8,6 +8,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     /// </summary>
     public interface IUsesContainsVRPlayerCompletely : IFunctionalitySubscriber<IProvidesContainsVRPlayerCompletely> { }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesContainsVRPlayerCompletely
+    /// </summary>
     public static class UsesContainsVRPlayerCompletelyMethods
     {
         /// <summary>

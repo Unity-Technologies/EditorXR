@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Decorates types that can provide a sub-menu in the SpatialUI
     /// </summary>
-    public interface ISpatialMenuProvider
+    interface ISpatialMenuProvider
     {
         /// <summary>
         /// Collection of section elements with which to populate the spatial UI table/list/view

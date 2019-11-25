@@ -1,12 +1,13 @@
-﻿#if UNITY_EDITOR
+﻿
+using Unity.Labs.EditorXR.Utilities;
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     [MainMenuItem("Locked Objects", "Workspaces", "View all locked objects in your scene(s)")]
     [SpatialMenuItem("Locked Objects", "Workspaces", "View all locked objects in your scene(s)")]

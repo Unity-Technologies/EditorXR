@@ -11,6 +11,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesSelectObject
+    /// </summary>
     public static class UsesSelectObjectMethods
     {
         /// <summary>

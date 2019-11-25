@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
+using UnityEditor;
 
 // Copied from UnityEditor.XR.LegacyInputHelpers
-namespace UnityEditor.Experimental.EditorXR.LegacyInputHelpers
+namespace Unity.Labs.EditorXR.LegacyInputHelpers
 {
     /// <summary>
     /// The SeedXRInputBindings class is used to populate the Input Asset with the cross platform bindings published by Unity for most XR Devices.
@@ -11,7 +12,7 @@ namespace UnityEditor.Experimental.EditorXR.LegacyInputHelpers
     {
         static SeedXRInputBindings()
         {
-            EditorVR.Core.EditorVR.UpdateInputManager = UpdateInputManager;
+            Core.EditorVR.UpdateInputManager = UpdateInputManager;
         }
         #region InputAxisDataAndConfig
         // Same as InputAxis.h

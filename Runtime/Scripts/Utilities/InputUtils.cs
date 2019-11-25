@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Utilities
+namespace Unity.Labs.EditorXR.Utilities
 {
-    public class BindingDictionary : Dictionary<string, List<VRInputDevice.VRControl>>
+    class BindingDictionary : Dictionary<string, List<VRInputDevice.VRControl>>
     {
     }
 

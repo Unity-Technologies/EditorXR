@@ -1,7 +1,6 @@
 ﻿using System;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR

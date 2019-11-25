@@ -1,7 +1,8 @@
 ﻿using NUnit.Framework;
-using UnityEditor.Experimental.EditorVR.Core;
+using Unity.Labs.EditorXR.Core;
+using UnityEditor;
 
-namespace UnityEditor.Experimental.EditorVR.Tests.Core
+namespace Unity.Labs.EditorXR.Tests.Core
 {
     [SetUpFixture]
     public class EditorVRTestInitializer

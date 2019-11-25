@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// The main menu that can be shown on device proxies

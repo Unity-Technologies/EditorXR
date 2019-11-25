@@ -1,6 +1,7 @@
-﻿using UnityEditor.UI;
+﻿using UnityEditor;
+using UnityEditor.UI;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     // Because Slider already has a custom editor, and we need to expose SelectionFlags, we need a custom inspector
     [CustomEditor(typeof(RaySlider))]

@@ -4,7 +4,7 @@ namespace Unity.Labs.EditorXR.Interfaces
     /// <summary>
     ///   <para>Where is the tool handle placed.</para>
     /// </summary>
-    public enum PivotMode
+    enum PivotMode
     {
         /// <summary>
         ///   <para>The tool handle is at the graphical center of the selection.</para>

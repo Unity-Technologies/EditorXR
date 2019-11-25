@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Helpers;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
     sealed class MainMenuFace : MonoBehaviour
     {

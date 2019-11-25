@@ -1,9 +1,9 @@
 ﻿using System;
 using Unity.Labs.EditorXR.Interfaces;
-using UnityEditor.Experimental.EditorVR.Modules;
+using Unity.Labs.EditorXR.Modules;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Gives decorated class ability to control/perform spatial-scrolling
@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR
     /// Spatially scrolling allows for directional input-device movement to drive changes/progression of UI
     /// element selection, without the need for additional input beyond the movement of an input-device.
     /// </summary>
-    public interface IControlSpatialScrolling
+    interface IControlSpatialScrolling
     {
         /// <summary>
         /// The data defining a spatial scroll operation
@@ -19,7 +19,10 @@ namespace UnityEditor.Experimental.EditorVR
         SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
     }
 
-    public static class IControlSpatialScrollingMethods
+    /// <summary>
+    /// Extension methods for IControlSpatialScrolling
+    /// </summary>
+    static class ControlSpatialScrollingMethods
     {
         internal delegate SpatialScrollModule.SpatialScrollData PerformSpatialScrollDelegate(IControlSpatialScrolling caller, Node node, Vector3 startingPosition,
             Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true);

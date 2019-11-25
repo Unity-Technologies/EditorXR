@@ -1,14 +1,14 @@
 using System;
 using System.Collections;
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Helpers;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     sealed class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler, IUsesStencilRef
     {

@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Tools;
+using Unity.Labs.EditorXR.Workspaces;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Tools;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
     sealed class SpatialMainMenu : MonoBehaviour, IMainMenu, ISpatialMenuProvider, INodeToRay, IUsesCreateWorkspace
     {

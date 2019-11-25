@@ -1,4 +1,4 @@
-﻿namespace UnityEditor.Experimental.EditorVR.UI
+﻿namespace Unity.Labs.EditorXR.UI
 {
     /// <summary>
     /// Allows fine-grained control of what constitutes a selection

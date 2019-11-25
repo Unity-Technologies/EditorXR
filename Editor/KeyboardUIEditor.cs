@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     [CustomEditor(typeof(KeyboardUI))]
     sealed class KeyboardUIEditor : Editor

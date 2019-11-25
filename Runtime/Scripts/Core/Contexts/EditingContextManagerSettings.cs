@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     class EditingContextManagerSettings : ScriptableObject
     {

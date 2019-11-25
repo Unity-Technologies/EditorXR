@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Handles;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 using UnityEngine.UI;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
-    public class FeedbackModule : ScriptableSettings<FeedbackModule>, IDelayedInitializationModule, ISettingsMenuItemProvider,
+    class FeedbackModule : ScriptableSettings<FeedbackModule>, IDelayedInitializationModule, ISettingsMenuItemProvider,
         ISerializePreferences, IInterfaceConnector, IProvidesRequestFeedback
     {
         [Serializable]

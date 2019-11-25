@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Helpers
+namespace Unity.Labs.EditorXR.Helpers
 {
     sealed class GridCellSizeAdjuster : MonoBehaviour
     {

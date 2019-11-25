@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -13,7 +14,7 @@ using UnityEditor.Compilation;
 using UnityEditorInternal;
 #endif
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     [CreateAssetMenu(menuName = "EditorXR/Editing Context")]
     class EditorXRContext : ScriptableObject, IEditingContext

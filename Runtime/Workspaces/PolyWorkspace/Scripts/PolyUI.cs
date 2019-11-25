@@ -1,7 +1,7 @@
-using UnityEditor.Experimental.EditorVR.Handles;
+using Unity.Labs.EditorXR.Handles;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     sealed class PolyUI : MonoBehaviour
     {

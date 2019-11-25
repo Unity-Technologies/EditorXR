@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
     abstract class MainMenuSelectable : MonoBehaviour
     {

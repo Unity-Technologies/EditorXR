@@ -1,6 +1,6 @@
 ﻿using Unity.Labs.EditorXR.Interfaces;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     interface IAxisConstraints
     {

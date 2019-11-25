@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.HighlightModuleBehaviorOrder)]
     sealed class HighlightModule : ScriptableSettings<HighlightModule>, IModuleBehaviorCallbacks, IUsesGameObjectLocking,

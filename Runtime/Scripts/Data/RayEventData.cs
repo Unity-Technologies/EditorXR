@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     sealed class RayEventData : PointerEventData
     {

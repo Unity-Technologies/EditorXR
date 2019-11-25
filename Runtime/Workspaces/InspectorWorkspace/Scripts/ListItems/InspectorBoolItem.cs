@@ -1,8 +1,8 @@
-﻿using UnityEditor.Experimental.EditorVR.Data;
+﻿using Unity.Labs.EditorXR.Data;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     sealed class InspectorBoolItem : InspectorPropertyItem
     {

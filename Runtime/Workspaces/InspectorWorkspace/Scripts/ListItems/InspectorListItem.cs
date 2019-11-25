@@ -1,16 +1,17 @@
 using TMPro;
+using Unity.Labs.EditorXR.Data;
+using Unity.Labs.EditorXR.Handles;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.UI;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.UI;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
+using InputField = Unity.Labs.EditorXR.UI.InputField;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     abstract class InspectorListItem : NestedDraggableListItem<InspectorData, int>, IUsesSetHighlight, IUsesGetFieldGrabOrigin
     {

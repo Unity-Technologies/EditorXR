@@ -1,19 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Labs.EditorXR;
+using Unity.Labs.EditorXR.Helpers;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Manipulators;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Manipulators;
-using UnityEditor.Experimental.EditorVR.Menus;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     class EditorXRRayModule : ScriptableSettings<EditorXRRayModule>,
         IModuleDependency<DeviceInputModule>, IInterfaceConnector, IForEachRayOrigin,

@@ -1,12 +1,12 @@
 ﻿using TMPro;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using Unity.Labs.XRLineRenderer;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.XR;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Tools
+namespace Unity.Labs.EditorXR.Tools
 {
     sealed class ViewerScaleVisuals : MonoBehaviour, IUsesViewerScale
     {

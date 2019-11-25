@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Proxies;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Proxies;
+using UnityEditor;
 using UnityEngine;
 
 #if UNITY_2019_1_OR_NEWER
@@ -10,7 +11,7 @@ using UnityEngine.UIElements;
 using UnityEngine.Experimental.UIElements;
 #endif
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     class ProxyFeedbackSettingsProvider : EditorXRSettingsProvider
     {
@@ -93,6 +94,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
             m_SerializedFeedback.Clear();
 
             var preferences = SerializedPreferencesModule.SerializedPreferences.Deserialize(SerializedPreferencesModule.serializedPreferences);
+            if (preferences == null)
+                return;
+
             foreach (var kvp in preferences.items)
             {
                 var type = kvp.Key;

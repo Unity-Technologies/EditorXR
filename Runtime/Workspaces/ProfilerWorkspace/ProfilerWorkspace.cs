@@ -1,9 +1,10 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Utilities;
+﻿
+using Unity.Labs.EditorXR.Helpers;
+using Unity.Labs.EditorXR.Utilities;
+#if UNITY_EDITOR
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     [EditorOnlyWorkspace]
     [MainMenuItem("Profiler", "Workspaces", "Analyze your project's performance")]

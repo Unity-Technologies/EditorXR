@@ -2,7 +2,7 @@
 using Unity.Labs.ModuleLoader;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Helpers
+namespace Unity.Labs.EditorXR.Helpers
 {
     /// <summary>
     /// Provides for smooth translation and/or rotation of an object

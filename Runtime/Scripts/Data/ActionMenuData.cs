@@ -1,6 +1,6 @@
 ﻿using Unity.Labs.EditorXR.Interfaces;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Used for passing action data for menu purposes

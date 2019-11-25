@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     [ModuleOrder(ModuleOrders.DeviceInputModuleOrder)]
     [ModuleBehaviorCallbackOrder(ModuleOrders.DeviceInputModuleBehaviorOrder)]
-    public sealed class DeviceInputModule : ScriptableSettings<DeviceInputModule>, IInterfaceConnector, IDelayedInitializationModule,
+    sealed class DeviceInputModule : ScriptableSettings<DeviceInputModule>, IInterfaceConnector, IDelayedInitializationModule,
         IModuleBehaviorCallbacks
     {
         class InputProcessor

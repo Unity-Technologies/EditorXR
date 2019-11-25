@@ -1,14 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using Unity.Labs.XRLineRenderer;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.XR;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Proxies
+namespace Unity.Labs.EditorXR.Proxies
 {
     sealed class DefaultProxyRay : MonoBehaviour, IUsesViewerScale
     {

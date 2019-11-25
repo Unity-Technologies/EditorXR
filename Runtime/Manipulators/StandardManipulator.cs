@@ -1,9 +1,9 @@
-﻿using Unity.Labs.EditorXR.Interfaces;
-using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.Utilities;
+﻿using Unity.Labs.EditorXR.Handles;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Manipulators
+namespace Unity.Labs.EditorXR.Manipulators
 {
     sealed class StandardManipulator : BaseManipulator
     {

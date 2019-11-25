@@ -14,6 +14,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesSnapping
+    /// </summary>
     public static class UsesSnappingMethods
     {
         /// <summary>

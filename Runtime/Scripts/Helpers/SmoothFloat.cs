@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Helpers
+namespace Unity.Labs.EditorXR.Helpers
 {
     /// <summary>
     /// Calculates a 'smooth' values of a float based on history.
     /// 1d-version of the PhysicsTracker
     /// </summary>
-    public class SmoothFloat
+    class SmoothFloat
     {
         /// <summary>
         /// The time period that the input values are averaged over

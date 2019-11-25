@@ -1,5 +1,5 @@
-﻿using UnityEditor;
-using UnityEditor.Experimental.EditorVR.Proxies;
+﻿using Unity.Labs.EditorXR.Proxies;
+using UnityEditor;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR

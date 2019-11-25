@@ -3,22 +3,22 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
     /// <summary>
     /// The SpatialMenu's UI/View-controller
     /// Drives the SpatialMenu visuals elements
     /// </summary>
-    public sealed class SpatialMenuUI : SpatialUIView, IAdaptPosition, IUsesDetectGazeDivergence, IUsesConnectInterfaces,
+    sealed class SpatialMenuUI : SpatialUIView, IAdaptPosition, IUsesDetectGazeDivergence, IUsesConnectInterfaces,
         IUsesRaycastResults, IUsesFunctionalityInjection
     {
         const float k_AllowedGazeDivergence = 45f;

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
-    public interface ISetEditingContext
+    interface ISetEditingContext
     {
     }
 
-    public static class ISetEditingContextMethods
+    static class SetEditingContextMethods
     {
         internal static Func<List<IEditingContext>> getAvailableEditingContexts { get; set; }
         internal static Func<List<IEditingContext>> getPreviousEditingContexts { get; set; }

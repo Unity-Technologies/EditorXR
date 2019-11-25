@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections;
 using TMPro;
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Helpers;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     sealed class GradientButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
     {

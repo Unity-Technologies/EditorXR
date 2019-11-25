@@ -10,6 +10,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesGameObjectLocking
+    /// </summary>
     public static class UsesGameObjectLockingMethods
     {
         /// <summary>
@@ -32,6 +35,7 @@ namespace Unity.Labs.EditorXR.Interfaces
         /// </summary>
         /// <param name="user">The functionality user</param>
         /// <param name="go">GameObject locked status to test</param>
+        /// <returns>Whether the GameObject is locked</returns>
         public static bool IsLocked(this IUsesGameObjectLocking user, GameObject go)
         {
 #if FI_AUTOFILL

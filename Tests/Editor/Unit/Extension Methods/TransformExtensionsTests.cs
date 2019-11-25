@@ -1,9 +1,8 @@
-﻿#if UNITY_5_6_OR_NEWER
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UnityEngine;
-using UnityEditor.Experimental.EditorVR.Extensions;
+using Unity.Labs.EditorXR.Extensions;
 
-namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
+namespace Unity.Labs.EditorXR.Tests.Extensions
 {
     [TestFixture]
     public class TransformExtensionsTests
@@ -31,4 +30,3 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
         }
     }
 }
-#endif

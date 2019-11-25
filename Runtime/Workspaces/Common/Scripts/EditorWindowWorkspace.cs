@@ -1,8 +1,8 @@
-﻿using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.Helpers;
+﻿using Unity.Labs.EditorXR.Handles;
+using Unity.Labs.EditorXR.Helpers;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
 #if UNITY_EDITOR
     abstract class EditorWindowWorkspace : Workspace

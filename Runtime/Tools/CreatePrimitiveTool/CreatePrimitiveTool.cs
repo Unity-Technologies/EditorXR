@@ -1,12 +1,13 @@
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Tools
+namespace Unity.Labs.EditorXR.Tools
 {
     [MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
     [SpatialMenuItem("Primitives", "Tools", "Create primitives in the scene")]
@@ -135,7 +136,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 m_CurrentGameObject = GameObject.CreatePrimitive(m_SelectedPrimitiveType);
 #if UNITY_EDITOR
-                Undo.RegisterCreatedObjectUndo(m_CurrentGameObject, "Create Primitive");
+                UnityEditor.Undo.RegisterCreatedObjectUndo(m_CurrentGameObject, "Create Primitive");
 #endif
                 // Set starting minimum scale (don't allow zero scale object to be created)
                 const float kMinScale = 0.0025f;
@@ -184,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 m_State = PrimitiveCreationStates.StartPoint;
 #if UNITY_EDITOR
-                Undo.IncrementCurrentGroup();
+                UnityEditor.Undo.IncrementCurrentGroup();
 #endif
 
                 consumeControl(standardInput.action);

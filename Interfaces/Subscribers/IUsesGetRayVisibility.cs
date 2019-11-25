@@ -10,6 +10,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesGetRayVisibility
+    /// </summary>
     public static class UsesGetRayVisibilityMethods
     {
         /// <summary>

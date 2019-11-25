@@ -4,7 +4,7 @@ using Unity.Labs.ModuleLoader;
 using PolyToolkit;
 using System;
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Workspaces;
+using Unity.Labs.EditorXR.Workspaces;
 #endif
 
 namespace Unity.Labs.EditorXR.Interfaces
@@ -12,9 +12,12 @@ namespace Unity.Labs.EditorXR.Interfaces
     /// <summary>
     /// Gives decorated class access to viewer scale
     /// </summary>
-    public interface IUsesPoly : IFunctionalitySubscriber<IProvidesPoly> { }
+    interface IUsesPoly : IFunctionalitySubscriber<IProvidesPoly> { }
 
-    public static class UsesPolyMethods
+    /// <summary>
+    /// Extension methods for implementors of IUsesPoly
+    /// </summary>
+    static class UsesPolyMethods
     {
 #if INCLUDE_POLY_TOOLKIT
         /// <summary>

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.UI;
+using Unity.Labs.EditorXR.Data;
+using Unity.Labs.EditorXR.UI;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     sealed class InspectorRectItem : InspectorPropertyItem
     {

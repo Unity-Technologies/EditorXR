@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Extensions
+namespace Unity.Labs.EditorXR.Extensions
 {
     static class Vector3Extensions
     {

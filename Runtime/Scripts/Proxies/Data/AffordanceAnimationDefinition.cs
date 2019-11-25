@@ -3,7 +3,7 @@ using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.Utils.GUI;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     /// <summary>
     /// Definition containing data utilized to change the translation/rotation of an affordance

@@ -1,5 +1,5 @@
-﻿using UnityEditor;
-using UnityEditor.Experimental.EditorVR.Menus;
+﻿using Unity.Labs.EditorXR.Menus;
+using UnityEditor;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR

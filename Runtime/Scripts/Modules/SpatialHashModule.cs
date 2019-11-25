@@ -1,12 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Data;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     sealed class SpatialHashModule : MonoBehaviour, IDelayedInitializationModule, IProvidesSpatialHash
     {

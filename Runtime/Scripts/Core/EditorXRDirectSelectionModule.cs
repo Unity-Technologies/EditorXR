@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Proxies;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.DirectSelectionModuleBehaviorOrder)]
     class EditorXRDirectSelectionModule : IDelayedInitializationModule,

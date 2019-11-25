@@ -4,7 +4,7 @@ using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Declares a class as being a proxy for an input device

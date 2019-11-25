@@ -1,9 +1,9 @@
 ﻿using TMPro;
+using Unity.Labs.EditorXR.Data;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     sealed class InspectorUnimplementedItem : InspectorPropertyItem
     {

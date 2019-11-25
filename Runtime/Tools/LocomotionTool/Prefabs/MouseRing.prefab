@@ -509,7 +509,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RingTransform: {fileID: 4972223272525874}
-  m_EleveationText: {fileID: 114033411654485852}
+  m_ElevationText: {fileID: 114033411654485852}
   m_CoordinatesText: {fileID: 114490602417851340}
   m_CoordinatesRenderer: {fileID: 23841250678452536}
   m_RingRenderer: {fileID: 23246761121398968}

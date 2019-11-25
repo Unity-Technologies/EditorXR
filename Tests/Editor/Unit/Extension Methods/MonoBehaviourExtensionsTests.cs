@@ -1,11 +1,10 @@
-﻿#if UNITY_5_6_OR_NEWER
-using System.Collections;
+﻿using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Proxies;
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Proxies;
 
-namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
+namespace Unity.Labs.EditorXR.Tests.Extensions
 {
     public class MonoBehaviourExtensionsTests
     {
@@ -33,4 +32,3 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
         }
     }
 }
-#endif

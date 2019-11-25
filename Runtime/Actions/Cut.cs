@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Actions
+namespace Unity.Labs.EditorXR
 {
     [ActionMenuItem("Cut", ActionMenuItemAttribute.DefaultActionSectionName, 4)]
     [SpatialMenuItem("Cut", "Actions", "Cut the selected object")]

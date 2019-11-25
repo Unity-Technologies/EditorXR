@@ -1,7 +1,8 @@
 ﻿#if !UNITY_CLOUD_BUILD
 using NUnit.Framework;
+using UnityEditor;
 
-namespace UnityEditor.Experimental.EditorVR.Tests
+namespace Unity.Labs.EditorXR.Tests
 {
     [InitializeOnLoad]
     public class BuildPlayerTest

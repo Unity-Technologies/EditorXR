@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR
 {
     sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap,
         IUsesControlHaptics, IUsesNode, IUsesConnectInterfaces, IUsesRequestFeedback, IActionsMenu

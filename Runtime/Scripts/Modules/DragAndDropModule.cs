@@ -4,7 +4,7 @@ using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     sealed class DragAndDropModule : IDelayedInitializationModule, IUsesUIEvents
     {

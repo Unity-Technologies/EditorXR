@@ -1,6 +1,6 @@
 using Unity.Labs.EditorXR.Interfaces;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Implementors can receive Feedback Requests

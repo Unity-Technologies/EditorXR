@@ -2,17 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 
 #if UNITY_EDITOR
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 #endif
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
 #if UNITY_EDITOR
     [RequiresTag(VRPlayerTag)]

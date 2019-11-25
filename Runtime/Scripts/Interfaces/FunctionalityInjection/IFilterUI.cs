@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Implementors receive a filtered list of types found
@@ -18,8 +18,17 @@ namespace UnityEditor.Experimental.EditorVR
         string searchQuery { get; }
     }
 
-    public static class IFilterUIMethods
+    /// <summary>
+    /// Extension methods for IFilterUI
+    /// </summary>
+    public static class FilterUIMethods
     {
+        /// <summary>
+        /// Check if the given string matches the filter
+        /// </summary>
+        /// <param name="filterUI">The filterUI providing the filtering</param>
+        /// <param name="type">The type string to check</param>
+        /// <returns>Whether the string matches the filter</returns>
         public static bool MatchesFilter(this IFilterUI filterUI, string type)
         {
             var searchQuery = filterUI.searchQuery;

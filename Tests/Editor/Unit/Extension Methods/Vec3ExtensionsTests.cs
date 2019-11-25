@@ -1,9 +1,9 @@
 ﻿using NUnit.Framework;
 using UnityEngine;
-using UnityEditor.Experimental.EditorVR.Extensions;
+using Unity.Labs.EditorXR.Extensions;
 
 // MinComponent() has no uses in the project currently, so no test for it
-namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
+namespace Unity.Labs.EditorXR.Tests.Extensions
 {
     public class Vec3ExtensionsTests
     {

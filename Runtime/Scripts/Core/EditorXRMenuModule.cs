@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Menus;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.UI;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Menus;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.UI;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     class MenuHideData
     {
@@ -69,8 +70,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            IUsesCustomMenuOriginsMethods.getCustomMenuOrigin = GetCustomMenuOrigin;
-            IUsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
+            UsesCustomMenuOriginsMethods.getCustomMenuOrigin = GetCustomMenuOrigin;
+            UsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
 
             var moduleLoaderCore = ModuleLoaderCore.instance;
             m_DirectSelectionModule = moduleLoaderCore.GetModule<EditorXRDirectSelectionModule>();

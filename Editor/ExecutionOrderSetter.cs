@@ -1,7 +1,8 @@
 ﻿using Unity.Labs.Utils;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     /// <summary>
     /// Sets the execution order of EditingContextManager

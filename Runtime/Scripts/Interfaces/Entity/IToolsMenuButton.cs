@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Provides an interface for handling Tools Menu Button functionality
@@ -61,7 +61,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         /// <summary>
         /// Bool denoting that this button implements a secondary button
-        /// The MainMenu & SelectionTool are examples of buttons that don't implement a secondary button for closing
+        /// The MainMenu and SelectionTool are examples of buttons that don't implement a secondary button for closing
         /// </summary>
         bool implementsSecondaryButton { set; }
 

@@ -1,13 +1,13 @@
 ﻿using System.Collections;
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.Utils;
-using Unity.Labs.XRLineRenderer;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.XR;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
-    public class HintLine : MonoBehaviour
+    class HintLine : MonoBehaviour
     {
         const string k_ShaderLineRadiusPropertyName = "_lineRadius";
 

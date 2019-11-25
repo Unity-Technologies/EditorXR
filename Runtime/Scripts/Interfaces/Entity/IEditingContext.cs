@@ -1,4 +1,4 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Implement this interface to create an editing context. You can also specify your own custom

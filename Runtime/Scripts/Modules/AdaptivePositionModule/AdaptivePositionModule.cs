@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
-    public sealed class AdaptivePositionModule : ScriptableSettings<AdaptivePositionModule>, IDelayedInitializationModule,
+    sealed class AdaptivePositionModule : ScriptableSettings<AdaptivePositionModule>, IDelayedInitializationModule,
         IModuleBehaviorCallbacks, IUsesDetectGazeDivergence, IUsesViewerScale, IUsesControlHaptics, IInterfaceConnector
     {
 #pragma warning disable 649

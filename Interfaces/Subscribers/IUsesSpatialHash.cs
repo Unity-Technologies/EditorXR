@@ -10,6 +10,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesSpatialHash
+    /// </summary>
     public static class UsesSpatialHashMethods
     {
         /// <summary>

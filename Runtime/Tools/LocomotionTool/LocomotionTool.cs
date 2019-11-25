@@ -1,18 +1,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.UI;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.UI;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Tools
+namespace Unity.Labs.EditorXR.Tools
 {
     sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IUsesRayVisibilitySettings,
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
@@ -113,7 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         bool m_MouseWasHeld;
         Vector3 m_RingDirection;
-        Ring m_Ring;
+        MouseLocomotionRing m_MouseLocomotionRing;
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
         readonly List<ProxyFeedbackRequest> m_MainButtonFeedback = new List<ProxyFeedbackRequest>();
@@ -208,7 +208,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
 
                 var instance = EditorXRUtils.Instantiate(m_RingPrefab, cameraRig, false);
-                m_Ring = instance.GetComponent<Ring>();
+                m_MouseLocomotionRing = instance.GetComponent<MouseLocomotionRing>();
             }
 
             m_BlinkVisualsGO = EditorXRUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
@@ -235,10 +235,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             var cameraTransform = CameraUtils.GetMainCamera().transform;
             var cameraYaw = cameraTransform.localRotation.ConstrainYaw();
-            if (!m_Ring)
+            if (!m_MouseLocomotionRing)
                 return;
 
-            var ringTransform = m_Ring.transform;
+            var ringTransform = m_MouseLocomotionRing.transform;
             ringTransform.localPosition = cameraTransform.localPosition + cameraYaw * k_RingOffset;
             ringTransform.localRotation = cameraYaw;
         }
@@ -251,8 +251,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (m_ViewerScaleVisuals)
                 UnityObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
 
-            if (m_Ring)
-                UnityObjectUtils.Destroy(m_Ring.gameObject);
+            if (m_MouseLocomotionRing)
+                UnityObjectUtils.Destroy(m_MouseLocomotionRing.gameObject);
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -312,7 +312,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     m_RingDirection = Vector3.Lerp(m_RingDirection, delta.normalized, k_RingDirectionSmoothing);
 
                     if (m_RingDirection != Vector3.zero)
-                        m_Ring.SetEffectWorldDirection(m_RingDirection);
+                        m_MouseLocomotionRing.SetEffectWorldDirection(m_RingDirection);
                 }
             }
 
@@ -324,15 +324,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             if (this.IsSharedUpdater(this) && !Mathf.Approximately(deltaScroll, 0f))
             {
-                if (!m_Ring.coreVisible)
+                if (!m_MouseLocomotionRing.coreVisible)
                     SetRingPosition();
 
-                m_Ring.SetEffectCore();
+                m_MouseLocomotionRing.SetEffectCore();
 
                 if (deltaScroll > 0f)
-                    m_Ring.SetEffectCoreUp();
+                    m_MouseLocomotionRing.SetEffectCoreUp();
                 else
-                    m_Ring.SetEffectCoreDown();
+                    m_MouseLocomotionRing.SetEffectCoreDown();
             }
 
             m_MouseWasHeld = VRView.LeftMouseButtonHeld;

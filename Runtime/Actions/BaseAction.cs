@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Actions
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// A convenience class for simple action implementations

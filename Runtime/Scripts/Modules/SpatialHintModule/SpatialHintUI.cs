@@ -1,14 +1,14 @@
 ﻿using System.Collections;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
-    public class SpatialHintUI : MonoBehaviour, IUsesViewerScale, IUsesControlHaptics, IRayToNode
+    class SpatialHintUI : MonoBehaviour, IUsesViewerScale, IUsesControlHaptics, IRayToNode
     {
         readonly Color k_PrimaryArrowColor = Color.white;
 

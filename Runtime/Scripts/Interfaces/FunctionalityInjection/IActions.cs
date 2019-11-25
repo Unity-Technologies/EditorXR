@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Declares that a class has tool actions that should be picked up by the system

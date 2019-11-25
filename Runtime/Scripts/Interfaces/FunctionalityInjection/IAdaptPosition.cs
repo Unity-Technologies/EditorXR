@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Gives decorated class ability to be automatically positioned by the AdaptivePositionModule
@@ -24,12 +24,12 @@ namespace UnityEditor.Experimental.EditorVR
         bool beingMoved { set; }
 
         /// <summary>
-        /// Denotes if this implementer is within the allowed gaze range, & being looked at
+        /// Denotes if this implementer is within the allowed gaze range, and being looked at
         /// </summary>
         bool inFocus { get; set; }
 
         /// <summary>
-        /// Angle representing the allowed amount of tolerance between the gaze's forward vector & the implementer transform,
+        /// Angle representing the allowed amount of tolerance between the gaze's forward vector and the implementer transform,
         /// beyond which the implementer will be repositioned by the AdaptivePositionModule
         /// </summary>
         float allowedDegreeOfGazeDivergence { get; }

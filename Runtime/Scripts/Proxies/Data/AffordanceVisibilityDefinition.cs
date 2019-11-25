@@ -1,13 +1,13 @@
 ﻿using System;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     /// <summary>
     /// Definition containing data utilized to change the visual appearance of an affordance for various actions
     /// </summary>
     [Serializable]
-    public class AffordanceVisibilityDefinition
+    class AffordanceVisibilityDefinition
     {
 #pragma warning disable 649
         [SerializeField]

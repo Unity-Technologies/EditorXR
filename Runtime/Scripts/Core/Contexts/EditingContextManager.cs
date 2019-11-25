@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
 using UnityEngine.XR;
 using UnityObject = UnityEngine.Object;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
 #if UNITY_EDITOR
     [InitializeOnLoad]
@@ -322,10 +323,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             ModuleLoaderCore.instance.OnBehaviorEnable();
 
-            ISetEditingContextMethods.getAvailableEditingContexts = GetAvailableEditingContexts;
-            ISetEditingContextMethods.getPreviousEditingContexts = GetPreviousEditingContexts;
-            ISetEditingContextMethods.setEditingContext = SetEditingContext;
-            ISetEditingContextMethods.restorePreviousEditingContext = RestorePreviousContext;
+            SetEditingContextMethods.getAvailableEditingContexts = GetAvailableEditingContexts;
+            SetEditingContextMethods.getPreviousEditingContexts = GetPreviousEditingContexts;
+            SetEditingContextMethods.setEditingContext = SetEditingContext;
+            SetEditingContextMethods.restorePreviousEditingContext = RestorePreviousContext;
 
 #if UNITY_EDITOR
             if (runInEditMode)
@@ -371,10 +372,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             SetEditingContext(null);
 
-            ISetEditingContextMethods.getAvailableEditingContexts = null;
-            ISetEditingContextMethods.getPreviousEditingContexts = null;
-            ISetEditingContextMethods.setEditingContext = null;
-            ISetEditingContextMethods.restorePreviousEditingContext = null;
+            SetEditingContextMethods.getAvailableEditingContexts = null;
+            SetEditingContextMethods.getPreviousEditingContexts = null;
+            SetEditingContextMethods.setEditingContext = null;
+            SetEditingContextMethods.restorePreviousEditingContext = null;
 
             SaveUserSettings(settings);
 

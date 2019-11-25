@@ -1,7 +1,7 @@
 ﻿using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     internal sealed class Tooltip : MonoBehaviour, ITooltip, ITooltipPlacement
     {

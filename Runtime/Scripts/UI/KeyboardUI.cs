@@ -1,15 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Handles;
+using Unity.Labs.EditorXR.Helpers;
 using Unity.Labs.EditorXR.Interfaces;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Manipulators;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.EditorXR.Manipulators;
+using Unity.Labs.EditorXR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     sealed class KeyboardUI : MonoBehaviour
     {

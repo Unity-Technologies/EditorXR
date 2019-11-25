@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
-    public class SnappingModuleSettingsUI : MonoBehaviour
+    class SnappingModuleSettingsUI : MonoBehaviour
     {
 #pragma warning disable 649
         [SerializeField]

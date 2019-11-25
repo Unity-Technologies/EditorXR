@@ -4,9 +4,9 @@ using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
-    public static class Selection
+    static class Selection
     {
         static Object[] s_Objects;
 

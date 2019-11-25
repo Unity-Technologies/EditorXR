@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Data;
+using Unity.Labs.EditorXR.UI;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     sealed class FolderListViewController : EditorXRNestedListViewController<FolderData, FolderListItem, int>
     {

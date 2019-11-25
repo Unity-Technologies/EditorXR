@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Data;
+using Unity.Labs.EditorXR.Data;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Exposes a property used to provide a hierarchy of project folders and assets to the object

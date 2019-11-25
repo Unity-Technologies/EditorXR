@@ -2,7 +2,7 @@
 using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Gives decorated class access to the GameObject over which a particular ray is hovering

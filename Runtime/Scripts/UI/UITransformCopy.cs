@@ -1,7 +1,7 @@
-﻿using UnityEditor.Experimental.EditorVR.Extensions;
+﻿using Unity.Labs.EditorXR.Extensions;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Helpers
+namespace Unity.Labs.EditorXR.Helpers
 {
     sealed class UITransformCopy : MonoBehaviour
     {

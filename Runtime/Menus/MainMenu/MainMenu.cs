@@ -1,18 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.Tools;
+using Unity.Labs.EditorXR.Utilities;
+using Unity.Labs.EditorXR.Workspaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.Tools;
-using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
     sealed class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, IUsesCreateWorkspace,
         ICustomActionMap, IUsesMenuOrigins, IUsesDeviceType, IUsesControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin,

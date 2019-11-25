@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.UI;
+using Unity.Labs.EditorXR.Data;
+using Unity.Labs.EditorXR.UI;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
+using InputField = Unity.Labs.EditorXR.UI.InputField;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
 #if UNITY_EDITOR
     sealed class InspectorHeaderItem : InspectorListItem

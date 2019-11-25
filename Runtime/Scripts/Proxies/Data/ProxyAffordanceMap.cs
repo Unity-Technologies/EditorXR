@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     [CreateAssetMenu(menuName = "EditorXR/Proxy Affordance Map", fileName = "NewProxyAffordanceMap.asset")]
-    public class ProxyAffordanceMap : ScriptableObject
+    class ProxyAffordanceMap : ScriptableObject
     {
         /// <summary>
         /// The type of visibility changes that will be performed on this affordance (color change, alpha change, material swap, etc)

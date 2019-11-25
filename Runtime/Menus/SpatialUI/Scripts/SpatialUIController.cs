@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Reflection;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
-using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
     /// <summary>
     /// Mandates that derived classes implement core required SpatialUI controller functionality
     /// </summary>
-    public abstract class SpatialUIController : MonoBehaviour, INodeToRay
+    abstract class SpatialUIController : MonoBehaviour, INodeToRay
     {
 #if UNITY_EDITOR
         // Pre-box fields to avoid allocation when setting them via reflection

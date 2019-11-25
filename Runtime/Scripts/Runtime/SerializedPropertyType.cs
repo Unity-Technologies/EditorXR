@@ -1,7 +1,7 @@
 ﻿#if !UNITY_EDITOR
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
-    public enum SerializedPropertyType
+    enum SerializedPropertyType
     {
         Generic = -1,
         Integer = 0,

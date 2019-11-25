@@ -1,9 +1,10 @@
 ﻿using System.Collections;
-using UnityEditor.Experimental.EditorVR.Input;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.EditorXR.Input;
+using Unity.Labs.EditorXR.Utilities;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Proxies
+namespace Unity.Labs.EditorXR.Proxies
 {
     sealed class TouchProxy : TwoHandedProxyBase
     {

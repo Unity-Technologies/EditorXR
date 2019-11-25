@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     /// <summary>
     /// Implementors can expose visibility callbacks to UI components when they are added to the same GameObject

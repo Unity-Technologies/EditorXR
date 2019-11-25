@@ -1,9 +1,9 @@
-﻿using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
+﻿using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     sealed class CuboidLayout : UIBehaviour
     {

@@ -11,6 +11,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesControlInputIntersection
+    /// </summary>
     public static class UsesControlInputIntersectionMethods
     {
         /// <summary>

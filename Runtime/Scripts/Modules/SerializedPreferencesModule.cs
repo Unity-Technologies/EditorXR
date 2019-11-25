@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Core;
+using Unity.Labs.EditorXR.Core;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     sealed class SerializedPreferencesModule : IDelayedInitializationModule, IInterfaceConnector
     {

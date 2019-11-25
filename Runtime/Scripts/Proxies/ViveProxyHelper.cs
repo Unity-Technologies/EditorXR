@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Proxies
+namespace Unity.Labs.EditorXR.Proxies
 {
     class ViveProxyHelper : MonoBehaviour
     {
