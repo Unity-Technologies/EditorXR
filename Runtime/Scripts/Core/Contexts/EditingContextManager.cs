@@ -59,7 +59,7 @@ namespace Unity.Labs.EditorXR.Core
             get
             {
                 var availableContexts = GetAvailableEditingContexts();
-                var context = availableContexts.Find(c => c.Equals(s_DefaultContext)) ?? availableContexts.First();
+                var context = availableContexts.Find(c => c.Equals(s_DefaultContext)) ?? availableContexts.FirstOrDefault();
 
                 var defaultContextName = settings.defaultContextName;
                 if (!string.IsNullOrEmpty(defaultContextName))
@@ -151,8 +151,9 @@ namespace Unity.Labs.EditorXR.Core
         static SettingsProvider CreateSettingsProvider()
         {
             var contextNames = GetEditingContextNames();
-            if (string.IsNullOrEmpty(settings.defaultContextName))
-                settings.defaultContextName = defaultContext.name;
+            var context = defaultContext;
+            if (string.IsNullOrEmpty(settings.defaultContextName) && context != null)
+                settings.defaultContextName = context.name;
 
             var selectedIndex = Array.IndexOf(contextNames, settings.defaultContextName);
             var provider = new SettingsProvider("Project/EditorXR/Context Manager", SettingsScope.Project)
