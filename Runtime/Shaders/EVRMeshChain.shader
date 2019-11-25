@@ -24,7 +24,7 @@
 		Pass
 	{
 		// In the first pass we write only to the alpha channel.
-		// This lets us punch a hole in the background that our 
+		// This lets us punch a hole in the background that our
 		// line color then shows through
 		Blend One One
 		BlendOp Min
@@ -75,5 +75,5 @@
 	}
 	}
 		FallBack "Diffuse"
-		CustomEditor "MeshChainShaderGUI"
+		CustomEditor "Unity.Labs.XRLineRenderer.MeshChainShaderGUI"
 }
