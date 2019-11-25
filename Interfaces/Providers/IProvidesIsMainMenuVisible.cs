@@ -8,10 +8,11 @@ namespace Unity.Labs.EditorXR.Interfaces
     /// </summary>
     public interface IProvidesIsMainMenuVisible : IFunctionalityProvider
     {
-      /// <summary>
-      /// Returns whether the main menu is visible on the specified rayOrigin
-      /// </summary>
-      /// <param name="rayOrigin">The rayOrigin that is being checked</param>
-      bool IsMainMenuVisible(Transform rayOrigin);
+        /// <summary>
+        /// Returns whether the main menu is visible on the specified rayOrigin
+        /// </summary>
+        /// <param name="rayOrigin">The rayOrigin that is being checked</param>
+        /// <returns>Whether the main menu is visible on the specified rayOrigin</returns>
+        bool IsMainMenuVisible(Transform rayOrigin);
     }
 }

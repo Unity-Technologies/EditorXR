@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.EditorXR.LegacyInputHelpers
     /// The SeedXRInputBindings class is used to populate the Input Asset with the cross platform bindings published by Unity for most XR Devices.
     /// </summary>
     [InitializeOnLoad]
-    public class SeedXRInputBindings
+    class SeedXRInputBindings
     {
         static SeedXRInputBindings()
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
+using Unity.Labs.XRLineRenderer;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEngine;
 
@@ -52,7 +53,7 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IUsesSceneRaycast
 #pragma warning restore 649
 
     float m_SpherePosition;
-    VRLineRenderer m_LineRenderer;
+    XRLineRenderer m_LineRenderer;
     Vector3[] m_Positions;
     Transform[] m_Spheres;
     Material m_VisualsMaterial;
@@ -100,7 +101,7 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IUsesSceneRaycast
 
         m_Positions = new Vector3[m_MaxProjectileSteps];
 
-        m_LineRenderer = GetComponent<VRLineRenderer>();
+        m_LineRenderer = GetComponent<XRLineRenderer>();
         m_LineRenderer.SetPositions(m_Positions, true);
 
         m_Spheres = new Transform[m_SphereCount];
@@ -232,12 +233,14 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IUsesSceneRaycast
             targetPosition = null;
 
         var lineWidth = m_LineWidth * viewerScale;
-        m_LineRenderer.SetWidth(lineWidth, lineWidth);
+        m_LineRenderer.widthStart = lineWidth;
+        m_LineRenderer.widthEnd = lineWidth;
 
         var color = targetPosition.HasValue ? m_ValidColor : m_InvalidColor;
         color.a *= m_TransitionAmount * m_TransitionAmount;
         m_VisualsMaterial.SetColor("_TintColor", color);
-        m_LineRenderer.SetColors(color, color);
+        m_LineRenderer.colorStart = color;
+        m_LineRenderer.colorEnd = color;
 
         m_LineRenderer.SetPositions(m_Positions);
     }

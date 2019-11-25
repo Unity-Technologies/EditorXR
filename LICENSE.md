@@ -1,5 +1,5 @@
+EditorXR copyright © 2019 Unity Technologies ApS
 EditorVR copyright © 2016 Unity Technologies ApS
-EditorXR copyright © 2018 Unity Technologies ApS
 
 Licensed under the Unity Companion License for Unity-dependent projects--see [Unity Companion License](http://www.unity3d.com/legal/licenses/Unity_Companion_License).
 

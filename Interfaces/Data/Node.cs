@@ -5,8 +5,19 @@
     /// </summary>
     public enum Node
     {
+        /// <summary>
+        /// No hand specified
+        /// </summary>
         None,
+
+        /// <summary>
+        /// The left hand
+        /// </summary>
         LeftHand,
+
+        /// <summary>
+        /// The right hand
+        /// </summary>
         RightHand
     }
 }

@@ -8,8 +8,19 @@ namespace Unity.Labs.EditorXR.Interfaces
     [Flags]
     public enum AxisFlags
     {
+        /// <summary>
+        /// The X axis
+        /// </summary>
         X = 1 << 0,
+
+        /// <summary>
+        /// The Y axis
+        /// </summary>
         Y = 1 << 1,
+
+        /// <summary>
+        /// The Z axis
+        /// </summary>
         Z = 1 << 2
     }
 }

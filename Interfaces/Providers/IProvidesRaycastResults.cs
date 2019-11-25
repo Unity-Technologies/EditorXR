@@ -13,6 +13,7 @@ namespace Unity.Labs.EditorXR.Interfaces
         /// Returns the first GameObject being hovered over, or intersected with
         /// </summary>
         /// <param name="rayOrigin">The rayOrigin for intersection purposes</param>
+        /// <returns>The first intersected GameObject</returns>
         GameObject GetFirstGameObject(Transform rayOrigin);
     }
 }

@@ -7,6 +7,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     /// </summary>
     public interface IStandardActionMap : IProcessInput
     {
+        /// <summary>
+        /// The default action map will be set on this property by the system
+        /// </summary>
         ActionMap standardActionMap { set; }
     }
 }

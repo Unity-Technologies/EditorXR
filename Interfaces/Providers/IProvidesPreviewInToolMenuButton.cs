@@ -11,10 +11,10 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
       /// <summary>
       /// Highlights a ToolMenuButton when a menu button is highlighted
+      /// </summary>
       /// <param name="rayOrigin">Transform: Ray origin to check</param>
       /// <param name="toolType">Type: MenuButton's tool type to preview</param>
       /// <param name="toolDescription">String: The tool description to display as a Tooltip</param>
-      /// </summary>
       void PreviewInToolsMenuButton(Transform rayOrigin, Type toolType, string toolDescription);
 
       /// <summary>

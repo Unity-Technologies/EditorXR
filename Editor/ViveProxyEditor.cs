@@ -2,16 +2,19 @@
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEngine;
 
-[CustomEditor(typeof(ViveProxy))]
-public class ViveProxyEditor : Editor
+namespace Unity.Labs.EditorXR
 {
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(ViveProxy))]
+    class ViveProxyEditor : Editor
     {
-        base.OnInspectorGUI();
-
-        if (GUILayout.Button("FakeActivate"))
+        public override void OnInspectorGUI()
         {
-            ((ViveProxy)target).FakeActivate();
+            base.OnInspectorGUI();
+
+            if (GUILayout.Button("FakeActivate"))
+            {
+                ((ViveProxy)target).FakeActivate();
+            }
         }
     }
 }

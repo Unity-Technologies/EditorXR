@@ -2,16 +2,19 @@
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEngine;
 
-[CustomEditor(typeof(TouchProxy))]
-public class TouchProxyEditor : Editor
+namespace Unity.Labs.EditorXR
 {
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(TouchProxy))]
+    class TouchProxyEditor : Editor
     {
-        base.OnInspectorGUI();
-
-        if (GUILayout.Button("FakeActivate"))
+        public override void OnInspectorGUI()
         {
-            ((TouchProxy)target).FakeActivate();
+            base.OnInspectorGUI();
+
+            if (GUILayout.Button("FakeActivate"))
+            {
+                ((TouchProxy)target).FakeActivate();
+            }
         }
     }
 }

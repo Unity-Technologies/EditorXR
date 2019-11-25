@@ -5,7 +5,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.UI
 {
     [CustomEditor(typeof(MainMenu))]
-    public class MainMenuEditor : Editor
+    class MainMenuEditor : Editor
     {
         public override void OnInspectorGUI()
         {

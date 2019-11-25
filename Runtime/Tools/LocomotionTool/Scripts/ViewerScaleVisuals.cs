@@ -1,6 +1,7 @@
 ﻿using TMPro;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.XRLineRenderer;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         float m_IconTranslateOffset = 0.08f;
 
         [SerializeField]
-        VRLineRenderer m_Line;
+        XRLineRenderer m_Line;
 
         [SerializeField]
         Transform m_IconsContainer;
@@ -92,7 +93,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_Line.SetPosition(0, Vector3.left * length);
             m_Line.SetPosition(1, Vector3.right * length);
             var lineWidth = m_LineWidth * viewerScale;
-            m_Line.SetWidth(lineWidth, lineWidth);
+            m_Line.widthStart = lineWidth;
+            m_Line.widthEnd = lineWidth;
             m_ScaleText.text = string.Format("Viewer Scale: {0:f2}", viewerScale);
         }
     }

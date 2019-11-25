@@ -4,12 +4,16 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     /// <summary>
-    /// Runtime hooks for EditingContextManager.  One of these must be in any scene which depends on modules for it to function properly
+    /// Sets the execution order of EditingContextManager
     /// </summary>
     [InitializeOnLoad]
     public static class ExecutionOrderSetter
     {
-        // For some reason, we can't set an execution order as low as int.MinValue
+        /// <summary>
+        /// The execution order value which will be set on the EditingContextManager script
+        /// This is intended to be as early as possible so that module Awake happens before all other scripts
+        /// It is still possible to use a lower execution order if necessary
+        /// </summary>
         public const int EditingContextManagerExecutionOrder = short.MinValue / 2;
 
         static ExecutionOrderSetter()
