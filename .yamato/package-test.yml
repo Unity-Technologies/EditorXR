@@ -187,7 +187,7 @@ pack:{{ test.name }}:
     {{ v[0] }}: {{ v[1]}}
 {% endfor -%}
   commands:
-  - git submodule update
+  - git submodule update --init
   - npm install git+ssh://git@github.cds.internal.unity3d.com/unity/upm-ci-utils#auto-publish -g --@upm:registry=https://artifactory.internal.unity3d.com/api/npm/upm-service-npm
 {% if test.type == "project" or test.type == "template" %}
   - upm-ci {{ test.type }} pack --project-path {{ test.path }}
