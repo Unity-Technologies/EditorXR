@@ -13,7 +13,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using PolyToolkit;
 #else
-using UnityEditor.Experimental.EditorVR.Core;
+using Unity.Labs.EditorXR.Core;
 using UnityEngine.InputNew;
 #endif
 

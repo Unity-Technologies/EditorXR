@@ -2,11 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Helpers;
 using Unity.Labs.EditorXR.Input;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEngine;
 using UnityEngine.InputNew;
 

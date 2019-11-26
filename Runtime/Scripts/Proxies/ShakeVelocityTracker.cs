@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace  UnityEditor.Experimental.EditorVR.Helpers
+namespace  Unity.Labs.EditorXR.Helpers
 {
     /// <summary>
     /// Helper class that tracks an object's shaking velocity over a period of time
