@@ -3,14 +3,15 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0bcb87ab5055bd3498c8b75ba8ccde1c, type: 3}
   m_Name: Minimal
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   m_RenderScale: 1
   m_CopyMainCameraSettings: 1
   m_CopyMainCameraImageEffectsToHmd: 1
@@ -30,30 +31,30 @@ MonoBehaviour:
   - {fileID: 11500000, guid: abb8ac7663774794da12f7c749f66d2a, type: 3}
   - {fileID: 11500000, guid: aab2ab33b5d370b4889c8004fceb7843, type: 3}
   - {fileID: 11500000, guid: 80defa433e2f1ba4b8c5cbf97051b13e, type: 3}
-  m_DefaultMainMenuName: Unity.Labs.EditorXR.Menus.SpatialMainMenu,
-    EXR, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_DefaultAlternateMenuName:
+  m_DefaultMainMenuName: Unity.Labs.EditorXR.Menus.SpatialMainMenu, Unity.Labs.EditorXR,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  m_DefaultAlternateMenuName: 
   m_DefaultToolStackNames:
-  - Unity.Labs.EditorXR.Tools.TransformTool, EXR, Version=0.0.0.0, Culture=neutral,
-    PublicKeyToken=null
-  - Unity.Labs.EditorXR.Tools.SelectionTool, EXR, Version=0.0.0.0, Culture=neutral,
-    PublicKeyToken=null
-  - Unity.Labs.EditorXR.Tools.VacuumTool, EXR, Version=0.0.0.0, Culture=neutral,
-    PublicKeyToken=null
-  - Unity.Labs.EditorXR.Tools.MoveWorkspacesTool, EXR, Version=0.0.0.0,
+  - Unity.Labs.EditorXR.Tools.TransformTool, Unity.Labs.EditorXR, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null
-  - Unity.Labs.EditorXR.Tools.LocomotionTool, EXR, Version=0.0.0.0,
+  - Unity.Labs.EditorXR.Tools.SelectionTool, Unity.Labs.EditorXR, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null
+  - Unity.Labs.EditorXR.Tools.VacuumTool, Unity.Labs.EditorXR, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
+  - Unity.Labs.EditorXR.Tools.MoveWorkspacesTool, Unity.Labs.EditorXR, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null
+  - Unity.Labs.EditorXR.Tools.LocomotionTool, Unity.Labs.EditorXR, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null
   m_HiddenTypeNames:
-  - Unity.Labs.EditorXR.Workspaces.ConsoleWorkspace, EXR, Version=0.0.0.0,
+  - Unity.Labs.EditorXR.Workspaces.ConsoleWorkspace, Unity.Labs.EditorXR, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null
-  - Unity.Labs.EditorXR.Workspaces.HierarchyWorkspace, EXR, Version=0.0.0.0,
+  - Unity.Labs.EditorXR.Workspaces.HierarchyWorkspace, Unity.Labs.EditorXR, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null
-  - Unity.Labs.EditorXR.Workspaces.LockedObjectsWorkspace, EXR, Version=0.0.0.0,
+  - Unity.Labs.EditorXR.Workspaces.LockedObjectsWorkspace, Unity.Labs.EditorXR, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null
-  - Unity.Labs.EditorXR.Workspaces.ProfilerWorkspace, EXR, Version=0.0.0.0,
+  - Unity.Labs.EditorXR.Workspaces.ProfilerWorkspace, Unity.Labs.EditorXR, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null
-  - Unity.Labs.EditorXR.Workspaces.MiniWorldWorkspace, EXR, Version=0.0.0.0,
+  - Unity.Labs.EditorXR.Workspaces.MiniWorldWorkspace, Unity.Labs.EditorXR, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null
-  - Unity.Labs.EditorXR.Workspaces.InspectorWorkspace, EXR, Version=0.0.0.0,
+  - Unity.Labs.EditorXR.Workspaces.InspectorWorkspace, Unity.Labs.EditorXR, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null

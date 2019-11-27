@@ -4,8 +4,9 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: Handle_G
   m_Shader: {fileID: 4800000, guid: 17d79fd9a3d634a40ae219ffcf9befd4, type: 3}
   m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A

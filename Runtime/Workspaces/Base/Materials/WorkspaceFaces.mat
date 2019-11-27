@@ -4,8 +4,9 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: WorkspaceFaces
   m_Shader: {fileID: 4800000, guid: 68eb1b178e2b7f74eb314a539c948954, type: 3}
   m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION _METALLICGLOSSMAP
@@ -79,6 +80,7 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _StencilFailZero: 0
     - _StencilRef: 3
     - _UVSec: 0
     - _VerticalOffset: 0

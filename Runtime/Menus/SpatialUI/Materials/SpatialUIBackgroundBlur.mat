@@ -4,8 +4,9 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: SpatialUIBackgroundBlur
   m_Shader: {fileID: 4800000, guid: 38a11d8c6b7d4926a7a6c267aa6d0ff1, type: 3}
   m_ShaderKeywords: _ALPHABLEND_ON _EMISSION
@@ -63,6 +64,7 @@ Material:
     - _Alpha: 0
     - _Blur: 10
     - _BlurNoise: 0
+    - _BlurNoiseAmount: 0.125
     - _BumpScale: 1
     - _ColorMask: 15
     - _Cutoff: 0.5
