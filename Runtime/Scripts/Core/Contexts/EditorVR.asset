@@ -3,14 +3,15 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0bcb87ab5055bd3498c8b75ba8ccde1c, type: 3}
   m_Name: EditorVR
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   m_RenderScale: 1
   m_CopyMainCameraSettings: 1
   m_CopyMainCameraImageEffectsToHmd: 1
@@ -25,19 +26,19 @@ MonoBehaviour:
   - {fileID: 11500000, guid: 49e533569ecea994c856e43af713e5be, type: 3}
   - {fileID: 11500000, guid: 403957a6dcd8bfe4a905881513f309b0, type: 3}
   m_HiddenTypes: []
-  m_DefaultMainMenuName: Unity.Labs.EditorXR.Menus.MainMenu, EXR, Version=0.0.0.0,
-    Culture=neutral, PublicKeyToken=null
-  m_DefaultAlternateMenuName: Unity.Labs.EditorXR.Menus.RadialMenu,
-    EXR, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  m_DefaultMainMenuName: Unity.Labs.EditorXR.Menus.MainMenu, Unity.Labs.EditorXR,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  m_DefaultAlternateMenuName: Unity.Labs.EditorXR.RadialMenu, Unity.Labs.EditorXR,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_DefaultToolStackNames:
-  - Unity.Labs.EditorXR.Tools.TransformTool, EXR, Version=0.0.0.0, Culture=neutral,
-    PublicKeyToken=null
-  - Unity.Labs.EditorXR.Tools.SelectionTool, EXR, Version=0.0.0.0, Culture=neutral,
-    PublicKeyToken=null
-  - Unity.Labs.EditorXR.Tools.VacuumTool, EXR, Version=0.0.0.0, Culture=neutral,
-    PublicKeyToken=null
-  - Unity.Labs.EditorXR.Tools.MoveWorkspacesTool, EXR, Version=0.0.0.0,
+  - Unity.Labs.EditorXR.Tools.TransformTool, Unity.Labs.EditorXR, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null
-  - Unity.Labs.EditorXR.Tools.LocomotionTool, EXR, Version=0.0.0.0,
+  - Unity.Labs.EditorXR.Tools.SelectionTool, Unity.Labs.EditorXR, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null
+  - Unity.Labs.EditorXR.Tools.VacuumTool, Unity.Labs.EditorXR, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
+  - Unity.Labs.EditorXR.Tools.MoveWorkspacesTool, Unity.Labs.EditorXR, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null
+  - Unity.Labs.EditorXR.Tools.LocomotionTool, Unity.Labs.EditorXR, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null
   m_HiddenTypeNames: []

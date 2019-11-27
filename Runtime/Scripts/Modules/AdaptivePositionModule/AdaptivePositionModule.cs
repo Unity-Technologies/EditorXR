@@ -43,13 +43,17 @@ namespace Unity.Labs.EditorXR.Modules
         public void LoadModule()
         {
             m_GazeTransform = CameraUtils.GetMainCamera().transform;
-            m_WorldspaceAnchorTransform = m_GazeTransform.parent;
+            if (m_GazeTransform)
+                m_WorldspaceAnchorTransform = m_GazeTransform.parent;
         }
 
         public void UnloadModule() { }
 
         public void OnBehaviorUpdate()
         {
+            if (m_GazeTransform != null)
+                return;
+
             if (m_AdaptivePositionElements.Count > 0)
             {
                 foreach (var element in m_AdaptivePositionElements)

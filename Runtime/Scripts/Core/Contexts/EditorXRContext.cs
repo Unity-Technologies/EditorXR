@@ -288,12 +288,12 @@ namespace Unity.Labs.EditorXR.Core
             {
                 asmDef.IncludePlatforms = include ? k_IncludePlatformsInPlayer : k_IncludePlatformsEditorOnly;
                 asmDef.ExcludePlatforms = include ? k_ExcludePlatformsInPlayer : k_ExcludePlatformsEditorOnly;
-            });
+            }, true);
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
         }
 
-        static void ForEachAssembly(Action<AssemblyDefinition> callback)
+        static void ForEachAssembly(Action<AssemblyDefinition> callback, bool write = false)
         {
             foreach (var assembly in k_AssemblyNames)
             {
@@ -313,7 +313,8 @@ namespace Unity.Labs.EditorXR.Core
 
                 var asmDef = JsonUtility.FromJson<AssemblyDefinition>(asmDefAsset.text);
                 callback(asmDef);
-                File.WriteAllText(path, JsonUtility.ToJson(asmDef, true));
+                if (write)
+                    File.WriteAllText(path, JsonUtility.ToJson(asmDef, true));
             }
         }
 #endif
