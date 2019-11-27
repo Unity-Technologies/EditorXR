@@ -116,7 +116,8 @@ namespace Unity.Labs.EditorXR.Utilities
 
             DestroyImmediate(prefabsRoot);
 
-            AssetDatabase.SaveAssets();
+            if (!Application.isBatchMode)
+                AssetDatabase.SaveAssets();
         }
 #endif
     }
