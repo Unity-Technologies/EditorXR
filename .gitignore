@@ -10,3 +10,4 @@ npm-debug.log
 build.sh.meta
 build.bat.meta
 .idea/
+.Editor/*
