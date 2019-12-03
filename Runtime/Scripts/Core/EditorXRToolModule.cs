@@ -477,7 +477,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             });
 
 #if UNITY_EDITOR
-            EditorXREvents.ToolSelected.Send(new SelectToolArgs { label = toolType.Name });
+            EditorXRAnalyticsEvents.ToolSelected.Send(new SelectToolArgs { label = toolType.Name });
 #endif
             return result;
         }

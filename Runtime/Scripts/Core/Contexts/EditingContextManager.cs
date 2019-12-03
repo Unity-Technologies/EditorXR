@@ -340,7 +340,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 SetEditingContext(defaultContext);
             }
 
-            EditorXREvents.StartStop.Send(new ExrStartStopArgs(true, Application.isPlaying));
+            EditorXRAnalyticsEvents.StartStop.Send(new ExrStartStopArgs(true, Application.isPlaying));
 #endif
         }
 
@@ -392,7 +392,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
 
-            EditorXREvents.StartStop.Send(new ExrStartStopArgs(false, Application.isPlaying));
+            EditorXRAnalyticsEvents.StartStop.Send(new ExrStartStopArgs(false, Application.isPlaying));
 #endif
         }
 

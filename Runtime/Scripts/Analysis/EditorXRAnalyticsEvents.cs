@@ -1,6 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
-using UnityEngine;
+// ReSharper disable InconsistentNaming
 
 namespace Unity.Labs.EditorXR
 {
@@ -50,9 +50,9 @@ namespace Unity.Labs.EditorXR
         public override string ToString() { return $"{name}, {label}"; }
     }
 
-    static class EditorXREvents
+    static class EditorXRAnalyticsEvents
     {
-        internal const string k_TopLevelName = "editorxr";
+        const string k_TopLevelName = "editorxr";
 
         public static EditorXREvent<SelectToolArgs> ToolSelected =
             new EditorXREvent<SelectToolArgs>(k_TopLevelName, "toolUsed");

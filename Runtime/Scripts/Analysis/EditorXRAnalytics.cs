@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
-using UnityEngine;
-using UnityEngine.Analytics;
 using UnityEditor;
+using UnityEngine.Analytics;
 
 namespace Unity.Labs.EditorXR
 {
@@ -41,15 +40,14 @@ namespace Unity.Labs.EditorXR
                 return;
 
             value.name = Name;
+#if DEBUG_EXR_EDITOR_ANALYTICS
             var result = EditorAnalytics.SendEventWithLimit(TopLevelName, value);
-            if (result != AnalyticsResult.Ok)
-            {
-#if DEBUG_EXR_EDITOR_ANALYTICS
+            if (result == AnalyticsResult.Ok)
+                Debug.Log($"Sending event {Name} : {value} Success with status {result}");
+            else
                 Debug.LogWarning($"Sending event {Name} : {value} Failed with status {result}");
-#endif
-            }
-#if DEBUG_EXR_EDITOR_ANALYTICS
-            Debug.Log($"Sending event {Name} : {value} Success with status {result}");
+#else
+            EditorAnalytics.SendEventWithLimit(TopLevelName, value);
 #endif
         }
 
@@ -70,8 +68,8 @@ namespace Unity.Labs.EditorXR
 
         static EditorXRAnalytics()
         {
-            var result = RegisterEvent(EditorXREvents.ToolSelected);
-            // if the user has analytics disabled, respect that and make sure that no code actually tries to send events
+            var result = RegisterEvent(EditorXRAnalyticsEvents.ToolSelected);
+            // If the user has analytics disabled, respect that and make sure that no code actually tries to send events
             if (result == AnalyticsResult.AnalyticsDisabled)
             {
                 Disabled = true;
@@ -80,16 +78,16 @@ namespace Unity.Labs.EditorXR
 
             EditorApplication.quitting += SetQuitting;
 
-            // this just means we've already previously registered this event for this client, and can stop.
+            // This just means we've already previously registered this event for this client, and can stop.
             // remove this if you want to iterate on analytics without restarting the Editor.
             if (result == AnalyticsResult.TooManyRequests)
                 return;
 
-            RegisterEvent(EditorXREvents.WorkspaceState);
-            RegisterEvent(EditorXREvents.StartStop);
+            RegisterEvent(EditorXRAnalyticsEvents.WorkspaceState);
+            RegisterEvent(EditorXRAnalyticsEvents.StartStop);
         }
 
-        // we set the Quitting variable so that we don't record window close events when the editor quits
+        // We set the Quitting variable so that we don't record window close events when the editor quits
         static void SetQuitting()
         {
             Quitting = true;

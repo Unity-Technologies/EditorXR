@@ -214,7 +214,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 workspaceCreated(workspace);
 
 #if UNITY_EDITOR
-            EditorXREvents.WorkspaceState.Send(new UiComponentArgs(t.Name, true));
+            EditorXRAnalyticsEvents.WorkspaceState.Send(new UiComponentArgs(t.Name, true));
 #endif
         }
 
@@ -228,7 +228,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 workspaceDestroyed(workspace);
 
 #if UNITY_EDITOR
-            EditorXREvents.WorkspaceState.Send(new UiComponentArgs(workspace.GetType().Name, false));
+            EditorXRAnalyticsEvents.WorkspaceState.Send(new UiComponentArgs(workspace.GetType().Name, false));
 #endif
         }
 
