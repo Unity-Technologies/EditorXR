@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Data;
 using Unity.Labs.Utils;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Video;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Unity.Labs.EditorXR.Utilities
 {
@@ -187,8 +190,8 @@ namespace Unity.Labs.EditorXR.Utilities
         internal static void AssignPhysicMaterial(Collider collider, PhysicMaterial material)
         {
 #if UNITY_EDITOR
-#endif
             UnityEditor.Undo.RecordObject(collider, k_AssignPhysicMaterialUndo);
+#endif
             collider.material = material;
         }
 
