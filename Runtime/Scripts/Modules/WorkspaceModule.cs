@@ -212,6 +212,10 @@ namespace Unity.Labs.EditorXR.Modules
 
             if (workspaceCreated != null)
                 workspaceCreated(workspace);
+
+#if UNITY_EDITOR
+            EditorXRAnalyticsEvents.WorkspaceState.Send(new UiComponentArgs(t.Name, true));
+#endif
         }
 
         void OnWorkspaceDestroyed(IWorkspace workspace)
@@ -222,6 +226,10 @@ namespace Unity.Labs.EditorXR.Modules
 
             if (workspaceDestroyed != null)
                 workspaceDestroyed(workspace);
+
+#if UNITY_EDITOR
+            EditorXRAnalyticsEvents.WorkspaceState.Send(new UiComponentArgs(workspace.GetType().Name, false));
+#endif
         }
 
         public void ResetWorkspaceRotations()

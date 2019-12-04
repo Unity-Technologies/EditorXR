@@ -340,6 +340,8 @@ namespace Unity.Labs.EditorXR.Core
 
                 SetEditingContext(defaultContext);
             }
+
+            EditorXRAnalyticsEvents.StartStop.Send(new ExrStartStopArgs(true, Application.isPlaying));
 #endif
         }
 
@@ -390,6 +392,8 @@ namespace Unity.Labs.EditorXR.Core
                         behavior.StopRunInEditMode();
                 }
             }
+
+            EditorXRAnalyticsEvents.StartStop.Send(new ExrStartStopArgs(false, Application.isPlaying));
 #endif
         }
 

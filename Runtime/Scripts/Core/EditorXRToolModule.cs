@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.EditorXR.Menus;
 using Unity.Labs.EditorXR.Modules;
@@ -476,6 +477,9 @@ namespace Unity.Labs.EditorXR.Core
                 }
             });
 
+#if UNITY_EDITOR
+            EditorXRAnalyticsEvents.ToolSelected.Send(new SelectToolArgs { label = toolType.Name });
+#endif
             return result;
         }
 
