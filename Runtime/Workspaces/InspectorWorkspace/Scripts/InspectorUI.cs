@@ -1,4 +1,4 @@
-﻿using Unity.Labs.EditorXR.Handles;
+using Unity.Labs.EditorXR.Handles;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Workspaces

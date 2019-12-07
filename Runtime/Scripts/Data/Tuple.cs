@@ -1,4 +1,4 @@
-﻿namespace Unity.Labs.EditorXR
+namespace Unity.Labs.EditorXR
 {
     class Tuple<T1, T2>
     {

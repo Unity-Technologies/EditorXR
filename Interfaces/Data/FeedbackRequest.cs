@@ -1,4 +1,4 @@
-﻿namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
     /// Base class for feedback requests

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using Unity.Labs.EditorXR.Extensions;

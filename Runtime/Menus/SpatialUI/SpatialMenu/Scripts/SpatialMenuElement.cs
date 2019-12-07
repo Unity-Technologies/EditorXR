@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using TMPro;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.EditorXR.Modules;

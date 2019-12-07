@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.Utils.GUI;
 using UnityEngine;

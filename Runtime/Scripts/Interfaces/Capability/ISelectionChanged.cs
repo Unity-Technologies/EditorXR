@@ -1,4 +1,4 @@
-﻿namespace Unity.Labs.EditorXR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Decorates types that need to respond to a change in selection

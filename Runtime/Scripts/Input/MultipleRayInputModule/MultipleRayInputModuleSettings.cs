@@ -1,4 +1,4 @@
-﻿using Unity.Labs.Utils;
+using Unity.Labs.Utils;
 using UnityEngine;
 using UnityEngine.InputNew;
 

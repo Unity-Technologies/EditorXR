@@ -1,4 +1,4 @@
-﻿namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
 #if UNITY_EDITOR
     [MainMenuItem("Console", "Workspaces", "View errors, warnings and other messages")]

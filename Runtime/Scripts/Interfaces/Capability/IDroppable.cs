@@ -1,4 +1,4 @@
-﻿namespace Unity.Labs.EditorXR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Implementors can be dropped on IDropReceivers

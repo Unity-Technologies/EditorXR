@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEditor.UI;
 
 namespace Unity.Labs.EditorXR.UI

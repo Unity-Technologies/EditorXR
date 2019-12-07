@@ -1,4 +1,4 @@
-﻿namespace Unity.Labs.EditorXR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Designates a tool as a Transform tool

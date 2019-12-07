@@ -1,4 +1,4 @@
-﻿namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
     /// Possible states for a spatial hint

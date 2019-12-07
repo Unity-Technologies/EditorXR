@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Unity.Labs.ListView;
 using UnityEditor;
 using UnityEngine;

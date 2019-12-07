@@ -1,4 +1,4 @@
-﻿using UnityEngine.InputNew;
+using UnityEngine.InputNew;
 
 namespace Unity.Labs.EditorXR
 {

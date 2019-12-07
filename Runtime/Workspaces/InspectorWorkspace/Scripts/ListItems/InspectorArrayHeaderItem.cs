@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Button = Unity.Labs.EditorXR.UI.Button;
 
 namespace Unity.Labs.EditorXR.Workspaces

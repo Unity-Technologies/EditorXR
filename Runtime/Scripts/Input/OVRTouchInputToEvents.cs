@@ -1,4 +1,4 @@
-﻿namespace Unity.Labs.EditorXR.Input
+namespace Unity.Labs.EditorXR.Input
 {
     sealed class OVRTouchInputToEvents : BaseVRInputToEvents
     {

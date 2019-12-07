@@ -1,4 +1,4 @@
-﻿namespace Unity.Labs.EditorXR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Provide access to the system to show/hide and check drag state of manipulators on this tool / workspace / etc.

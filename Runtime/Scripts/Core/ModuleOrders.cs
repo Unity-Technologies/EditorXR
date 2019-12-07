@@ -1,4 +1,4 @@
-﻿namespace Unity.Labs.EditorXR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     static class ModuleOrders
     {

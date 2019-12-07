@@ -1,4 +1,4 @@
-﻿using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Modules;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR

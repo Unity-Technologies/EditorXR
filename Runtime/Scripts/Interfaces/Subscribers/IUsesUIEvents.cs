@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Unity.Labs.EditorXR.Modules;
 using Unity.Labs.ModuleLoader;
 using UnityEngine;

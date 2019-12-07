@@ -1,4 +1,4 @@
-﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Proxies

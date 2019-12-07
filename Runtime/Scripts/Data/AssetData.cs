@@ -1,4 +1,4 @@
-﻿using Unity.Labs.ListView;
+using Unity.Labs.ListView;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.Utils;

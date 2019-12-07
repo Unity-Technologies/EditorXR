@@ -1,4 +1,4 @@
-﻿
+
 using Unity.Labs.EditorXR.Helpers;
 #if UNITY_5_6_OR_NEWER
 using UnityEngine;

@@ -1,4 +1,4 @@
-﻿using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Core;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
 

@@ -1,4 +1,4 @@
-﻿using Unity.Labs.EditorXR.Menus;
+using Unity.Labs.EditorXR.Menus;
 using UnityEditor;
 using UnityEngine;
 

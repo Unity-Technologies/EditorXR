@@ -1,4 +1,4 @@
-﻿
+
 using Unity.Labs.EditorXR.Utilities;
 #if UNITY_EDITOR
 using System.Collections.Generic;

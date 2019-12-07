@@ -1,4 +1,4 @@
-﻿using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.Proxies;
 using UnityEditor;
 using UnityEngine;
 

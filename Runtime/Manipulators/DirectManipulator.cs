@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Handles;
 using Unity.Labs.EditorXR.Interfaces;

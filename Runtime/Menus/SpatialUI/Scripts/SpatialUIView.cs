@@ -1,4 +1,4 @@
-﻿using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using UnityEngine;

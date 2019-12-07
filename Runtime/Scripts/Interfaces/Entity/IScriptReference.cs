@@ -1,4 +1,4 @@
-﻿namespace Unity.Labs.EditorXR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Implement this interface to add this class's default script importer references to the DefaultScriptReferences prefab

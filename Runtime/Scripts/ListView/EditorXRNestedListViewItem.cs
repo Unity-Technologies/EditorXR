@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Unity.Labs.ListView;
 
 namespace Unity.Labs.EditorXR

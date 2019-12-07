@@ -1,4 +1,4 @@
-﻿using Unity.Labs.EditorXR.Data;
+using Unity.Labs.EditorXR.Data;
 using UnityEngine;
 using UnityEngine.UI;
 

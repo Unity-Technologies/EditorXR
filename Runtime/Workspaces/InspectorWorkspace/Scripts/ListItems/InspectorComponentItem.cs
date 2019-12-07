@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using Unity.Labs.EditorXR.Data;
 using Unity.Labs.Utils;
 using UnityEditor;
