@@ -2,16 +2,11 @@ using System;
 using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 using Unity.Labs.ListView;
-using Unity.Labs.Utils;
 
 using Unity.Labs.ModuleLoader;
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 using UnityEngine.Networking;
-#endif
-
-#if UNITY_EDITOR
-[assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 #endif
 
 namespace Unity.Labs.EditorXR.Workspaces

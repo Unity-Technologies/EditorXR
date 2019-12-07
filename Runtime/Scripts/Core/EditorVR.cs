@@ -9,10 +9,6 @@ using Unity.Labs.Utils;
 using UnityEditor;
 using UnityEngine;
 
-#if UNITY_EDITOR
-[assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
-#endif
-
 namespace Unity.Labs.EditorXR.Core
 {
 #if UNITY_EDITOR

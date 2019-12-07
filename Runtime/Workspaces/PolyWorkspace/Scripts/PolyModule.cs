@@ -10,11 +10,6 @@ using PolyToolkit;
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
-
-#endif
-
-#if UNITY_EDITOR
-[assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 #endif
 
 #if INCLUDE_POLY_TOOLKIT

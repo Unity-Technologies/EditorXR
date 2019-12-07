@@ -17,12 +17,6 @@ using Unity.Labs.EditorXR.Core;
 using UnityEngine.InputNew;
 #endif
 
-#if UNITY_EDITOR
-using Unity.Labs.Utils;
-
-[assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
-#endif
-
 namespace Unity.Labs.EditorXR.Workspaces
 {
 #if INCLUDE_POLY_TOOLKIT
