@@ -1,13 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.EditorXR.Modules;
 using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor;
 using UnityEngine;
+
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEditor.Build;
+#endif
 
 namespace Unity.Labs.EditorXR.Core
 {
@@ -17,6 +22,30 @@ namespace Unity.Labs.EditorXR.Core
     [ModuleOrder(ModuleOrders.EditorVRLoadOrder)]
     sealed class EditorVR : IEditor, IModule, IUsesConnectInterfaces
     {
+#if UNITY_EDITOR
+        class AssemblyFilter : IFilterBuildAssemblies
+        {
+            static readonly string[] k_EditorXRAssemblies =
+            {
+                "Library/ScriptAssemblies/Unity.Labs.EditorXR.dll",
+                "Library/ScriptAssemblies/Unity.Labs.EditorXR.Interfaces.dll",
+                "Library/ScriptAssemblies/input-prototype.dll"
+            };
+
+            public int callbackOrder { get { return 0; } }
+
+            public string[] OnFilterAssemblies(BuildOptions buildOptions, string[] assemblies)
+            {
+                if (includeInBuilds)
+                    return assemblies;
+
+                var assemblySet = new HashSet<string>(assemblies);
+                assemblySet.ExceptWith(k_EditorXRAssemblies);
+                return assemblySet.ToArray();
+            }
+        }
+#endif
+
         const HideFlags k_DefaultHideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
         internal const string VRPlayerTag = "VRPlayer";
         const string k_PreserveLayout = "EditorVR.PreserveLayout";

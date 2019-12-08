@@ -207,6 +207,13 @@ namespace Unity.Labs.EditorXR.Core
                 EditorVR.preserveLayout = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorVR.preserveLayout);
             }
 
+            // Include in Builds
+            {
+                const string title = "Include in Player Builds";
+                const string tooltip = "Normally, EditorXR will only be available in the editor. Check this if you would like to modify its assembly definitions and include it in player builds";
+                EditorVR.includeInBuilds = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorVR.includeInBuilds);
+            }
+
             if (GUILayout.Button("Reset to Defaults", GUILayout.Width(140)))
                 EditorVR.ResetPreferences();
 

@@ -44,7 +44,10 @@ namespace Unity.Labs.EditorXR
     {
         const string k_TemplateName = "HierarchyListItem";
 
+        //Suppress warning in builds
+#pragma warning disable 649
         readonly int m_Index;
+#pragma warning restore 649
 
         public string name { get; set; }
         public HashSet<string> types { get; set; }
