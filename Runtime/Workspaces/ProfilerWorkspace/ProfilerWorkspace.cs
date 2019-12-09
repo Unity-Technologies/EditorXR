@@ -1,7 +1,6 @@
-
+#if UNITY_EDITOR
 using Unity.Labs.EditorXR.Helpers;
 using Unity.Labs.EditorXR.Utilities;
-#if UNITY_EDITOR
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Workspaces

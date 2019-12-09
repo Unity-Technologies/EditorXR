@@ -1,13 +1,12 @@
-
-using Unity.Labs.EditorXR.Data;
-using Unity.Labs.EditorXR.Handles;
-using Unity.Labs.EditorXR.UI;
-using Unity.Labs.EditorXR.Utilities;
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Data;
+using Unity.Labs.EditorXR.Handles;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.UI;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using UnityEngine;
 

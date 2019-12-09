@@ -1,8 +1,7 @@
-
-using Unity.Labs.EditorXR.Utilities;
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using UnityEngine;
 using UnityEngine.UI;

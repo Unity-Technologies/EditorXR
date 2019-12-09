@@ -1,8 +1,6 @@
-
-using Unity.Labs.EditorXR.Helpers;
-#if UNITY_5_6_OR_NEWER
-using UnityEngine;
 using NUnit.Framework;
+using Unity.Labs.EditorXR.Helpers;
+using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Tests.Utilities
 {
@@ -55,4 +53,3 @@ namespace Unity.Labs.EditorXR.Tests.Utilities
         public void Cleanup() { }
     }
 }
-#endif

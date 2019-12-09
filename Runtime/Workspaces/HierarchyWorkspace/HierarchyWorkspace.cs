@@ -1,13 +1,12 @@
-
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Handles;
-using Unity.Labs.EditorXR.Utilities;
-using UnityEditor;
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Handles;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
+using UnityEditor;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Workspaces
