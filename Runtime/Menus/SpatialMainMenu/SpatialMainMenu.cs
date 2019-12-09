@@ -18,8 +18,8 @@ namespace Unity.Labs.EditorXR.Menus
 
         public List<Type> menuTools { private get; set; }
         public List<Type> menuWorkspaces { private get; set; }
-        public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { get; set; }
-        public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { get; set; }
+        public Dictionary<Tuple<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { get; set; }
+        public Dictionary<Tuple<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { get; set; }
         public Transform targetRayOrigin { private get; set; }
         public Node node { get; set; }
 

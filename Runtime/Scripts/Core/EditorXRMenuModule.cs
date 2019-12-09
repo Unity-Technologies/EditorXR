@@ -35,8 +35,8 @@ namespace Unity.Labs.EditorXR.Core
         const int k_PossibleOverlaps = 16;
 
         readonly Dictionary<Transform, IMainMenu> m_MainMenus = new Dictionary<Transform, IMainMenu>();
-        readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider>();
-        readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider>();
+        readonly Dictionary<Tuple<Type, Transform>, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<Tuple<Type, Transform>, ISettingsMenuProvider>();
+        readonly Dictionary<Tuple<Type, Transform>, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<Tuple<Type, Transform>, ISettingsMenuItemProvider>();
 
         EditorXRToolModule m_ToolModule;
         EditorXRRayModule m_RayModule;
@@ -86,7 +86,7 @@ namespace Unity.Labs.EditorXR.Core
             var settingsMenuProvider = target as ISettingsMenuProvider;
             if (settingsMenuProvider != null)
             {
-                m_SettingsMenuProviders[new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin)] = settingsMenuProvider;
+                m_SettingsMenuProviders[new Tuple<Type, Transform>(target.GetType(), rayOrigin)] = settingsMenuProvider;
                 foreach (var kvp in m_MainMenus)
                 {
                     if (rayOrigin == null || kvp.Key == rayOrigin)
@@ -97,7 +97,7 @@ namespace Unity.Labs.EditorXR.Core
             var settingsMenuItemProvider = target as ISettingsMenuItemProvider;
             if (settingsMenuItemProvider != null)
             {
-                m_SettingsMenuItemProviders[new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin)] = settingsMenuItemProvider;
+                m_SettingsMenuItemProviders[new Tuple<Type, Transform>(target.GetType(), rayOrigin)] = settingsMenuItemProvider;
                 foreach (var kvp in m_MainMenus)
                 {
                     if (rayOrigin == null || kvp.Key == rayOrigin)
@@ -150,7 +150,7 @@ namespace Unity.Labs.EditorXR.Core
                         kvp.Value.RemoveSettingsMenu(settingsMenuProvider);
                 }
 
-                m_SettingsMenuProviders.Remove(new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin));
+                m_SettingsMenuProviders.Remove(new Tuple<Type, Transform>(target.GetType(), rayOrigin));
             }
 
             var settingsMenuItemProvider = target as ISettingsMenuItemProvider;
@@ -162,7 +162,7 @@ namespace Unity.Labs.EditorXR.Core
                         kvp.Value.RemoveSettingsMenuItem(settingsMenuItemProvider);
                 }
 
-                m_SettingsMenuItemProviders.Remove(new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin));
+                m_SettingsMenuItemProviders.Remove(new Tuple<Type, Transform>(target.GetType(), rayOrigin));
             }
 
             var mainMenu = target as IMainMenu;

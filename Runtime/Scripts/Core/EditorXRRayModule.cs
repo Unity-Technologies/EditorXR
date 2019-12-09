@@ -62,7 +62,7 @@ namespace Unity.Labs.EditorXR.Core
         public List<GameObject> ignoreList { private get; set; }
 
         public int initializationOrder { get { return 1; } }
-        public int shutdownOrder { get { return 0; } }
+        public int shutdownOrder { get { return 3; } }
         public int connectInterfaceOrder { get { return 0; } }
 
 #if !FI_AUTOFILL

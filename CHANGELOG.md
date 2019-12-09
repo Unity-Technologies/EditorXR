@@ -4,6 +4,14 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.4.0-preview.2] - 2019-11-14
+-- Fix settings menu issues
+-- Fix ViewerScaleVisuals Line Renderer
+
+## [0.4.0-preview.1] - 2019-12-08
+-- Fixes related to immutable package exceptions
+-- Upgrade to latest VRLineRenderer
+
 ## [0.4.0] - 2019-11-14
 -- Refactor to use Module Loader package
 -- Add package manifest, change structure to match package layout
@@ -66,7 +74,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 -- Fast toolswapping via spatial workflow
 Known issues:
 -- Performance improvements are an ongoing priority
--- Console + profiler can’t be resized
+-- Console + profiler canï¿½t be resized
 -- Single Pass Stereo + EXR is currently non-functional with Unity 2017.2 and .3
 
 ## [0.0.8] - 2017-10-01

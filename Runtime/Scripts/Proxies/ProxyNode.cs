@@ -83,7 +83,7 @@ namespace Unity.Labs.EditorXR.Proxies
                 Color m_CurrentColor;
 
                 readonly Dictionary<int, VisibilityState> m_AffordanceVisibilityStates = new Dictionary<int, VisibilityState>();
-                readonly Dictionary<KeyValuePair<Material, string>, VisibilityState> m_VisibilityStates = new Dictionary<KeyValuePair<Material, string>, VisibilityState>();
+                readonly Dictionary<Tuple<Material, string>, VisibilityState> m_VisibilityStates = new Dictionary<Tuple<Material, string>, VisibilityState>();
 
                 public void AddAffordance(Material material, VRControl control, Renderer renderer,
                     AffordanceTooltip[] tooltips, AffordanceVisibilityDefinition definition)
@@ -149,11 +149,11 @@ namespace Unity.Labs.EditorXR.Proxies
                         case VisibilityControlType.AlphaProperty:
                             if (visibilityState == null)
                             {
-                                var kvp = new KeyValuePair<Material, string>(material, definition.alphaProperty);
-                                if (!m_VisibilityStates.TryGetValue(kvp, out visibilityState))
+                                var tuple = new Tuple<Material, string>(material, definition.alphaProperty);
+                                if (!m_VisibilityStates.TryGetValue(tuple, out visibilityState))
                                 {
                                     visibilityState = new VisibilityState(renderer, null, definition, material);
-                                    m_VisibilityStates[kvp] = visibilityState;
+                                    m_VisibilityStates[tuple] = visibilityState;
                                 }
                             }
 
@@ -165,11 +165,11 @@ namespace Unity.Labs.EditorXR.Proxies
                         case VisibilityControlType.ColorProperty:
                             if (visibilityState == null)
                             {
-                                var kvp = new KeyValuePair<Material, string>(material, definition.alphaProperty);
-                                if (!m_VisibilityStates.TryGetValue(kvp, out visibilityState))
+                                var tuple = new Tuple<Material, string>(material, definition.alphaProperty);
+                                if (!m_VisibilityStates.TryGetValue(tuple, out visibilityState))
                                 {
                                     visibilityState = new VisibilityState(renderer, null, definition, material);
-                                    m_VisibilityStates[kvp] = visibilityState;
+                                    m_VisibilityStates[tuple] = visibilityState;
                                 }
                             }
 
@@ -521,7 +521,7 @@ namespace Unity.Labs.EditorXR.Proxies
             AffordanceVisibilityDefinition bodyVisibility = null;
             foreach (var tuple in m_BodyData)
             {
-                if (tuple.secondElement.GetVisibility())
+                if (tuple.Item2.GetVisibility())
                 {
                     bodyVisibility = m_AffordanceMap.bodyVisibilityDefinition;
                     break;
@@ -537,7 +537,7 @@ namespace Unity.Labs.EditorXR.Proxies
 
             foreach (var tuple in m_BodyData)
             {
-                tuple.secondElement.Update(tuple.firstElement, time, m_FadeInDuration, m_FadeOutDuration, this);
+                tuple.Item2.Update(tuple.Item1, time, m_FadeInDuration, m_FadeOutDuration, this);
             }
         }
 
@@ -552,7 +552,7 @@ namespace Unity.Labs.EditorXR.Proxies
 
             foreach (var tuple in m_BodyData)
             {
-                UnityObjectUtils.Destroy(tuple.firstElement);
+                UnityObjectUtils.Destroy(tuple.Item1);
             }
         }
 
@@ -646,7 +646,7 @@ namespace Unity.Labs.EditorXR.Proxies
             {
                 foreach (var tuple in m_BodyData)
                 {
-                    tuple.secondElement.SetVisibility(true, changedRequest.duration);
+                    tuple.Item2.SetVisibility(true, changedRequest.duration);
                 }
                 return;
             }

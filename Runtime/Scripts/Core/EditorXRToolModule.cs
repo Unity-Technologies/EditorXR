@@ -53,7 +53,7 @@ namespace Unity.Labs.EditorXR.Core
         internal readonly List<DeviceData> deviceData = new List<DeviceData>();
 
         public int initializationOrder { get { return 0; } }
-        public int shutdownOrder { get { return 0; } }
+        public int shutdownOrder { get { return 2; } }
         public int connectInterfaceOrder { get { return 0; } }
 
 #if !FI_AUTOFILL
@@ -99,38 +99,39 @@ namespace Unity.Labs.EditorXR.Core
             foreach (var device in deviceData)
             {
                 var mainMenu = device.mainMenu;
-                this.DisconnectInterfaces(mainMenu);
+                var rayOrigin = device.rayOrigin;
+                this.DisconnectInterfaces(mainMenu, rayOrigin);
                 var behavior = mainMenu as MonoBehaviour;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
                 var alternateMenu = device.alternateMenu;
-                this.DisconnectInterfaces(alternateMenu);
+                this.DisconnectInterfaces(alternateMenu, rayOrigin);
                 behavior = alternateMenu as MonoBehaviour;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
                 var toolsMenu = device.toolsMenu;
-                this.DisconnectInterfaces(toolsMenu);
+                this.DisconnectInterfaces(toolsMenu, rayOrigin);
                 behavior = toolsMenu as MonoBehaviour;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
                 var customMenu = device.customMenu;
-                this.DisconnectInterfaces(customMenu);
+                this.DisconnectInterfaces(customMenu, rayOrigin);
                 behavior = customMenu as MonoBehaviour;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
                 var spatialMenu = device.spatialMenu;
-                this.DisconnectInterfaces(spatialMenu);
+                this.DisconnectInterfaces(spatialMenu, rayOrigin);
                 behavior = spatialMenu;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
                 foreach (var menu in device.alternateMenus.ToList())
                 {
-                    this.DisconnectInterfaces(menu);
+                    this.DisconnectInterfaces(menu, rayOrigin);
                     behavior = menu as MonoBehaviour;
                     if (behavior)
                         UnityObjectUtils.Destroy(behavior);
@@ -139,7 +140,7 @@ namespace Unity.Labs.EditorXR.Core
                 foreach (var toolData in device.toolData.ToList())
                 {
                     var tool = toolData.tool;
-                    this.DisconnectInterfaces(tool);
+                    this.DisconnectInterfaces(tool, rayOrigin);
                     behavior = tool as MonoBehaviour;
                     if (behavior)
                         UnityObjectUtils.Destroy(behavior);

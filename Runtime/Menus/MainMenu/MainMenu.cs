@@ -62,8 +62,8 @@ namespace Unity.Labs.EditorXR.Menus
 
         public List<Type> menuTools { internal get; set; }
         public List<Type> menuWorkspaces { internal get; set; }
-        public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { get; set; }
-        public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { get; set; }
+        public Dictionary<Tuple<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { get; set; }
+        public Dictionary<Tuple<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { get; set; }
         public Transform targetRayOrigin { private get; set; }
         public Node node { get; set; }
 
@@ -232,8 +232,8 @@ namespace Unity.Labs.EditorXR.Menus
             var types = new HashSet<Type>();
             types.UnionWith(menuTools);
             types.UnionWith(menuWorkspaces);
-            types.UnionWith(settingsMenuProviders.Keys.Select(provider => provider.Key));
-            types.UnionWith(settingsMenuItemProviders.Keys.Select(provider => provider.Key));
+            types.UnionWith(settingsMenuProviders.Keys.Select(provider => provider.Item1));
+            types.UnionWith(settingsMenuItemProviders.Keys.Select(provider => provider.Item1));
 
             if (Application.isPlaying)
                 types.RemoveWhere(type => type.GetCustomAttributes(true).OfType<EditorOnlyWorkspaceAttribute>().Any());
@@ -309,8 +309,8 @@ namespace Unity.Labs.EditorXR.Menus
                 {
                     foreach (var providerPair in settingsMenuProviders)
                     {
-                        var kvp = providerPair.Key;
-                        if (kvp.Key == type && (kvp.Value == null || kvp.Value == rayOrigin))
+                        var tuple = providerPair.Key;
+                        if (tuple.Item1 == type && (tuple.Item2 == null || tuple.Item2 == rayOrigin))
                             AddSettingsMenu(providerPair.Value, buttonData, tooltip);
                     }
                 }
@@ -320,7 +320,7 @@ namespace Unity.Labs.EditorXR.Menus
                     foreach (var providerPair in settingsMenuItemProviders)
                     {
                         var kvp = providerPair.Key;
-                        if (kvp.Key == type && (kvp.Value == null || kvp.Value == rayOrigin))
+                        if (kvp.Item1 == type && (kvp.Item2 == null || kvp.Item2 == rayOrigin))
                             AddSettingsMenuItem(providerPair.Value);
                     }
                 }

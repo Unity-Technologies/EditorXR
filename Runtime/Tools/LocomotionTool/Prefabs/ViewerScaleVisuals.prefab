@@ -420,7 +420,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Materials:
   - {fileID: 2100000, guid: e9fab79a8b1fff8418ae32738ebd4900, type: 2}
-  m_Width: 0.1
+  m_Width: 0.01
   m_WidthCurve:
     serializedVersion: 2
     m_Curve:
