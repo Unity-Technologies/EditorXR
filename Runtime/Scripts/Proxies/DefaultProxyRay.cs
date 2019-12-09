@@ -92,9 +92,10 @@ namespace Unity.Labs.EditorXR.Proxies
 
             var lineRendererTransform = m_LineRenderer.transform;
             lineRendererTransform.localScale = Vector3.one * scaledLength;
-            m_LineRenderer.widthStart = scaledWidth * scaledLength;
-            m_LineRenderer.widthEnd = scaledWidth;
-            m_Tip.transform.position = transform.position + transform.forward * length;
+            m_LineRenderer.widthStart = scaledWidth;
+            m_LineRenderer.widthEnd = scaledWidth * scaledLength;
+            var thisTransform = transform;
+            m_Tip.transform.position = thisTransform.position + thisTransform.forward * length;
             m_Tip.transform.localScale = scaledLength * m_TipStartScale;
         }
 

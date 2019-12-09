@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: TransformToolRotatePulse
   m_EditorClassIdentifier: 
   m_Duration: 0.25
-  m_Intensity: 0.6
+  m_Intensity: 0.3
   m_FadeIn: 1
   m_FadeOut: 1
