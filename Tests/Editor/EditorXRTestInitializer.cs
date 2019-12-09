@@ -5,7 +5,7 @@ using UnityEditor;
 namespace Unity.Labs.EditorXR.Tests.Core
 {
     [SetUpFixture]
-    public class EditorVRTestInitializer
+    public class EditorXRTestInitializer
     {
         EditingContextManagerSettings projectSettingsBackup;
         EditingContextManagerSettings userSettingsBackup;
@@ -16,7 +16,7 @@ namespace Unity.Labs.EditorXR.Tests.Core
             projectSettingsBackup = EditingContextManager.LoadProjectSettings();
             userSettingsBackup = EditingContextManager.LoadUserSettings();
 
-            EditingContextManager.ShowEditorVR();
+            EditingContextManager.ShowEditorXR();
         }
 
         [OneTimeTearDown]
@@ -25,7 +25,7 @@ namespace Unity.Labs.EditorXR.Tests.Core
             EditingContextManager.SaveProjectSettings(projectSettingsBackup);
             EditingContextManager.SaveUserSettings(userSettingsBackup);
 
-            EditorApplication.delayCall += () => { EditorWindow.GetWindow<VRView>("EditorVR", false).Close(); };
+            EditorApplication.delayCall += () => { EditorWindow.GetWindow<VRView>("EditorXR", false).Close(); };
         }
     }
 }

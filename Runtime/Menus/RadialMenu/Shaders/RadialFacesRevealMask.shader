@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/RadialMenu/RadialFacesRevealMask"
+﻿Shader "EditorXR/RadialMenu/RadialFacesRevealMask"
 {
 	SubShader
 	{

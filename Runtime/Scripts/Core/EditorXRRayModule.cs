@@ -531,7 +531,7 @@ namespace Unity.Labs.EditorXR.Core
 
         public void RemoveRayVisibilitySettings(Transform rayOrigin, object obj)
         {
-            if (!rayOrigin) // Prevent MissingReferenceException on closing m_EditorVR
+            if (!rayOrigin) // Prevent MissingReferenceException on closing m_EditorXR
                 return;
 
             var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();

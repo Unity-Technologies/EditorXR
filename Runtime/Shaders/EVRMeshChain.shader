@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/MeshChain - Alpha Blended"
+﻿Shader "EditorXR/MeshChain - Alpha Blended"
 {
 	Properties
 	{

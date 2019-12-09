@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/UI/GradientTexture"
+﻿Shader "EditorXR/UI/GradientTexture"
 {
 	Properties
 	{

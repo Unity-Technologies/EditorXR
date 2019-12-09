@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/UI/Angled Vertical Gradient UI Clip"
+﻿Shader "EditorXR/UI/Angled Vertical Gradient UI Clip"
 {
     Properties
     {

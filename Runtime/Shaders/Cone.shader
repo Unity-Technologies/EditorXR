@@ -1,4 +1,4 @@
-Shader "EditorVR/Standard-Cone"
+Shader "EditorXR/Standard-Cone"
 {
 	Properties
 	{

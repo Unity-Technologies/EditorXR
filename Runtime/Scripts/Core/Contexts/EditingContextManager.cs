@@ -129,7 +129,7 @@ namespace Unity.Labs.EditorXR.Core
 
 #if UNITY_EDITOR
         [MenuItem("Window/EditorXR %e", false)]
-        internal static void ShowEditorVR()
+        internal static void ShowEditorXR()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying)
                 return;
@@ -139,7 +139,7 @@ namespace Unity.Labs.EditorXR.Core
         }
 
         [MenuItem("Window/EditorXR %e", true)]
-        static bool ShouldShowEditorVR()
+        static bool ShouldShowEditorXR()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying)
                 return false;
@@ -255,7 +255,7 @@ namespace Unity.Labs.EditorXR.Core
             if (EditorApplication.isCompiling || Application.isPlaying || EditorApplication.isPlayingOrWillChangePlaymode)
                 return;
 
-            if (!ShouldShowEditorVR())
+            if (!ShouldShowEditorXR())
                 return;
 
             if (!XRSettings.enabled)
@@ -280,7 +280,7 @@ namespace Unity.Labs.EditorXR.Core
             if (!s_UserWasPresent && userPresent && !view && !s_AutoOpened)
             {
                 s_AutoOpened = true;
-                EditorApplication.delayCall += ShowEditorVR;
+                EditorApplication.delayCall += ShowEditorXR;
             }
             else if (s_UserWasPresent && view && !userPresent && s_AutoOpened)
             {
@@ -292,7 +292,7 @@ namespace Unity.Labs.EditorXR.Core
         }
 
         // Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
-        // EditorVR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
+        // EditorXR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
         // we watch until playmode is done and then relaunch.
         static void ReopenOnExitPlaymode()
         {
@@ -302,7 +302,7 @@ namespace Unity.Labs.EditorXR.Core
                 EditorPrefs.DeleteKey(k_LaunchOnExitPlaymode);
                 EditorApplication.update -= ReopenOnExitPlaymode;
                 if (launch)
-                    EditorApplication.delayCall += ShowEditorVR;
+                    EditorApplication.delayCall += ShowEditorXR;
             }
         }
 #endif
@@ -611,7 +611,7 @@ namespace Unity.Labs.EditorXR.Core
             go.SetRunInEditModeRecursively(true);
             go.transform.SetParent(ModuleLoaderCore.instance.GetModuleParent().transform);
 
-            // These components were allocating memory every frame and aren't currently used in EditorVR
+            // These components were allocating memory every frame and aren't currently used in EditorXR
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());

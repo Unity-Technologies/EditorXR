@@ -124,7 +124,7 @@ namespace Unity.Labs.EditorXR.Menus
         void CreateToolsMenuButton(Type toolType, Sprite buttonIcon)
         {
             // Verify first that the ToolsMenuUI exists
-            // This is called in EditorVR.Tools before the UI can be created herein in Awake
+            // This is called in EditorXR.Tools before the UI can be created herein in Awake
             // The SelectionTool & MainMenu buttons are created immediately after instantiating the ToolsMenu
             if (m_ToolsMenuUI == null)
                 CreateToolsMenuUI();

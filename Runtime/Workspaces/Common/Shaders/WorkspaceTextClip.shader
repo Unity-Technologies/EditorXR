@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Workspaces/Workspace Text Clip"
+﻿Shader "EditorXR/Workspaces/Workspace Text Clip"
 {
 	Properties
 	{

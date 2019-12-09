@@ -80,7 +80,7 @@ namespace Unity.Labs.EditorXR.Modules
             }
         }
 
-        public const string SerializedPreferencesKey = "EditorVR.SerializedPreferences";
+        public const string SerializedPreferencesKey = "EditorXR.SerializedPreferences";
 
         readonly List<ISerializePreferences> m_Serializers = new List<ISerializePreferences>();
         bool m_HasDeserialized;

@@ -1,4 +1,4 @@
-Shader "EditorVR/Annotation/Brush"
+Shader "EditorXR/Annotation/Brush"
  {
 	Properties
 	{

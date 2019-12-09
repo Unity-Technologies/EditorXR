@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Custom/List Item"
+﻿Shader "EditorXR/Custom/List Item"
 {
 	Properties
 	{

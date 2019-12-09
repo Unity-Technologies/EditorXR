@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/TransparentBlurVerticalFade"
+﻿Shader "EditorXR/TransparentBlurVerticalFade"
 {
 	Properties{
 		_Color("Main Color", Color) = (1,1,1,1)

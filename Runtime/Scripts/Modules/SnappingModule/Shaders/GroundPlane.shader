@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/GroundPlane"
+﻿Shader "EditorXR/GroundPlane"
 {
 	Properties
 	{

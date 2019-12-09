@@ -19,7 +19,7 @@ namespace Unity.Labs.EditorXR.Core
 #if UNITY_EDITOR
     [RequiresTag(VRPlayerTag)]
 #endif
-    [ModuleOrder(ModuleOrders.EditorVRLoadOrder)]
+    [ModuleOrder(ModuleOrders.EditorXRLoadOrder)]
     sealed class EditorXR : IEditor, IModule, IUsesConnectInterfaces
     {
 #if UNITY_EDITOR
@@ -48,8 +48,8 @@ namespace Unity.Labs.EditorXR.Core
 
         const HideFlags k_DefaultHideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
         internal const string VRPlayerTag = "VRPlayer";
-        const string k_PreserveLayout = "EditorVR.PreserveLayout";
-        const string k_IncludeInBuilds = "EditorVR.IncludeInBuilds";
+        const string k_PreserveLayout = "EditorXR.PreserveLayout";
+        const string k_IncludeInBuilds = "EditorXR.IncludeInBuilds";
 
         static bool s_IsInitialized;
 

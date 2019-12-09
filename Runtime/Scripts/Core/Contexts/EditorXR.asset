@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0bcb87ab5055bd3498c8b75ba8ccde1c, type: 3}
-  m_Name: EditorVR
+  m_Name: EditorXR
   m_EditorClassIdentifier: 
   m_RenderScale: 1
   m_CopyMainCameraSettings: 1

@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/UI/GradientButtonMaskClip"
+﻿Shader "EditorXR/UI/GradientButtonMaskClip"
 {
 	Properties
 	{

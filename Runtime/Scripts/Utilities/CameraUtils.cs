@@ -5,7 +5,7 @@ using UnityObject = UnityEngine.Object;
 namespace Unity.Labs.EditorXR.Utilities
 {
     /// <summary>
-    /// Camera related EditorVR utilities
+    /// Camera related EditorXR utilities
     /// </summary>
     static class CameraUtils
     {

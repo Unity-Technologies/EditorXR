@@ -243,7 +243,7 @@ namespace Unity.Labs.EditorXR.Core
             m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
             m_UseCustomPreviewCamera = EditorPrefs.GetBool(k_UseCustomPreviewCamera, false);
 
-            // Disable other views to increase rendering performance for EditorVR
+            // Disable other views to increase rendering performance for EditorXR
             SetOtherViewsEnabled(false);
 
             // VRSettings.enabled latches the reference pose for the current camera

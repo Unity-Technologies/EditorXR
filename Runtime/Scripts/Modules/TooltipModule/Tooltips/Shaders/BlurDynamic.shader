@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Blur/Blur Dynamic"
+﻿Shader "EditorXR/Blur/Blur Dynamic"
 {
     Properties
     {

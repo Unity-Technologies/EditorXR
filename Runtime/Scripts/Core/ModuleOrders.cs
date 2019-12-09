@@ -5,8 +5,8 @@ namespace Unity.Labs.EditorXR.Core
         const int k_DefaultEarlyOrder = int.MinValue / 2;
         const int k_DefaultLateOrder = int.MaxValue / 2;
 
-        public const int InterfaceModule = EditorVRLoadOrder - 1;
-        public const int EditorVRLoadOrder = k_DefaultEarlyOrder;
+        public const int InterfaceModule = EditorXRLoadOrder - 1;
+        public const int EditorXRLoadOrder = k_DefaultEarlyOrder;
         public const int DeviceInputModuleOrder = k_DefaultEarlyOrder;
         public const int MenuModuleLoadOrder = k_DefaultLateOrder;
         public const int SpatialHintModuleLoadOrder = k_DefaultLateOrder;

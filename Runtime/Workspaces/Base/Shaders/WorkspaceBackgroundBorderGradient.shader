@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Workspaces/WorkspaceBackgroundBorderGradient"
+﻿Shader "EditorXR/Workspaces/WorkspaceBackgroundBorderGradient"
 {
 	Properties
 	{

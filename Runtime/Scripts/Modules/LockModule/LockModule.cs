@@ -66,7 +66,7 @@ namespace Unity.Labs.EditorXR.Modules
             if (!go)
                 return false;
 
-            // EditorVR objects (i.e. PlayerHead) may get HideAndDontSave, which includes NotEditable, but should not count as locked
+            // EditorXR objects (i.e. PlayerHead) may get HideAndDontSave, which includes NotEditable, but should not count as locked
             var moduleParent = ModuleLoaderCore.instance.GetModuleParent();
             if (go.transform.IsChildOf(moduleParent.transform))
                 return false;

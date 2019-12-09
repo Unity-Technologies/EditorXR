@@ -2,7 +2,7 @@ namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Implement this interface to create an editing context. You can also specify your own custom
-    /// settings within the context to be applied to the specified VR editor (e.g. EditorVR).
+    /// settings within the context to be applied to the specified VR editor (e.g. EditorXR).
     /// </summary>
     public interface IEditingContext
     {
@@ -27,7 +27,7 @@ namespace Unity.Labs.EditorXR
         bool copyMainCameraImageEffectsToPresentationCamera { get; }
 
         /// <summary>
-        /// Bool denotes that the EditorVR instance exists, having already been created in Setup()
+        /// Bool denotes that the EditorXR instance exists, having already been created in Setup()
         /// </summary>
         bool instanceExists { get; }
 

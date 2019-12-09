@@ -92,7 +92,7 @@ namespace Unity.Labs.EditorXR.Core
             m_Instance = ModuleLoaderCore.instance.GetModule<EditorXR>();
             if (m_Instance == null)
             {
-                Debug.LogWarning("EditorVR Module not loaded");
+                Debug.LogWarning("EditorXR Module not loaded");
                 return;
             }
 

@@ -9,7 +9,7 @@ namespace Unity.Labs.EditorXR.Utilities
     }
 
     /// <summary>
-    /// Input related EditorVR utilities
+    /// Input related EditorXR utilities
     /// </summary>
     static class InputUtils
     {

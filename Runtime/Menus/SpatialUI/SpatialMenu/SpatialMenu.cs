@@ -16,7 +16,7 @@ namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// The SpatialMenu controller
-    /// A SpatialMenu controller is spawned in EditorVR.Tools SpawnDefaultTools() function, for each proxy/input-device
+    /// A SpatialMenu controller is spawned in EditorXR.Tools SpawnDefaultTools() function, for each proxy/input-device
     /// There is a single static SpatialUI(view) that all SpatialMenu controllers direct
     /// </summary>
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
