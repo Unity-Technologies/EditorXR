@@ -42,7 +42,11 @@ namespace Unity.Labs.EditorXR.Modules
 
         public void LoadModule()
         {
-            m_GazeTransform = CameraUtils.GetMainCamera().transform;
+            var mainCamera = CameraUtils.GetMainCamera();
+            if (mainCamera == null)
+                return;
+
+            m_GazeTransform = mainCamera.transform;
             if (m_GazeTransform)
                 m_WorldspaceAnchorTransform = m_GazeTransform.parent;
         }
