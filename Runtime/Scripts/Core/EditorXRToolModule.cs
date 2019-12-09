@@ -85,7 +85,7 @@ namespace Unity.Labs.EditorXR.Core
             {
                 menuModule.mainMenuTools = allTools.Where(t =>
                 {
-                    return !IsDefaultTool(t) && !EditorVR.HiddenTypes.Contains(t);
+                    return !IsDefaultTool(t) && !EditorXR.HiddenTypes.Contains(t);
                 }).ToList(); // Don't show tools that can't be selected/toggled
             }
 
@@ -202,7 +202,7 @@ namespace Unity.Labs.EditorXR.Core
 
         internal static bool IsDefaultTool(Type type)
         {
-            var defaultTools = EditorVR.DefaultTools;
+            var defaultTools = EditorXR.DefaultTools;
             if (defaultTools == null)
                 return false;
 
@@ -211,7 +211,7 @@ namespace Unity.Labs.EditorXR.Core
 
         internal void SpawnDefaultTools(IProxy proxy)
         {
-            var defaultTools = EditorVR.DefaultTools;
+            var defaultTools = EditorXR.DefaultTools;
             if (defaultTools == null)
                 return;
 
@@ -257,16 +257,16 @@ namespace Unity.Labs.EditorXR.Core
 
                 IMainMenu mainMenu;
                 var menuHideData = device.menuHideData;
-                if (EditorVR.DefaultMenu != null)
+                if (EditorXR.DefaultMenu != null)
                 {
-                    mainMenu = (IMainMenu)menuModule.SpawnMenu(EditorVR.DefaultMenu, rayOrigin);
+                    mainMenu = (IMainMenu)menuModule.SpawnMenu(EditorXR.DefaultMenu, rayOrigin);
                     device.mainMenu = mainMenu;
                     menuHideData[mainMenu] = new MenuHideData();
                 }
 
-                if (EditorVR.DefaultAlternateMenu != null)
+                if (EditorXR.DefaultAlternateMenu != null)
                 {
-                    var alternateMenu = (IAlternateMenu)menuModule.SpawnMenu(EditorVR.DefaultAlternateMenu, rayOrigin);
+                    var alternateMenu = (IAlternateMenu)menuModule.SpawnMenu(EditorXR.DefaultAlternateMenu, rayOrigin);
                     menuHideData[alternateMenu] = new MenuHideData();
                     var radialMenu = alternateMenu as RadialMenu;
                     if (radialMenu)

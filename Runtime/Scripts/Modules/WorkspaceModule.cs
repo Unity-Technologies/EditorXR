@@ -117,7 +117,7 @@ namespace Unity.Labs.EditorXR.Modules
 
         public void LoadModule()
         {
-            preserveWorkspaces = EditorVR.preserveLayout;
+            preserveWorkspaces = Core.EditorXR.preserveLayout;
 
             UpdateInspectorsMethods.updateInspectors = UpdateInspectors;
         }
@@ -294,7 +294,7 @@ namespace Unity.Labs.EditorXR.Modules
                 var workspaceType = Type.GetType(workspaceLayout.name);
                 if (workspaceType != null)
                 {
-                    if (Core.EditorVR.HiddenTypes.Contains(workspaceType))
+                    if (Core.EditorXR.HiddenTypes.Contains(workspaceType))
                         continue;
 
                     if (Application.isPlaying && workspaceType.GetCustomAttributes(true).OfType<EditorOnlyWorkspaceAttribute>().Any())

@@ -393,7 +393,7 @@ namespace Unity.Labs.EditorXR.Core
 
         public void Initialize()
         {
-            preserveCameraRig = EditorVR.preserveLayout;
+            preserveCameraRig = EditorXR.preserveLayout;
 
             m_VRPlayerObjects.Clear();
 

@@ -185,7 +185,7 @@ namespace Unity.Labs.EditorXR.Core
         static bool OverrideSelectObject(GameObject hoveredObject)
         {
             // The player head can hovered, but not selected (only directly manipulated)
-            if (hoveredObject && hoveredObject.CompareTag(EditorVR.VRPlayerTag))
+            if (hoveredObject && hoveredObject.CompareTag(EditorXR.VRPlayerTag))
             {
                 // Clear the selection so that we do not manipulate it when moving the player head
                 Selection.activeObject = null;
@@ -459,7 +459,7 @@ namespace Unity.Labs.EditorXR.Core
             var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
             Vector3 collisionPoint;
             var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester, out collisionPoint);
-            if (renderer && !renderer.CompareTag(EditorVR.VRPlayerTag))
+            if (renderer && !renderer.CompareTag(EditorXR.VRPlayerTag))
                 return renderer.gameObject;
 
             if (m_MiniWorldModule == null)

@@ -109,7 +109,7 @@ namespace Unity.Labs.EditorXR.Core
             if (mainMenu != null && rayOrigin != null)
             {
                 mainMenu.menuTools = mainMenuTools;
-                mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes.Where(t => !EditorVR.HiddenTypes.Contains(t)).ToList();
+                mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes.Where(t => !EditorXR.HiddenTypes.Contains(t)).ToList();
                 mainMenu.settingsMenuProviders = m_SettingsMenuProviders;
                 mainMenu.settingsMenuItemProviders = m_SettingsMenuItemProviders;
                 m_MainMenus[rayOrigin] = mainMenu;

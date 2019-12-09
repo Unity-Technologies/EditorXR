@@ -12,7 +12,7 @@ namespace Unity.Labs.EditorXR.LegacyInputHelpers
     {
         static SeedXRInputBindings()
         {
-            Core.EditorVR.UpdateInputManager = UpdateInputManager;
+            Core.EditorXR.UpdateInputManager = UpdateInputManager;
         }
         #region InputAxisDataAndConfig
         // Same as InputAxis.h

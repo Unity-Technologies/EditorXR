@@ -311,7 +311,7 @@ namespace Unity.Labs.EditorXR.Core
 
             foreach (var r in k_Renderers)
             {
-                if (r.CompareTag(EditorVR.VRPlayerTag))
+                if (r.CompareTag(EditorXR.VRPlayerTag))
                     continue;
 
                 if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.ShowInMiniWorldTag))
@@ -473,7 +473,7 @@ namespace Unity.Labs.EditorXR.Core
                         var playerHead = false;
                         foreach (var obj in miniWorldRayObjects)
                         {
-                            if (obj.CompareTag(EditorVR.VRPlayerTag))
+                            if (obj.CompareTag(EditorXR.VRPlayerTag))
                             {
                                 playerHead = true;
                                 m_DirectSelectionModule.DropHeldObjects(node);

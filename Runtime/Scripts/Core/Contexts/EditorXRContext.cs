@@ -57,7 +57,7 @@ namespace Unity.Labs.EditorXR.Core
         List<string> m_HiddenTypeNames;
 #pragma warning restore 649
 
-        EditorVR m_Instance;
+        EditorXR m_Instance;
         Transform m_CameraRig;
 
         public bool copyMainCameraSettings { get { return m_CopyMainCameraSettings; } }
@@ -74,14 +74,14 @@ namespace Unity.Labs.EditorXR.Core
             SetupMonoScriptTypeNames();
 #endif
 
-            EditorVR.DefaultMenu = GetTypeSafe(m_DefaultMainMenuName);
-            EditorVR.DefaultAlternateMenu = GetTypeSafe(m_DefaultAlternateMenuName);
+            EditorXR.DefaultMenu = GetTypeSafe(m_DefaultMainMenuName);
+            EditorXR.DefaultAlternateMenu = GetTypeSafe(m_DefaultAlternateMenuName);
 
             if (m_DefaultToolStackNames != null)
-                EditorVR.DefaultTools = m_DefaultToolStackNames.Select(GetTypeSafe).ToArray();
+                EditorXR.DefaultTools = m_DefaultToolStackNames.Select(GetTypeSafe).ToArray();
 
             if (m_HiddenTypeNames != null)
-                EditorVR.HiddenTypes = m_HiddenTypeNames.Select(GetTypeSafe).ToArray();
+                EditorXR.HiddenTypes = m_HiddenTypeNames.Select(GetTypeSafe).ToArray();
 
             if (Application.isPlaying)
             {
@@ -89,7 +89,7 @@ namespace Unity.Labs.EditorXR.Core
                 VRView.CreateCameraRig(ref camera, out m_CameraRig);
             }
 
-            m_Instance = ModuleLoaderCore.instance.GetModule<EditorVR>();
+            m_Instance = ModuleLoaderCore.instance.GetModule<EditorXR>();
             if (m_Instance == null)
             {
                 Debug.LogWarning("EditorVR Module not loaded");
@@ -204,18 +204,18 @@ namespace Unity.Labs.EditorXR.Core
             {
                 const string title = "Preserve Layout";
                 const string tooltip = "Check this to preserve your layout and location in EditorXR";
-                EditorVR.preserveLayout = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorVR.preserveLayout);
+                EditorXR.preserveLayout = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorXR.preserveLayout);
             }
 
             // Include in Builds
             {
                 const string title = "Include in Player Builds";
                 const string tooltip = "Normally, EditorXR will only be available in the editor. Check this if you would like to modify its assembly definitions and include it in player builds";
-                EditorVR.includeInBuilds = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorVR.includeInBuilds);
+                EditorXR.includeInBuilds = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorXR.includeInBuilds);
             }
 
             if (GUILayout.Button("Reset to Defaults", GUILayout.Width(140)))
-                EditorVR.ResetPreferences();
+                EditorXR.ResetPreferences();
 
             EditorGUILayout.EndVertical();
         }

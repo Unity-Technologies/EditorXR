@@ -20,7 +20,7 @@ namespace Unity.Labs.EditorXR.Core
     [RequiresTag(VRPlayerTag)]
 #endif
     [ModuleOrder(ModuleOrders.EditorVRLoadOrder)]
-    sealed class EditorVR : IEditor, IModule, IUsesConnectInterfaces
+    sealed class EditorXR : IEditor, IModule, IUsesConnectInterfaces
     {
 #if UNITY_EDITOR
         class AssemblyFilter : IFilterBuildAssemblies

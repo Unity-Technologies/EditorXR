@@ -141,7 +141,7 @@ namespace Unity.Labs.EditorXR.Core
                     var rayOrigin = deviceData.rayOrigin;
                     Vector3 contactPoint;
                     var obj = GetDirectSelectionForRayOrigin(rayOrigin, out contactPoint);
-                    if (obj && !obj.CompareTag(EditorVR.VRPlayerTag))
+                    if (obj && !obj.CompareTag(EditorXR.VRPlayerTag))
                     {
                         m_DirectSelections[rayOrigin] = new DirectSelectionData
                         {
@@ -190,7 +190,7 @@ namespace Unity.Labs.EditorXR.Core
 
         public bool CanGrabObject(GameObject selection, Transform rayOrigin)
         {
-            if (selection.CompareTag(EditorVR.VRPlayerTag) && (m_MiniWorldModule == null || !m_MiniWorldModule.rays.ContainsKey(rayOrigin)))
+            if (selection.CompareTag(EditorXR.VRPlayerTag) && (m_MiniWorldModule == null || !m_MiniWorldModule.rays.ContainsKey(rayOrigin)))
                 return false;
 
             return true;
@@ -210,7 +210,7 @@ namespace Unity.Labs.EditorXR.Core
             // Detach the player head model so that it is not affected by its parent transform
             foreach (var grabbedObject in grabbedObjects)
             {
-                if (grabbedObject.CompareTag(EditorVR.VRPlayerTag))
+                if (grabbedObject.CompareTag(EditorXR.VRPlayerTag))
                 {
                     grabbedObject.hideFlags = HideFlags.None;
                     grabbedObject.transform.parent = null;
@@ -235,7 +235,7 @@ namespace Unity.Labs.EditorXR.Core
                 if (m_ViewerModule != null)
                 {
                     // Dropping the player head updates the camera rig position
-                    if (grabbedObject.CompareTag(EditorVR.VRPlayerTag))
+                    if (grabbedObject.CompareTag(EditorXR.VRPlayerTag))
                         m_ViewerModule.DropPlayerHead(grabbedObject);
                     else if (m_SceneObjectModule != null && this.IsOverShoulder(rayOrigin) && (m_MiniWorldModule == null || !m_MiniWorldModule.rays.ContainsKey(rayOrigin)))
                         m_SceneObjectModule.DeleteSceneObject(grabbedObject.gameObject);
