@@ -365,6 +365,9 @@ promotion:test:trigger:{{ test.name }}:
     type: Unity::VM
     image: package-ci/win10:stable
     flavor: b1.large
+  commands:
+    - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
+    - upm-ci {{ test.type }} izon -d
   dependencies:
     - .yamato/package-test.yml#pack:{{ test.name }}
 {% for editor in editors %}
