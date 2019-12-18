@@ -10,6 +10,8 @@
     "com.unity.labs.module-loader": "0.1.0-preview.4",
     "com.unity.labs.list-view-framework": "1.1.0-preview",
     "com.unity.xr.legacyinputhelpers": "2.0.6",
-    "com.unity.labs.xrlinerenderer": "0.1.0-preview.1"
+    "com.unity.labs.xrlinerenderer": "0.1.0-preview.1",
+    "com.unity.timeline": "1.0.0",
+    "com.unity.textmeshpro": "2.0.1"
   }
 }
