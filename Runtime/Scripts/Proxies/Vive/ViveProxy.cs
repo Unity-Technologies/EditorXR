@@ -1,14 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Input;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Input;
+using Unity.Labs.EditorXR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.XR;
 
-namespace UnityEditor.Experimental.EditorVR.Proxies
+namespace Unity.Labs.EditorXR.Proxies
 {
     sealed class ViveProxy : TwoHandedProxyBase
     {

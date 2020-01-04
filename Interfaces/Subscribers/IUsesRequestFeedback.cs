@@ -9,6 +9,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesRequestFeedback
+    /// </summary>
     public static class UsesRequestFeedbackMethods
     {
         /// <summary>

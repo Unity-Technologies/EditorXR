@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Tools
+namespace Unity.Labs.EditorXR.Tools
 {
-    public class AnnotationPointer : MonoBehaviour
+    class AnnotationPointer : MonoBehaviour
     {
         const int k_Sides = 8;
         const float k_BottomRadius = 0.01f;

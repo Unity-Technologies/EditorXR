@@ -1,9 +1,9 @@
+using Unity.Labs.EditorXR.Workspaces;
 using Unity.Labs.ModuleLoader;
 
 #if INCLUDE_POLY_TOOLKIT
 using System;
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 using PolyToolkit;
 #endif
 
@@ -12,7 +12,7 @@ namespace Unity.Labs.EditorXR.Interfaces
     /// <summary>
     /// Provide access to the spatial hash
     /// </summary>
-    public interface IProvidesPoly : IFunctionalityProvider
+    interface IProvidesPoly : IFunctionalityProvider
     {
 #if INCLUDE_POLY_TOOLKIT
         /// <summary>

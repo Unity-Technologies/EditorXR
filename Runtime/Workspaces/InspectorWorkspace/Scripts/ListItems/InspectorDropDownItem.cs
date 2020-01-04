@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Data;
+using Unity.Labs.EditorXR.UI;
+using UnityEditor;
 using UnityEngine;
-using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.UI;
-
 #if UNITY_EDITOR
 using UnityEditorInternal;
 #endif
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     sealed class InspectorDropDownItem : InspectorPropertyItem
     {

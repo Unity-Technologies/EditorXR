@@ -9,6 +9,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesResetWorkspaces
+    /// </summary>
     public static class UsesResetWorkspacesMethods
     {
         /// <summary>

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     [ImmortalModule]
     [ModuleOrder(ModuleOrders.InterfaceModule)]

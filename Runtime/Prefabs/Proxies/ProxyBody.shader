@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Proxies/ProxyBodyShader"
+﻿Shader "EditorXR/Proxies/ProxyBodyShader"
 {
 	Properties
     {

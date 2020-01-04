@@ -1,5 +1,4 @@
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Interfaces
@@ -11,6 +10,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for users of IUsesInstantiateMenuUI
+    /// </summary>
     public static class UsesInstantiateMenuUIMethods
     {
         /// <summary>

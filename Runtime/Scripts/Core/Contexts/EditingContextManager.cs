@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Unity.Labs.EditorXR;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
 using UnityEngine.XR;
 using UnityObject = UnityEngine.Object;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
 #if UNITY_EDITOR
     [InitializeOnLoad]
@@ -59,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             get
             {
                 var availableContexts = GetAvailableEditingContexts();
-                var context = availableContexts.Find(c => c.Equals(s_DefaultContext)) ?? availableContexts.First();
+                var context = availableContexts.Find(c => c.Equals(s_DefaultContext)) ?? availableContexts.FirstOrDefault();
 
                 var defaultContextName = settings.defaultContextName;
                 if (!string.IsNullOrEmpty(defaultContextName))
@@ -129,7 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 #if UNITY_EDITOR
         [MenuItem("Window/EditorXR %e", false)]
-        internal static void ShowEditorVR()
+        internal static void ShowEditorXR()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying)
                 return;
@@ -139,7 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 
         [MenuItem("Window/EditorXR %e", true)]
-        static bool ShouldShowEditorVR()
+        static bool ShouldShowEditorXR()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying)
                 return false;
@@ -151,8 +151,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         static SettingsProvider CreateSettingsProvider()
         {
             var contextNames = GetEditingContextNames();
-            if (string.IsNullOrEmpty(settings.defaultContextName))
-                settings.defaultContextName = defaultContext.name;
+            var context = defaultContext;
+            if (string.IsNullOrEmpty(settings.defaultContextName) && context != null)
+                settings.defaultContextName = context.name;
 
             var selectedIndex = Array.IndexOf(contextNames, settings.defaultContextName);
             var provider = new SettingsProvider("Project/EditorXR/Context Manager", SettingsScope.Project)
@@ -254,7 +255,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (EditorApplication.isCompiling || Application.isPlaying || EditorApplication.isPlayingOrWillChangePlaymode)
                 return;
 
-            if (!ShouldShowEditorVR())
+            if (!ShouldShowEditorXR())
                 return;
 
             if (!XRSettings.enabled)
@@ -279,7 +280,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (!s_UserWasPresent && userPresent && !view && !s_AutoOpened)
             {
                 s_AutoOpened = true;
-                EditorApplication.delayCall += ShowEditorVR;
+                EditorApplication.delayCall += ShowEditorXR;
             }
             else if (s_UserWasPresent && view && !userPresent && s_AutoOpened)
             {
@@ -291,7 +292,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 
         // Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
-        // EditorVR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
+        // EditorXR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
         // we watch until playmode is done and then relaunch.
         static void ReopenOnExitPlaymode()
         {
@@ -301,7 +302,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 EditorPrefs.DeleteKey(k_LaunchOnExitPlaymode);
                 EditorApplication.update -= ReopenOnExitPlaymode;
                 if (launch)
-                    EditorApplication.delayCall += ShowEditorVR;
+                    EditorApplication.delayCall += ShowEditorXR;
             }
         }
 #endif
@@ -323,10 +324,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             ModuleLoaderCore.instance.OnBehaviorEnable();
 
-            ISetEditingContextMethods.getAvailableEditingContexts = GetAvailableEditingContexts;
-            ISetEditingContextMethods.getPreviousEditingContexts = GetPreviousEditingContexts;
-            ISetEditingContextMethods.setEditingContext = SetEditingContext;
-            ISetEditingContextMethods.restorePreviousEditingContext = RestorePreviousContext;
+            SetEditingContextMethods.getAvailableEditingContexts = GetAvailableEditingContexts;
+            SetEditingContextMethods.getPreviousEditingContexts = GetPreviousEditingContexts;
+            SetEditingContextMethods.setEditingContext = SetEditingContext;
+            SetEditingContextMethods.restorePreviousEditingContext = RestorePreviousContext;
 
 #if UNITY_EDITOR
             if (runInEditMode)
@@ -374,10 +375,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             SetEditingContext(null);
 
-            ISetEditingContextMethods.getAvailableEditingContexts = null;
-            ISetEditingContextMethods.getPreviousEditingContexts = null;
-            ISetEditingContextMethods.setEditingContext = null;
-            ISetEditingContextMethods.restorePreviousEditingContext = null;
+            SetEditingContextMethods.getAvailableEditingContexts = null;
+            SetEditingContextMethods.getPreviousEditingContexts = null;
+            SetEditingContextMethods.setEditingContext = null;
+            SetEditingContextMethods.restorePreviousEditingContext = null;
 
             SaveUserSettings(settings);
 
@@ -610,7 +611,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             go.SetRunInEditModeRecursively(true);
             go.transform.SetParent(ModuleLoaderCore.instance.GetModuleParent().transform);
 
-            // These components were allocating memory every frame and aren't currently used in EditorVR
+            // These components were allocating memory every frame and aren't currently used in EditorXR
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());

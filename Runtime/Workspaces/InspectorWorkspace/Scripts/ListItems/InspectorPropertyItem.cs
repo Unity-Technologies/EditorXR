@@ -1,10 +1,11 @@
 using System;
 using TMPro;
+using Unity.Labs.EditorXR.Data;
 using Unity.Labs.EditorXR.Interfaces;
-using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     abstract class InspectorPropertyItem : InspectorListItem
     {
@@ -71,7 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected void FinalizeModifications()
         {
 #if UNITY_EDITOR
-            Undo.IncrementCurrentGroup();
+            UnityEditor.Undo.IncrementCurrentGroup();
             data.serializedObject.ApplyModifiedProperties();
 #endif
         }

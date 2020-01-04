@@ -1,7 +1,8 @@
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.EditorXR.Utilities;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     sealed class NumericInputField : InputField
     {
@@ -50,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
             m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
             m_Dragging = true;
 #if UNITY_EDITOR
-            Undo.IncrementCurrentGroup(); // Every drag start is a new modification
+            UnityEditor.Undo.IncrementCurrentGroup(); // Every drag start is a new modification
 #endif
         }
 

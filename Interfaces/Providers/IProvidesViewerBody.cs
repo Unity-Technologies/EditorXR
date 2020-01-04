@@ -9,15 +9,17 @@ namespace Unity.Labs.EditorXR.Interfaces
     public interface IProvidesViewerBody : IFunctionalityProvider
     {
         /// <summary>
-        /// Returns whether the specified transform is over the viewer's shoulders and behind the head
+        /// Check whether the specified transform is over the viewer's shoulders and behind the head
         /// </summary>
         /// <param name="rayOrigin">The rayOrigin to test</param>
+        /// <returns>Whether the specified transform is over the viewer's shoulders and behind the head</returns>
         bool IsOverShoulder(Transform rayOrigin);
 
         /// <summary>
-        /// Returns whether the specified transform is over the viewer's head
+        /// Check whether the specified transform is over the viewer's head
         /// </summary>
         /// <param name="rayOrigin">The rayOrigin to test</param>
+        /// <returns>Whether the specified transform is over the viewer's head</returns>
         bool IsAboveHead(Transform rayOrigin);
     }
 }

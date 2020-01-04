@@ -1,9 +1,10 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
-using UnityEditor.Experimental.EditorVR.Extensions;
+using Unity.Labs.EditorXR.Extensions;
 
 // MinComponent, MaxComponent, & Inverse are unused presently
-namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
+namespace Unity.Labs.EditorXR.Tests.Extensions
 {
     [InitializeOnLoad]
     public class Vec2ExtensionsTests

@@ -4,7 +4,7 @@ using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     class EditorXRToolsMenuModule : IModuleDependency<EditorXRRayModule>,
         IModuleDependency<EditorXRToolModule>, IModuleDependency<EditorXRMenuModule>, IProvidesPreviewInToolMenuButton
@@ -30,8 +30,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            IToolsMenuMethods.mainMenuActivatorSelected = OnMainMenuActivatorSelected;
-            IToolsMenuMethods.selectTool = OnToolButtonClicked;
+            ToolsMenuMethods.mainMenuActivatorSelected = OnMainMenuActivatorSelected;
+            ToolsMenuMethods.selectTool = OnToolButtonClicked;
         }
 
         public void UnloadModule() { }

@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/VerticalGradient"
+﻿Shader "EditorXR/VerticalGradient"
 {
 	Properties
 	{

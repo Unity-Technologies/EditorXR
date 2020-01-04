@@ -1,15 +1,15 @@
-﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     /// <summary>
     /// Allows an implementer to test for a given transforms'
     /// position residing within an angular threshold of the HMD
     /// </summary>
-    public sealed class GazeDivergenceModule : IModuleBehaviorCallbacks, IDelayedInitializationModule, IProvidesDetectGazeDivergence
+    sealed class GazeDivergenceModule : IModuleBehaviorCallbacks, IDelayedInitializationModule, IProvidesDetectGazeDivergence
     {
         const float k_StableGazeThreshold = 0.25f;
 

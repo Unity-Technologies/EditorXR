@@ -1,4 +1,4 @@
-Shader "EditorVR/Standard Fog Disabled"
+Shader "EditorXR/Standard Fog Disabled"
 {
 	Properties
 	{

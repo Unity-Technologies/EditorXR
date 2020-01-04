@@ -1,57 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.XR;
 
-#if UNITY_EDITOR
-using UnityEditor.Compilation;
-using UnityEditorInternal;
-#endif
-
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     [CreateAssetMenu(menuName = "EditorXR/Editing Context")]
     class EditorXRContext : ScriptableObject, IEditingContext
     {
-        [Serializable]
-        class AssemblyDefinition
-        {
-            [SerializeField]
-            string name;
-
-            [SerializeField]
-            string[] references;
-
-            [SerializeField]
-            string[] optionalUnityReferences;
-
-            [SerializeField]
-            string[] includePlatforms;
-
-            [SerializeField]
-            string[] excludePlatforms;
-
-            [SerializeField]
-            bool allowUnsafeCode;
-
-            public string Name { get { return name; } set { name = value; } }
-            public string[] IncludePlatforms { get { return includePlatforms; } set { includePlatforms = value; } }
-            public string[] ExcludePlatforms { get { return excludePlatforms; } set { excludePlatforms = value; } }
-        }
-
-        static readonly string[] k_AssemblyNames = { "Unity.Labs.EditorXR", "input-prototype", "VRLR" };
-        static readonly string[] k_IncludePlatformsEditorOnly = { "Editor" };
-        static readonly string[] k_ExcludePlatformsEditorOnly = { };
-        static readonly string[] k_IncludePlatformsInPlayer = { };
-        static readonly string[] k_ExcludePlatformsInPlayer = { };
-
-        static bool s_IncludeInPlayer;
-
 #pragma warning disable 649
         [SerializeField]
         float m_RenderScale = 1f;
@@ -96,7 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         List<string> m_HiddenTypeNames;
 #pragma warning restore 649
 
-        EditorVR m_Instance;
+        EditorXR m_Instance;
         Transform m_CameraRig;
 
         public bool copyMainCameraSettings { get { return m_CopyMainCameraSettings; } }
@@ -113,14 +74,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
             SetupMonoScriptTypeNames();
 #endif
 
-            EditorVR.DefaultMenu = GetTypeSafe(m_DefaultMainMenuName);
-            EditorVR.DefaultAlternateMenu = GetTypeSafe(m_DefaultAlternateMenuName);
+            EditorXR.DefaultMenu = GetTypeSafe(m_DefaultMainMenuName);
+            EditorXR.DefaultAlternateMenu = GetTypeSafe(m_DefaultAlternateMenuName);
 
             if (m_DefaultToolStackNames != null)
-                EditorVR.DefaultTools = m_DefaultToolStackNames.Select(GetTypeSafe).ToArray();
+                EditorXR.DefaultTools = m_DefaultToolStackNames.Select(GetTypeSafe).ToArray();
 
             if (m_HiddenTypeNames != null)
-                EditorVR.HiddenTypes = m_HiddenTypeNames.Select(GetTypeSafe).ToArray();
+                EditorXR.HiddenTypes = m_HiddenTypeNames.Select(GetTypeSafe).ToArray();
 
             if (Application.isPlaying)
             {
@@ -128,10 +89,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 VRView.CreateCameraRig(ref camera, out m_CameraRig);
             }
 
-            m_Instance = ModuleLoaderCore.instance.GetModule<EditorVR>();
+            m_Instance = ModuleLoaderCore.instance.GetModule<EditorXR>();
             if (m_Instance == null)
             {
-                Debug.LogWarning("EditorVR Module not loaded");
+                Debug.LogWarning("EditorXR Module not loaded");
                 return;
             }
 
@@ -161,14 +122,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 
 #if UNITY_EDITOR
-        static EditorXRContext()
-        {
-            EditorApplication.delayCall += () =>
-            {
-                s_IncludeInPlayer = GetIncludeInPlayer();
-            };
-        }
-
         void OnValidate()
         {
             SetupMonoScriptTypeNames();
@@ -228,7 +181,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-
+        // ReSharper disable once UnusedMember.Local
         static void PreferencesGUI()
         {
             EditorGUILayout.BeginVertical();
@@ -251,69 +204,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 const string title = "Preserve Layout";
                 const string tooltip = "Check this to preserve your layout and location in EditorXR";
-                EditorVR.preserveLayout = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorVR.preserveLayout);
+                EditorXR.preserveLayout = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorXR.preserveLayout);
             }
 
             // Include in Builds
-            using (var changed = new EditorGUI.ChangeCheckScope())
             {
                 const string title = "Include in Player Builds";
                 const string tooltip = "Normally, EditorXR will only be available in the editor. Check this if you would like to modify its assembly definitions and include it in player builds";
-                s_IncludeInPlayer = EditorGUILayout.Toggle(new GUIContent(title, tooltip), s_IncludeInPlayer);
-                if (changed.changed)
-                    SetIncludeInPlayer(s_IncludeInPlayer);
+                EditorXR.includeInBuilds = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorXR.includeInBuilds);
             }
 
             if (GUILayout.Button("Reset to Defaults", GUILayout.Width(140)))
-                EditorVR.ResetPreferences();
+                EditorXR.ResetPreferences();
 
             EditorGUILayout.EndVertical();
-        }
-
-        static bool GetIncludeInPlayer()
-        {
-            var editorOnly = false;
-            ForEachAssembly(asmDef =>
-            {
-                editorOnly |= asmDef.IncludePlatforms.Contains("Editor");
-            });
-
-            return !editorOnly;
-        }
-
-        static void SetIncludeInPlayer(bool include)
-        {
-            ForEachAssembly(asmDef =>
-            {
-                asmDef.IncludePlatforms = include ? k_IncludePlatformsInPlayer : k_IncludePlatformsEditorOnly;
-                asmDef.ExcludePlatforms = include ? k_ExcludePlatformsInPlayer : k_ExcludePlatformsEditorOnly;
-            });
-
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-        }
-
-        static void ForEachAssembly(Action<AssemblyDefinition> callback)
-        {
-            foreach (var assembly in k_AssemblyNames)
-            {
-                var path = CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(assembly);
-                if (string.IsNullOrEmpty(path))
-                {
-                    Debug.LogWarningFormat("Error in EditorXR Pre-Build action: Cannot find asmdef for assembly: {0}", assembly);
-                    continue;
-                }
-
-                var asmDefAsset = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>(path);
-                if (asmDefAsset == null)
-                {
-                    Debug.LogWarningFormat("Error in EditorXR Pre-Build action: Cannot load asmdef at: {0}", path);
-                    continue;
-                }
-
-                var asmDef = JsonUtility.FromJson<AssemblyDefinition>(asmDefAsset.text);
-                callback(asmDef);
-                File.WriteAllText(path, JsonUtility.ToJson(asmDef, true));
-            }
         }
 #endif
     }

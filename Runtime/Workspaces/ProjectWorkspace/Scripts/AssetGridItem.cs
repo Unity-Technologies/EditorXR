@@ -2,21 +2,22 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Data;
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Handles;
+using Unity.Labs.EditorXR.Helpers;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     sealed class AssetGridItem : DraggableListItem<AssetData, int>, IUsesPlaceSceneObject, IUsesSpatialHash, IUsesSetHighlight,
         IUsesViewerBody, IUsesRayVisibilitySettings, IUsesRequestFeedback, IUsesDirectSelection, IUsesRaycastResults, IUpdateInspectors
@@ -574,7 +575,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (previewObjectTransform)
                 {
 #if UNITY_EDITOR
-                    Undo.RegisterCreatedObjectUndo(previewObjectTransform.gameObject, "Place Scene Object");
+                    UnityEditor.Undo.RegisterCreatedObjectUndo(previewObjectTransform.gameObject, "Place Scene Object");
 #endif
                     this.PlaceSceneObject(previewObjectTransform, m_PreviewPrefabScale);
                 }
@@ -648,7 +649,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             this.AddToSpatialHash(go);
 
 #if UNITY_EDITOR
-            Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
+            UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
 #endif
         }
 

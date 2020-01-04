@@ -1,7 +1,7 @@
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.UI;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Utilities
+namespace Unity.Labs.EditorXR.Utilities
 {
     /// <summary>
     /// UI related utilities

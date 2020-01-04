@@ -1,6 +1,7 @@
 using System;
 using System.Text;
-using UnityEditor.Experimental.EditorVR.Workspaces;
+using Unity.Labs.EditorXR.Utilities;
+using Unity.Labs.EditorXR.Workspaces;
 using UnityEngine;
 using Unity.Labs.Utils;
 
@@ -9,17 +10,12 @@ using PolyToolkit;
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Utilities;
-#endif
-
-#if UNITY_EDITOR
-[assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 #endif
 
 #if INCLUDE_POLY_TOOLKIT
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
-    public class PolyModule : IDelayedInitializationModule, IUsesFunctionalityInjection, IProvidesPoly
+    class PolyModule : IDelayedInitializationModule, IUsesFunctionalityInjection, IProvidesPoly
     {
         class RequestHandler
         {

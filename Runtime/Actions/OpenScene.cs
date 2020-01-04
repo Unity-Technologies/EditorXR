@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Actions
+namespace Unity.Labs.EditorXR
 {
     [ActionMenuItem("OpenScene", "Scene")]
     sealed class OpenScene : BaseAction

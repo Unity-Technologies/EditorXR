@@ -1,6 +1,6 @@
-﻿using Unity.Labs.ModuleLoader;
+using Unity.Labs.ModuleLoader;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Adds Initialize and Shutdown methods to modules for when editing starts and stops

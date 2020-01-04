@@ -1,4 +1,6 @@
-namespace UnityEditor.Experimental.EditorVR.UI
+using UnityEditor;
+
+namespace Unity.Labs.EditorXR.UI
 {
     // Because Button already has a custom editor, and we need to expose SelectionFlags, we need a custom inspector
     [CustomEditor(typeof(Button))]

@@ -1,4 +1,4 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Attribute used to tag items (tools, actions, etc) that can be added to a "spatial menu"

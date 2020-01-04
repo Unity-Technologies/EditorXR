@@ -1,9 +1,9 @@
 using System;
 using UnityEngine.XR;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
-    public enum DeviceType
+    enum DeviceType
     {
         Oculus,
         Vive
@@ -12,11 +12,11 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// In cases where you must have different input logic (e.g. button press + axis input) you can get the device type
     /// </summary>
-    public interface IUsesDeviceType
+    interface IUsesDeviceType
     {
     }
 
-    public static class IUsesDeviceTypeMethods
+    static class UsesDeviceTypeMethods
     {
         static string s_XRDeviceModel;
 

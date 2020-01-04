@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/SpatialUI/SpatialUIBackground"
+﻿Shader "EditorXR/SpatialUI/SpatialUIBackground"
 {
     Properties
     {

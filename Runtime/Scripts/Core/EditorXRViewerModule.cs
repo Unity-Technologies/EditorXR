@@ -1,16 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Helpers;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.XR;
 using Unity.Labs.ModuleLoader;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     class EditorXRViewerModule : ScriptableSettings<EditorXRViewerModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IInterfaceConnector,
@@ -393,7 +393,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Initialize()
         {
-            preserveCameraRig = EditorVR.preserveLayout;
+            preserveCameraRig = EditorXR.preserveLayout;
 
             m_VRPlayerObjects.Clear();
 

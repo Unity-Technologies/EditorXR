@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Modules;
+using System.Collections.Generic;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Modules;
+using UnityEditor;
 using UnityEngine;
 
 #if UNITY_2019_1_OR_NEWER
@@ -9,7 +10,7 @@ using UnityEngine.UIElements;
 using UnityEngine.Experimental.UIElements;
 #endif
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     class HapticPulsesSettingsProvider : EditorXRSettingsProvider
     {
@@ -43,14 +44,14 @@ namespace UnityEditor.Experimental.EditorVR.UI
             base.OnActivate(searchContext, rootElement);
             Reset();
 
-            Undo.undoRedoPerformed += OnUndoRedo;
+            UnityEditor.Undo.undoRedoPerformed += OnUndoRedo;
         }
 
         public override void OnDeactivate()
         {
             base.OnDeactivate();
 
-            Undo.undoRedoPerformed -= OnUndoRedo;
+            UnityEditor.Undo.undoRedoPerformed -= OnUndoRedo;
         }
 
         void OnUndoRedo()

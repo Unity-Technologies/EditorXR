@@ -5,6 +5,3 @@
 [submodule "Runtime/libs/UnityOctree"]
 	path = Runtime/libs/UnityOctree
 	url=https://github.com/Unity-Technologies/UnityOctree.git
-[submodule "Runtime/libs/VRLineRenderer"]
-	path = Runtime/libs/VRLineRenderer
-	url = https://github.com/Unity-Technologies/VRLineRenderer

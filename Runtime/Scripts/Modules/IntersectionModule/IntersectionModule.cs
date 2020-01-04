@@ -1,14 +1,14 @@
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Data;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
         IUsesGameObjectLocking, IUsesGetVRPlayerObjects, IInterfaceConnector, IProvidesSceneRaycast,

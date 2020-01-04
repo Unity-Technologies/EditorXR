@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Utilities;
 
 namespace UnityEngine.EventSystems
 {

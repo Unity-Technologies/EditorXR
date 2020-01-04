@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Custom/List Item Transparent"
+﻿Shader "EditorXR/Custom/List Item Transparent"
 {
 	Properties
 	{

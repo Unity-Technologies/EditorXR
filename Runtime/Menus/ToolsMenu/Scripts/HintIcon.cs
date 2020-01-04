@@ -1,13 +1,13 @@
-﻿using System.Collections;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using System.Collections;
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
-    public class HintIcon : MonoBehaviour
+    class HintIcon : MonoBehaviour
     {
 #pragma warning disable 649
         [SerializeField]

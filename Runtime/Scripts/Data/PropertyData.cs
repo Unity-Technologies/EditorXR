@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using UnityEditor;
 
 #if !UNITY_EDITOR
 class SerializedProperty
@@ -6,7 +7,7 @@ class SerializedProperty
 }
 #endif
 
-namespace UnityEditor.Experimental.EditorVR.Data
+namespace Unity.Labs.EditorXR.Data
 {
     sealed class PropertyData : InspectorData
     {

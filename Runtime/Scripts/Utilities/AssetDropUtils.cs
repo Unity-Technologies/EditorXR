@@ -1,13 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Data;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 using UnityEngine.Video;
 
-namespace UnityEditor.Experimental.EditorVR.Utilities
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+namespace Unity.Labs.EditorXR.Utilities
 {
-    public static class AssetDropUtils
+    static class AssetDropUtils
     {
         public static List<Material> activeMaterialClones = new List<Material>();
 
@@ -42,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         internal static void AssignAnimationClip(Animation animation, AnimationClip clipAsset)
         {
 #if UNITY_EDITOR
-            Undo.RecordObject(animation, k_AssignAnimationClipUndo);
+            UnityEditor.Undo.RecordObject(animation, k_AssignAnimationClipUndo);
 #endif
 
             if (animation.GetClipCount() > 0 && s_AssignMultipleAnimationClips)
@@ -71,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (source != null)
             {
 #if UNITY_EDITOR
-                Undo.RecordObject(source, k_AssignAudioClipUndo);
+                UnityEditor.Undo.RecordObject(source, k_AssignAudioClipUndo);
 #endif
                 source.clip = (AudioClip)data.asset;
             }
@@ -90,7 +94,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (player != null)
             {
 #if UNITY_EDITOR
-                Undo.RecordObject(player, k_AssignVideoClipUndo);
+                UnityEditor.Undo.RecordObject(player, k_AssignVideoClipUndo);
 #endif
                 player.clip = (VideoClip)data.asset;
             }
@@ -108,7 +112,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 #if UNITY_EDITOR
             var script = (MonoScript)data.asset;
             var type = script.GetClass();
-            Undo.AddComponent(go, type);
+            UnityEditor.Undo.AddComponent(go, type);
 #endif
             return go;
         }
@@ -124,7 +128,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (renderer != null)
             {
 #if UNITY_EDITOR
-                Undo.RecordObject(go, k_AssignMaterialUndo);
+                UnityEditor.Undo.RecordObject(go, k_AssignMaterialUndo);
 #endif
                 renderer.sharedMaterial = (Material)data.asset;
             }
@@ -143,7 +147,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (renderer != null)
             {
 #if UNITY_EDITOR
-                Undo.RecordObject(go, k_AssignMaterialUndo);
+                UnityEditor.Undo.RecordObject(go, k_AssignMaterialUndo);
 #endif
 
                 // copy the material before applying shader to the instance
@@ -186,7 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         internal static void AssignPhysicMaterial(Collider collider, PhysicMaterial material)
         {
 #if UNITY_EDITOR
-            Undo.RecordObject(collider, k_AssignPhysicMaterialUndo);
+            UnityEditor.Undo.RecordObject(collider, k_AssignPhysicMaterialUndo);
 #endif
             collider.material = material;
         }
@@ -200,7 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 var font = (Font)data.asset;
 
 #if UNITY_EDITOR
-                Undo.RecordObject(go, k_AssignFontUndo);
+                UnityEditor.Undo.RecordObject(go, k_AssignFontUndo);
 #endif
 
                 text.font = font;

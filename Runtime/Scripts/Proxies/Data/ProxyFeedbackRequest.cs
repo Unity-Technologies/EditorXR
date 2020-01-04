@@ -2,7 +2,7 @@ using System;
 using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Proxies
+namespace Unity.Labs.EditorXR.Proxies
 {
     using VRControl = VRInputDevice.VRControl;
 
@@ -64,6 +64,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// </summary>
         public Func<bool> suppressPresentation;
 
+        /// <summary>
+        /// Reset this ProxyFeedbackRequest for re-use
+        /// </summary>
         public override void Reset()
         {
             priority = default(int);

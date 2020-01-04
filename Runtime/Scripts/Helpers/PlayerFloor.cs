@@ -1,15 +1,15 @@
-﻿using System.Collections;
+using System.Collections;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Helpers
+namespace Unity.Labs.EditorXR.Helpers
 {
-    public class PlayerFloor : MonoBehaviour, IUsesViewerScale, IUsesDetectGazeDivergence
+    class PlayerFloor : MonoBehaviour, IUsesViewerScale, IUsesDetectGazeDivergence
     {
         const float k_XOffset = 0.05f;
         const float k_ZOffset = 0.025f;

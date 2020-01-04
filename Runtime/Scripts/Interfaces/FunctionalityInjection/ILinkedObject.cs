@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Provides access to other tools of the same type
@@ -14,15 +14,20 @@ namespace UnityEditor.Experimental.EditorVR
         List<ILinkedObject> linkedObjects { set; }
     }
 
-    public static class ILinkedObjectMethods
+    /// <summary>
+    /// Extension methods for implementors of ILinkedObject
+    /// </summary>
+    public static class LinkedObjectMethods
     {
         internal static Func<ILinkedObject, bool> isSharedUpdater { get; set; }
 
         /// <summary>
         /// Returns whether the specified object is designated to perform the duties of all linked objects of this type
         /// </summary>
+        /// <param name="user">The functionality user</param>
         /// <param name="linkedObject">Object among the linked objects to check if it is the central one</param>
-        public static bool IsSharedUpdater(this ILinkedObject obj, ILinkedObject linkedObject)
+        /// <returns>True if the specified object is the shared updater</returns>
+        public static bool IsSharedUpdater(this ILinkedObject user, ILinkedObject linkedObject)
         {
             return isSharedUpdater(linkedObject);
         }

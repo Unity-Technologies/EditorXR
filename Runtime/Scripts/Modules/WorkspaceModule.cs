@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Labs.EditorXR;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
+using Unity.Labs.EditorXR.Workspaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.Experimental.EditorVR.Workspaces;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     sealed class WorkspaceModule : IModuleDependency<DeviceInputModule>, IUsesConnectInterfaces, ISerializePreferences,
         IInterfaceConnector, IUsesFunctionalityInjection, IProvidesResetWorkspaces, IProvidesCreateWorkspace
@@ -117,9 +117,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void LoadModule()
         {
-            preserveWorkspaces = Core.EditorVR.preserveLayout;
+            preserveWorkspaces = Core.EditorXR.preserveLayout;
 
-            IUpdateInspectorsMethods.updateInspectors = UpdateInspectors;
+            UpdateInspectorsMethods.updateInspectors = UpdateInspectors;
         }
 
         public void UnloadModule()
@@ -294,7 +294,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var workspaceType = Type.GetType(workspaceLayout.name);
                 if (workspaceType != null)
                 {
-                    if (Core.EditorVR.HiddenTypes.Contains(workspaceType))
+                    if (Core.EditorXR.HiddenTypes.Contains(workspaceType))
                         continue;
 
                     if (Application.isPlaying && workspaceType.GetCustomAttributes(true).OfType<EditorOnlyWorkspaceAttribute>().Any())

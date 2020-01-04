@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace UnityEditor.Experimental.EditorVR.Input
+namespace Unity.Labs.EditorXR.Input
 {
     interface IInputToEvents
     {

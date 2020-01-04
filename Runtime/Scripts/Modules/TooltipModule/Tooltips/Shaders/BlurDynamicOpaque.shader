@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Blur/Blur Dynamic Opaque"
+﻿Shader "EditorXR/Blur/Blur Dynamic Opaque"
 {
     Properties
     {

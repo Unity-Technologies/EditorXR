@@ -1,16 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.Utilities;
+using Unity.Labs.EditorXR.Workspaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.Experimental.EditorVR.Workspaces;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     class EditorXRMiniWorldModule : IModuleDependency<EditorXRToolModule>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<SpatialHashModule>, IModuleDependency<HighlightModule>, IModuleDependency<IntersectionModule>,
@@ -310,7 +311,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             foreach (var r in k_Renderers)
             {
-                if (r.CompareTag(EditorVR.VRPlayerTag))
+                if (r.CompareTag(EditorXR.VRPlayerTag))
                     continue;
 
                 if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.ShowInMiniWorldTag))
@@ -472,7 +473,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         var playerHead = false;
                         foreach (var obj in miniWorldRayObjects)
                         {
-                            if (obj.CompareTag(EditorVR.VRPlayerTag))
+                            if (obj.CompareTag(EditorXR.VRPlayerTag))
                             {
                                 playerHead = true;
                                 m_DirectSelectionModule.DropHeldObjects(node);

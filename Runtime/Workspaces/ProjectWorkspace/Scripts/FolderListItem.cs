@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using TMPro;
+using Unity.Labs.EditorXR.Handles;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Data
+namespace Unity.Labs.EditorXR.Data
 {
     sealed class FolderListItem : EditorXRNestedListViewItem<FolderData, int>
     {

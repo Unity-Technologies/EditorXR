@@ -1,9 +1,9 @@
-﻿#if !UNITY_EDITOR
+#if !UNITY_EDITOR
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
-    public class EditorPrefs
+    class EditorPrefs
     {
         public static bool GetBool(string key, bool defaultValue)
         {

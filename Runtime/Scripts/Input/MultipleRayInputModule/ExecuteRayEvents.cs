@@ -1,6 +1,6 @@
-﻿using UnityEngine.EventSystems;
+using UnityEngine.EventSystems;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     static class ExecuteRayEvents
     {

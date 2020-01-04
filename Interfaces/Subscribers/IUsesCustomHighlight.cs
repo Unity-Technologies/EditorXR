@@ -18,6 +18,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     /// <returns>Whether to block the normal highlight method</returns>
     public delegate bool OnHighlightMethod(GameObject go, Material material);
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesCustomHighlight
+    /// </summary>
     public static class UsesCustomHighlightMethods
     {
         /// <summary>

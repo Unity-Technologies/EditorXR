@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Core;
+using Unity.Labs.EditorXR.Core;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     sealed class SerializedPreferencesModule : IDelayedInitializationModule, IInterfaceConnector
     {
@@ -79,7 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public const string SerializedPreferencesKey = "EditorVR.SerializedPreferences";
+        public const string SerializedPreferencesKey = "EditorXR.SerializedPreferences";
 
         readonly List<ISerializePreferences> m_Serializers = new List<ISerializePreferences>();
         bool m_HasDeserialized;

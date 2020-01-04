@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/UI/GradientButtonMask"
+﻿Shader "EditorXR/UI/GradientButtonMask"
 {
 	Properties
 	{

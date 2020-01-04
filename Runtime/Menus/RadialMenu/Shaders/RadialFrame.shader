@@ -1,4 +1,4 @@
-Shader "EditorVR/RadialMenu/RadialFrame"
+Shader "EditorXR/RadialMenu/RadialFrame"
 {
     Properties
     {

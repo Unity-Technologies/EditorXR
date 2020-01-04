@@ -1,9 +1,9 @@
-﻿using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.EditorXR.Utilities;
+using Unity.Labs.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Helpers
+namespace Unity.Labs.EditorXR.Helpers
 {
 #if UNITY_EDITOR
     /// <summary>

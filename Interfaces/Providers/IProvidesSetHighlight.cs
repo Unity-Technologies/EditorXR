@@ -30,6 +30,7 @@ namespace Unity.Labs.EditorXR.Interfaces
       /// <param name="force">Force the setting or unsetting of the highlight</param>
       /// <param name="dutyPercent">The percentage of time when the highlight is active</param>
       /// <param name="cycleDuration">The duration for which to show this highlight. Keep default value of 0 to show until explicitly hidden</param>
+      /// <returns>Coroutine enumerator</returns>
       IEnumerator SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin = null,
           Material material = null, bool force = false, float dutyPercent = 0.75f, float cycleDuration = .8f);
     }

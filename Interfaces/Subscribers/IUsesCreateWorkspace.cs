@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Unity.Labs.ModuleLoader;
 using UnityEngine;
 
@@ -12,6 +11,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesCreateWorkspace
+    /// </summary>
     public static class UsesCreateWorkspaceMethods
     {
       /// <summary>

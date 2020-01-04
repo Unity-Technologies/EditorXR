@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/RadialMenu/RadialMenuBorderGradient"
+﻿Shader "EditorXR/RadialMenu/RadialMenuBorderGradient"
 {
 	Properties
 	{

@@ -1,12 +1,27 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Unity.Labs.ListView;
+using UnityEditor;
 using UnityEngine;
 
 #if !UNITY_EDITOR
+/// <summary>
+/// The type of objects to display in the hierarchy
+/// </summary>
 public enum HierarchyType
 {
+    /// <summary>
+    /// Display assets
+    /// </summary>
     Assets = 1,
+
+    /// <summary>
+    /// Display GameObjects
+    /// </summary>
     GameObjects = 2,
+
+    /// <summary>
+    /// Display packages
+    /// </summary>
     Packages = 3,
 }
 
@@ -23,13 +38,16 @@ class HierarchyProperty
 }
 #endif
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     sealed class HierarchyData : NestedListViewItemData<HierarchyData, int>
     {
         const string k_TemplateName = "HierarchyListItem";
 
+        //Suppress warning in builds
+#pragma warning disable 649
         readonly int m_Index;
+#pragma warning restore 649
 
         public string name { get; set; }
         public HashSet<string> types { get; set; }

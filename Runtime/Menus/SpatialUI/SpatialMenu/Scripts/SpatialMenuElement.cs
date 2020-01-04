@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using TMPro;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Modules;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Abstract class housing common SpatialMenu element functionality
     /// </summary>
-    public abstract class SpatialMenuElement : MonoBehaviour, IUsesControlHaptics,
+    abstract class SpatialMenuElement : MonoBehaviour, IUsesControlHaptics,
         IRayEnterHandler, IRayExitHandler
     {
         [SerializeField]

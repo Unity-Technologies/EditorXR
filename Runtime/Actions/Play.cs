@@ -1,4 +1,6 @@
-﻿namespace UnityEditor.Experimental.EditorVR.Actions
+using UnityEditor;
+
+namespace Unity.Labs.EditorXR
 {
     [ActionMenuItem("Play")]
     [SpatialMenuItem("Play", "Actions", "Enter Play-Mode")]

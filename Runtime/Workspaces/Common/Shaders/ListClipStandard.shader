@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Custom/List Clip Standard"
+﻿Shader "EditorXR/Custom/List Clip Standard"
 {
 	Properties
 	{

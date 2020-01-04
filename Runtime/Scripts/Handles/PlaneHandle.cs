@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils.GUI;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Handles
+namespace Unity.Labs.EditorXR.Handles
 {
     sealed class PlaneHandle : BaseHandle, IAxisConstraints, IUsesViewerScale
     {

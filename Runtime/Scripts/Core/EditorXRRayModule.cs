@@ -1,19 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Labs.EditorXR;
+using Unity.Labs.EditorXR.Helpers;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Manipulators;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Manipulators;
-using UnityEditor.Experimental.EditorVR.Menus;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     class EditorXRRayModule : ScriptableSettings<EditorXRRayModule>,
         IModuleDependency<DeviceInputModule>, IInterfaceConnector, IForEachRayOrigin,
@@ -63,7 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public List<GameObject> ignoreList { private get; set; }
 
         public int initializationOrder { get { return 1; } }
-        public int shutdownOrder { get { return 0; } }
+        public int shutdownOrder { get { return 3; } }
         public int connectInterfaceOrder { get { return 0; } }
 
 #if !FI_AUTOFILL
@@ -186,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         static bool OverrideSelectObject(GameObject hoveredObject)
         {
             // The player head can hovered, but not selected (only directly manipulated)
-            if (hoveredObject && hoveredObject.CompareTag(EditorVR.VRPlayerTag))
+            if (hoveredObject && hoveredObject.CompareTag(EditorXR.VRPlayerTag))
             {
                 // Clear the selection so that we do not manipulate it when moving the player head
                 Selection.activeObject = null;
@@ -460,7 +459,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
             Vector3 collisionPoint;
             var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester, out collisionPoint);
-            if (renderer && !renderer.CompareTag(EditorVR.VRPlayerTag))
+            if (renderer && !renderer.CompareTag(EditorXR.VRPlayerTag))
                 return renderer.gameObject;
 
             if (m_MiniWorldModule == null)
@@ -532,7 +531,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void RemoveRayVisibilitySettings(Transform rayOrigin, object obj)
         {
-            if (!rayOrigin) // Prevent MissingReferenceException on closing m_EditorVR
+            if (!rayOrigin) // Prevent MissingReferenceException on closing m_EditorXR
                 return;
 
             var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();

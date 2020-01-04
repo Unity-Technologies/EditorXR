@@ -10,14 +10,17 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesRaycastResults
+    /// </summary>
     public static class UsesRaycastResultsMethods
     {
         /// <summary>
-        /// Method used to test hover/intersection
-        /// Returns the first GameObject being hovered over, or intersected with
+        /// Test hover/intersection
         /// </summary>
         /// <param name="user">The functionality user</param>
         /// <param name="rayOrigin">The rayOrigin for intersection purposes</param>
+        /// <returns>The first GameObject being hovered over, or intersected with</returns>
         public static GameObject GetFirstGameObject(this IUsesRaycastResults user, Transform rayOrigin)
         {
 #if FI_AUTOFILL

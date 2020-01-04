@@ -1,15 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
     sealed class UndoMenu : MonoBehaviour, IInstantiateUI, IUsesMenuOrigins, ICustomActionMap,
         IUsesControlHaptics, IUsesNode, IUsesConnectInterfaces, IUsesRequestFeedback, IUsesDeviceType, IAlternateMenu
@@ -132,7 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (navigateX < -k_UndoRedoThreshold && (m_TrackpadController || m_PrevNavigateX > -k_UndoRedoThreshold))
             {
 #if UNITY_EDITOR
-                Undo.PerformUndo();
+                UnityEditor.Undo.PerformUndo();
 #endif
                 m_UndoMenuUI.StartPerformedAnimation(true);
                 ShowUndoPerformedFeedback(true);
@@ -141,7 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             else if (navigateX > k_UndoRedoThreshold && (m_TrackpadController || m_PrevNavigateX < k_UndoRedoThreshold))
             {
 #if UNITY_EDITOR
-                Undo.PerformRedo();
+                UnityEditor.Undo.PerformRedo();
 #endif
                 m_UndoMenuUI.StartPerformedAnimation(false);
                 ShowUndoPerformedFeedback(false);

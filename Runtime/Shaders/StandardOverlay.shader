@@ -1,4 +1,4 @@
-Shader "EditorVR/StandardOverlay"
+Shader "EditorXR/StandardOverlay"
 {
 	Properties
 	{

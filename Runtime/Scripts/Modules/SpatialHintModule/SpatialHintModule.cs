@@ -1,15 +1,15 @@
-﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Menus;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     // TODO: Remove load order when switching to non-static FI
     [ModuleOrder(ModuleOrders.SpatialHintModuleLoadOrder)]
-    public sealed class SpatialHintModule : ScriptableSettings<SpatialHintModule>, IUsesConnectInterfaces, IInstantiateUI,
+    sealed class SpatialHintModule : ScriptableSettings<SpatialHintModule>, IUsesConnectInterfaces, IInstantiateUI,
         INodeToRay, IUsesRayVisibilitySettings, IDelayedInitializationModule, IProvidesControlSpatialHinting
     {
 #pragma warning disable 649

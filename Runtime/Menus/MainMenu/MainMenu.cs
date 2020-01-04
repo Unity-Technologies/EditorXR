@@ -1,18 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.Tools;
+using Unity.Labs.EditorXR.Utilities;
+using Unity.Labs.EditorXR.Workspaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.Tools;
-using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
     sealed class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, IUsesCreateWorkspace,
         ICustomActionMap, IUsesMenuOrigins, IUsesDeviceType, IUsesControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin,
@@ -62,8 +62,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public List<Type> menuTools { internal get; set; }
         public List<Type> menuWorkspaces { internal get; set; }
-        public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { get; set; }
-        public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { get; set; }
+        public Dictionary<Tuple<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { get; set; }
+        public Dictionary<Tuple<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { get; set; }
         public Transform targetRayOrigin { private get; set; }
         public Node node { get; set; }
 
@@ -232,8 +232,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var types = new HashSet<Type>();
             types.UnionWith(menuTools);
             types.UnionWith(menuWorkspaces);
-            types.UnionWith(settingsMenuProviders.Keys.Select(provider => provider.Key));
-            types.UnionWith(settingsMenuItemProviders.Keys.Select(provider => provider.Key));
+            types.UnionWith(settingsMenuProviders.Keys.Select(provider => provider.Item1));
+            types.UnionWith(settingsMenuItemProviders.Keys.Select(provider => provider.Item1));
 
             if (Application.isPlaying)
                 types.RemoveWhere(type => type.GetCustomAttributes(true).OfType<EditorOnlyWorkspaceAttribute>().Any());
@@ -309,8 +309,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 {
                     foreach (var providerPair in settingsMenuProviders)
                     {
-                        var kvp = providerPair.Key;
-                        if (kvp.Key == type && (kvp.Value == null || kvp.Value == rayOrigin))
+                        var tuple = providerPair.Key;
+                        if (tuple.Item1 == type && (tuple.Item2 == null || tuple.Item2 == rayOrigin))
                             AddSettingsMenu(providerPair.Value, buttonData, tooltip);
                     }
                 }
@@ -320,7 +320,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     foreach (var providerPair in settingsMenuItemProviders)
                     {
                         var kvp = providerPair.Key;
-                        if (kvp.Key == type && (kvp.Value == null || kvp.Value == rayOrigin))
+                        if (kvp.Item1 == type && (kvp.Item2 == null || kvp.Item2 == rayOrigin))
                             AddSettingsMenuItem(providerPair.Value);
                     }
                 }

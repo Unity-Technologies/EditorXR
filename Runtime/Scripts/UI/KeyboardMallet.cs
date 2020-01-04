@@ -1,8 +1,8 @@
 using System.Collections;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.EditorXR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     sealed class KeyboardMallet : MonoBehaviour
     {

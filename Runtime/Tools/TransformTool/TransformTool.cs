@@ -1,27 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Manipulators;
+using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Manipulators;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 #if !UNITY_EDITOR
-public enum PivotRotation
+enum PivotRotation
 {
     Local,
     Global,
 }
 #endif
 
-namespace UnityEditor.Experimental.EditorVR.Tools
+namespace Unity.Labs.EditorXR.Tools
 {
-    public sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
+    sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
         IGrabObjects, IUsesSelectObject, IManipulatorController, IUsesSnapping, IUsesSetHighlight, ILinkedObject, IRayToNode,
         IUsesControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IUsesIsMainMenuVisible,
         IUsesGetRayVisibility, IUsesRayVisibilitySettings, IUsesRequestFeedback, IUsesFunctionalityInjection
@@ -112,7 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     return;
 
 #if UNITY_EDITOR
-                Undo.RecordObjects(grabbedTransforms, "Move");
+                UnityEditor.Undo.RecordObjects(grabbedTransforms, "Move");
 #endif
 
                 var rayOriginRotation = rayOrigin.rotation;
@@ -153,7 +154,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     return;
 
 #if UNITY_EDITOR
-                Undo.RecordObjects(grabbedTransforms, "Move");
+                UnityEditor.Undo.RecordObjects(grabbedTransforms, "Move");
 #endif
 
                 var thisPosition = pivotPoint;
@@ -555,7 +556,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         m_DirectSelected = true;
 
 #if UNITY_EDITOR
-                        Undo.IncrementCurrentGroup();
+                        UnityEditor.Undo.IncrementCurrentGroup();
 #endif
                     }
                 }
@@ -726,7 +727,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                 var selectionTransforms = Selection.transforms;
 #if UNITY_EDITOR
-                Undo.RecordObjects(selectionTransforms, "Move");
+                UnityEditor.Undo.RecordObjects(selectionTransforms, "Move");
 #endif
 
                 foreach (var t in selectionTransforms)
@@ -863,7 +864,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         static void OnDragStarted()
         {
 #if UNITY_EDITOR
-            Undo.IncrementCurrentGroup();
+            UnityEditor.Undo.IncrementCurrentGroup();
 #endif
         }
 

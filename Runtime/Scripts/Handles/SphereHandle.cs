@@ -1,11 +1,11 @@
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace UnityEditor.Experimental.EditorVR.Handles
+namespace Unity.Labs.EditorXR.Handles
 {
     sealed class SphereHandle : BaseHandle, IScrollHandler, IUsesViewerScale
     {

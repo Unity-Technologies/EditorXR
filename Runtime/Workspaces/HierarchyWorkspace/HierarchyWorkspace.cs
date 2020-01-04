@@ -1,14 +1,15 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Handles;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     [EditorOnlyWorkspace]
     [MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]

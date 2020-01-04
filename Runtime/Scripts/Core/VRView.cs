@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.SpatialTracking;
@@ -12,7 +12,7 @@ using UnityEngine.XR;
 using InputTracking = UnityEngine.XR.InputTracking;
 using TrackingSpaceType = UnityEngine.XR.TrackingSpaceType;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     sealed class VRView
 #if UNITY_EDITOR
@@ -243,7 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
             m_UseCustomPreviewCamera = EditorPrefs.GetBool(k_UseCustomPreviewCamera, false);
 
-            // Disable other views to increase rendering performance for EditorVR
+            // Disable other views to increase rendering performance for EditorXR
             SetOtherViewsEnabled(false);
 
             // VRSettings.enabled latches the reference pose for the current camera

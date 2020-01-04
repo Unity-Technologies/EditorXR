@@ -1,13 +1,15 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.HighlightModuleBehaviorOrder)]
     sealed class HighlightModule : ScriptableSettings<HighlightModule>, IModuleBehaviorCallbacks, IUsesGameObjectLocking,
@@ -45,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #endif
 
         // Local method use only -- created here to reduce garbage collection
-        static readonly List<KeyValuePair<Material, GameObject>> k_HighlightsToRemove = new List<KeyValuePair<Material, GameObject>>();
+        static readonly List<Tuple<Material, GameObject>> k_HighlightsToRemove = new List<Tuple<Material, GameObject>>();
         static readonly List<MeshFilter> k_MeshFilters = new List<MeshFilter>();
         static readonly List<SkinnedMeshRenderer> k_SkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
 
@@ -94,7 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     {
                         var visibleTime = Time.time - highlightData.startTime;
                         if (visibleTime > highlightData.duration)
-                            k_HighlightsToRemove.Add(new KeyValuePair<Material, GameObject>(material, go));
+                            k_HighlightsToRemove.Add(new Tuple<Material, GameObject>(material, go));
                     }
 
                     var shouldHighlight = true;
@@ -123,9 +125,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             foreach (var kvp in k_HighlightsToRemove)
             {
-                var highlights = m_Highlights[kvp.Key];
-                if (highlights.Remove(kvp.Value) && highlights.Count == 0)
-                    m_Highlights.Remove(kvp.Key);
+                var highlights = m_Highlights[kvp.Item1];
+                if (highlights.Remove(kvp.Item2) && highlights.Count == 0)
+                    m_Highlights.Remove(kvp.Item1);
             }
 
             foreach (var kvp in m_Blinking)

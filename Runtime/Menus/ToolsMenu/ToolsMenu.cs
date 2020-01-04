@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.Tools;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.Tools;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
     sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IUsesConnectInterfaces, IInstantiateUI, IUsesControlHaptics,
         IUsesViewerScale, IControlSpatialScrolling, IUsesControlSpatialHinting, IUsesRayVisibilitySettings, IUsesRayOrigin,
@@ -124,7 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void CreateToolsMenuButton(Type toolType, Sprite buttonIcon)
         {
             // Verify first that the ToolsMenuUI exists
-            // This is called in EditorVR.Tools before the UI can be created herein in Awake
+            // This is called in EditorXR.Tools before the UI can be created herein in Awake
             // The SelectionTool & MainMenu buttons are created immediately after instantiating the ToolsMenu
             if (m_ToolsMenuUI == null)
                 CreateToolsMenuUI();

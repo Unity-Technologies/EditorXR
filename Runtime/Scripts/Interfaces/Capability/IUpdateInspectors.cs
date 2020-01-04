@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     /// <summary>
     /// Provides UpdateInspectors method used to update inspectors when their content has changed
     /// </summary>
-    public interface IUpdateInspectors
+    interface IUpdateInspectors
     {
     }
 
-    public static class IUpdateInspectorsMethods
+    static class UpdateInspectorsMethods
     {
         internal static Action<GameObject, bool> updateInspectors;
 

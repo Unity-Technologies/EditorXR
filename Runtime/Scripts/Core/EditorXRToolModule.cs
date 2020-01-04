@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Labs.EditorXR;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Menus;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Tools;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Menus;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Tools;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     class ToolData
     {
@@ -38,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public readonly Dictionary<IMenu, MenuHideData> menuHideData = new Dictionary<IMenu, MenuHideData>();
     }
 
-    public class EditorXRToolModule : MonoBehaviour,
+    class EditorXRToolModule : MonoBehaviour,
         IInterfaceConnector, IUsesConnectInterfaces, IDelayedInitializationModule,
         IUsesFunctionalityInjection, IProvidesSelectTool
     {
@@ -52,7 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal readonly List<DeviceData> deviceData = new List<DeviceData>();
 
         public int initializationOrder { get { return 0; } }
-        public int shutdownOrder { get { return 0; } }
+        public int shutdownOrder { get { return 2; } }
         public int connectInterfaceOrder { get { return 0; } }
 
 #if !FI_AUTOFILL
@@ -67,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
+            LinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
             m_RayModule = ModuleLoaderCore.instance.GetModule<EditorXRRayModule>();
         }
 
@@ -84,7 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 menuModule.mainMenuTools = allTools.Where(t =>
                 {
-                    return !IsDefaultTool(t) && !EditorVR.HiddenTypes.Contains(t);
+                    return !IsDefaultTool(t) && !EditorXR.HiddenTypes.Contains(t);
                 }).ToList(); // Don't show tools that can't be selected/toggled
             }
 
@@ -98,38 +99,39 @@ namespace UnityEditor.Experimental.EditorVR.Core
             foreach (var device in deviceData)
             {
                 var mainMenu = device.mainMenu;
-                this.DisconnectInterfaces(mainMenu);
+                var rayOrigin = device.rayOrigin;
+                this.DisconnectInterfaces(mainMenu, rayOrigin);
                 var behavior = mainMenu as MonoBehaviour;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
                 var alternateMenu = device.alternateMenu;
-                this.DisconnectInterfaces(alternateMenu);
+                this.DisconnectInterfaces(alternateMenu, rayOrigin);
                 behavior = alternateMenu as MonoBehaviour;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
                 var toolsMenu = device.toolsMenu;
-                this.DisconnectInterfaces(toolsMenu);
+                this.DisconnectInterfaces(toolsMenu, rayOrigin);
                 behavior = toolsMenu as MonoBehaviour;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
                 var customMenu = device.customMenu;
-                this.DisconnectInterfaces(customMenu);
+                this.DisconnectInterfaces(customMenu, rayOrigin);
                 behavior = customMenu as MonoBehaviour;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
                 var spatialMenu = device.spatialMenu;
-                this.DisconnectInterfaces(spatialMenu);
+                this.DisconnectInterfaces(spatialMenu, rayOrigin);
                 behavior = spatialMenu;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
                 foreach (var menu in device.alternateMenus.ToList())
                 {
-                    this.DisconnectInterfaces(menu);
+                    this.DisconnectInterfaces(menu, rayOrigin);
                     behavior = menu as MonoBehaviour;
                     if (behavior)
                         UnityObjectUtils.Destroy(behavior);
@@ -138,7 +140,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 foreach (var toolData in device.toolData.ToList())
                 {
                     var tool = toolData.tool;
-                    this.DisconnectInterfaces(tool);
+                    this.DisconnectInterfaces(tool, rayOrigin);
                     behavior = tool as MonoBehaviour;
                     if (behavior)
                         UnityObjectUtils.Destroy(behavior);
@@ -201,7 +203,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal static bool IsDefaultTool(Type type)
         {
-            var defaultTools = EditorVR.DefaultTools;
+            var defaultTools = EditorXR.DefaultTools;
             if (defaultTools == null)
                 return false;
 
@@ -210,7 +212,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal void SpawnDefaultTools(IProxy proxy)
         {
-            var defaultTools = EditorVR.DefaultTools;
+            var defaultTools = EditorXR.DefaultTools;
             if (defaultTools == null)
                 return;
 
@@ -256,16 +258,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 IMainMenu mainMenu;
                 var menuHideData = device.menuHideData;
-                if (EditorVR.DefaultMenu != null)
+                if (EditorXR.DefaultMenu != null)
                 {
-                    mainMenu = (IMainMenu)menuModule.SpawnMenu(EditorVR.DefaultMenu, rayOrigin);
+                    mainMenu = (IMainMenu)menuModule.SpawnMenu(EditorXR.DefaultMenu, rayOrigin);
                     device.mainMenu = mainMenu;
                     menuHideData[mainMenu] = new MenuHideData();
                 }
 
-                if (EditorVR.DefaultAlternateMenu != null)
+                if (EditorXR.DefaultAlternateMenu != null)
                 {
-                    var alternateMenu = (IAlternateMenu)menuModule.SpawnMenu(EditorVR.DefaultAlternateMenu, rayOrigin);
+                    var alternateMenu = (IAlternateMenu)menuModule.SpawnMenu(EditorXR.DefaultAlternateMenu, rayOrigin);
                     menuHideData[alternateMenu] = new MenuHideData();
                     var radialMenu = alternateMenu as RadialMenu;
                     if (radialMenu)

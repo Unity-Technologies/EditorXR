@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/SpatialUI/BackgroundOverlayBlur"
+﻿Shader "EditorXR/SpatialUI/BackgroundOverlayBlur"
 {
     Properties
     {

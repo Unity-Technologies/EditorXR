@@ -7,9 +7,9 @@ using Unity.Labs.ModuleLoader;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
-    public class WebModule : IModuleBehaviorCallbacks, IProvidesWeb
+    class WebModule : IModuleBehaviorCallbacks, IProvidesWeb
     {
         class DownloadRequest
         {

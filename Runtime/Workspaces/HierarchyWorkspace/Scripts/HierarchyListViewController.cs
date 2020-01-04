@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Handles;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.UI;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     sealed class HierarchyListViewController : EditorXRNestedListViewController<HierarchyData, HierarchyListItem, int>, IUsesGameObjectLocking, IUsesSetHighlight
     {
@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         bool m_HasLockedQuery;
         bool m_HasFilterQuery;
 
-        readonly List<KeyValuePair<Transform, GameObject>> m_HoveredGameObjects = new List<KeyValuePair<Transform, GameObject>>();
+        readonly List<Tuple<Transform, GameObject>> m_HoveredGameObjects = new List<Tuple<Transform, GameObject>>();
 
         public override List<HierarchyData> data
         {
@@ -200,7 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 GetNewItem(data, out item);
 
             var go = data.gameObject;
-            var kvp = new KeyValuePair<Transform, GameObject>(item.hoveringRayOrigin, go);
+            var kvp = new Tuple<Transform, GameObject>(item.hoveringRayOrigin, go);
 
             // Multiple rays can hover and unhover, so it's necessary to keep track of when hover state changes, so that
             // highlights can be turned on or off

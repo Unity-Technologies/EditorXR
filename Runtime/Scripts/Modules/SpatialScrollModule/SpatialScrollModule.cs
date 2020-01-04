@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
-    public sealed class SpatialScrollModule : ScriptableSettings<SpatialScrollModule>, IModule, IUsesViewerScale,
+    sealed class SpatialScrollModule : ScriptableSettings<SpatialScrollModule>, IModule, IUsesViewerScale,
         IUsesControlHaptics, IUsesControlSpatialHinting, IUsesRayVisibilitySettings, INodeToRay
     {
-        public class SpatialScrollData : INodeToRay
+        internal class SpatialScrollData : INodeToRay
         {
             public SpatialScrollData(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
             {
@@ -190,8 +190,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void LoadModule()
         {
-            IControlSpatialScrollingMethods.performSpatialScroll = PerformScroll;
-            IControlSpatialScrollingMethods.endSpatialScroll = EndScroll;
+            ControlSpatialScrollingMethods.performSpatialScroll = PerformScroll;
+            ControlSpatialScrollingMethods.endSpatialScroll = EndScroll;
         }
 
         public void UnloadModule() { }

@@ -1,9 +1,9 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Implementors can receive IDroppables
     /// </summary>
-    public interface IDropReceiver
+    interface IDropReceiver
     {
         /// <summary>
         /// Called when an object is hovering over the receiver

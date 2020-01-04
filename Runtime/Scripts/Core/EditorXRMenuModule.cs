@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Menus;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.UI;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Menus;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.UI;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     class MenuHideData
     {
@@ -34,8 +35,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         const int k_PossibleOverlaps = 16;
 
         readonly Dictionary<Transform, IMainMenu> m_MainMenus = new Dictionary<Transform, IMainMenu>();
-        readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider>();
-        readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider>();
+        readonly Dictionary<Tuple<Type, Transform>, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<Tuple<Type, Transform>, ISettingsMenuProvider>();
+        readonly Dictionary<Tuple<Type, Transform>, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<Tuple<Type, Transform>, ISettingsMenuItemProvider>();
 
         EditorXRToolModule m_ToolModule;
         EditorXRRayModule m_RayModule;
@@ -69,8 +70,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            IUsesCustomMenuOriginsMethods.getCustomMenuOrigin = GetCustomMenuOrigin;
-            IUsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
+            UsesCustomMenuOriginsMethods.getCustomMenuOrigin = GetCustomMenuOrigin;
+            UsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
 
             var moduleLoaderCore = ModuleLoaderCore.instance;
             m_DirectSelectionModule = moduleLoaderCore.GetModule<EditorXRDirectSelectionModule>();
@@ -85,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var settingsMenuProvider = target as ISettingsMenuProvider;
             if (settingsMenuProvider != null)
             {
-                m_SettingsMenuProviders[new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin)] = settingsMenuProvider;
+                m_SettingsMenuProviders[new Tuple<Type, Transform>(target.GetType(), rayOrigin)] = settingsMenuProvider;
                 foreach (var kvp in m_MainMenus)
                 {
                     if (rayOrigin == null || kvp.Key == rayOrigin)
@@ -96,7 +97,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var settingsMenuItemProvider = target as ISettingsMenuItemProvider;
             if (settingsMenuItemProvider != null)
             {
-                m_SettingsMenuItemProviders[new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin)] = settingsMenuItemProvider;
+                m_SettingsMenuItemProviders[new Tuple<Type, Transform>(target.GetType(), rayOrigin)] = settingsMenuItemProvider;
                 foreach (var kvp in m_MainMenus)
                 {
                     if (rayOrigin == null || kvp.Key == rayOrigin)
@@ -108,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (mainMenu != null && rayOrigin != null)
             {
                 mainMenu.menuTools = mainMenuTools;
-                mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes.Where(t => !EditorVR.HiddenTypes.Contains(t)).ToList();
+                mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes.Where(t => !EditorXR.HiddenTypes.Contains(t)).ToList();
                 mainMenu.settingsMenuProviders = m_SettingsMenuProviders;
                 mainMenu.settingsMenuItemProviders = m_SettingsMenuItemProviders;
                 m_MainMenus[rayOrigin] = mainMenu;
@@ -149,7 +150,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         kvp.Value.RemoveSettingsMenu(settingsMenuProvider);
                 }
 
-                m_SettingsMenuProviders.Remove(new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin));
+                m_SettingsMenuProviders.Remove(new Tuple<Type, Transform>(target.GetType(), rayOrigin));
             }
 
             var settingsMenuItemProvider = target as ISettingsMenuItemProvider;
@@ -161,7 +162,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         kvp.Value.RemoveSettingsMenuItem(settingsMenuItemProvider);
                 }
 
-                m_SettingsMenuItemProviders.Remove(new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin));
+                m_SettingsMenuItemProviders.Remove(new Tuple<Type, Transform>(target.GetType(), rayOrigin));
             }
 
             var mainMenu = target as IMainMenu;

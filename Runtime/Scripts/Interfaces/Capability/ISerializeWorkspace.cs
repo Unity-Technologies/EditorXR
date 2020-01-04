@@ -1,4 +1,4 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     interface ISerializeWorkspace
     {

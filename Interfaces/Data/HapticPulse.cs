@@ -1,7 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
+    /// <summary>
+    /// Serialized data to describe a haptic pulse
+    /// </summary>
     [CreateAssetMenu(menuName = "EditorXR/Haptic Pulse", fileName = "NewHapticPulse.asset")]
     public class HapticPulse : ScriptableObject
     {
@@ -21,21 +24,32 @@ namespace UnityEditor.Experimental.EditorVR.Core
         bool m_FadeOut;
 #pragma warning restore 649
 
-        // Don't allow public setting of value; use inspector-set values
+        /// <summary>
+        /// The duration of the pulse
+        /// </summary>
         public float duration
         {
             get { return m_Duration; }
             internal set { m_Duration = value; }
         }
 
+        /// <summary>
+        /// The intensity of the pulse
+        /// </summary>
         public float intensity
         {
             get { return m_Intensity; }
             internal set { m_Intensity = value; }
         }
 
+        /// <summary>
+        /// Whether to fade in this pulse
+        /// </summary>
         public bool fadeIn { get { return m_FadeIn; } }
 
+        /// <summary>
+        /// Whether to fade out this pulse
+        /// </summary>
         public bool fadeOut { get { return m_FadeOut; } }
     }
 }

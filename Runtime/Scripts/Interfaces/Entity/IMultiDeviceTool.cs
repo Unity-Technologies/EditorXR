@@ -1,4 +1,4 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Declares a tool as one that should be spawned on all devices at once
