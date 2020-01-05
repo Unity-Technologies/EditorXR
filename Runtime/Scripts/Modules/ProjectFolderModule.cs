@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.EditorXR.Data;
 using Unity.Labs.ModuleLoader;
 using UnityEditor;

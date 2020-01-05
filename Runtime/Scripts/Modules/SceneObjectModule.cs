@@ -1,6 +1,5 @@
 using System.Collections;
 using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;

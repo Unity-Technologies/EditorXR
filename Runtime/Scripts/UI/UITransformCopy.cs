@@ -1,4 +1,3 @@
-using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.Utils;
 using UnityEngine;
 

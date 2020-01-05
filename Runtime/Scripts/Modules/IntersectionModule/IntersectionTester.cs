@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Modules
 {
-    public sealed class IntersectionTester : MonoBehaviour
+    sealed class IntersectionTester : MonoBehaviour
     {
 #pragma warning disable 649
         [SerializeField]

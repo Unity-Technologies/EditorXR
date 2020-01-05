@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Modules
 {
-    public sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
+    sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
         IUsesGameObjectLocking, IUsesGetVRPlayerObjects, IProvidesSceneRaycast, IProvidesControlInputIntersection,
         IProvidesContainsVRPlayerCompletely, IProvidesCheckSphere, IProvidesCheckBounds
     {
@@ -39,8 +39,6 @@ namespace Unity.Labs.EditorXR.Modules
 
         SpatialHashContainer m_SpatialHashContainer;
         MeshCollider m_CollisionTester;
-
-        public List<IntersectionTester> testers { get { return m_Testers; } }
 
         public Func<GameObject, bool> shouldExcludeObject { private get; set; }
 
@@ -283,20 +281,20 @@ namespace Unity.Labs.EditorXR.Modules
 
         public void OnBehaviorDestroy() { }
 
-        public void AddTester(IntersectionTester tester)
+        internal void AddTester(IntersectionTester tester)
         {
             m_Testers.Add(tester);
             m_IntersectedObjects[tester] = new DirectIntersection();
         }
 
-        public Renderer GetIntersectedObjectForTester(IntersectionTester tester, out Vector3 contactPoint)
+        internal Renderer GetIntersectedObjectForTester(IntersectionTester tester, out Vector3 contactPoint)
         {
             var intersection = m_IntersectedObjects[tester];
             contactPoint = intersection.contactPoint;
             return intersection.renderer;
         }
 
-        public GameObject GetFirstGameObject(Transform rayOrigin, out float distance)
+        internal GameObject GetFirstGameObject(Transform rayOrigin, out float distance)
         {
             RayIntersection intersection;
             if (m_RaycastGameObjects.TryGetValue(rayOrigin, out intersection))
@@ -314,7 +312,7 @@ namespace Unity.Labs.EditorXR.Modules
             m_RayOriginEnabled[rayOrigin] = enabled;
         }
 
-        public void UpdateRaycast(Transform rayOrigin, float distance)
+        internal void UpdateRaycast(Transform rayOrigin, float distance)
         {
             if (!m_RayOriginEnabled.ContainsKey(rayOrigin))
                 m_RayOriginEnabled[rayOrigin] = true;
