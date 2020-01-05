@@ -11,8 +11,8 @@ using UnityEngine;
 namespace Unity.Labs.EditorXR.Modules
 {
     public sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
-        IUsesGameObjectLocking, IUsesGetVRPlayerObjects, IProvidesSceneRaycast,
-        IProvidesControlInputIntersection,IProvidesContainsVRPlayerCompletely, IProvidesCheckSphere, IProvidesCheckBounds
+        IUsesGameObjectLocking, IUsesGetVRPlayerObjects, IProvidesSceneRaycast, IProvidesControlInputIntersection,
+        IProvidesContainsVRPlayerCompletely, IProvidesCheckSphere, IProvidesCheckBounds
     {
         class RayIntersection
         {
@@ -40,17 +40,12 @@ namespace Unity.Labs.EditorXR.Modules
         SpatialHashContainer m_SpatialHashContainer;
         MeshCollider m_CollisionTester;
 
-        public bool ready { get { return m_SpatialHashContainer != null; } }
-
         public List<IntersectionTester> testers { get { return m_Testers; } }
-
-        public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
 
         public Func<GameObject, bool> shouldExcludeObject { private get; set; }
 
         public int initializationOrder { get { return -3; } }
         public int shutdownOrder { get { return 0; } }
-        public int connectInterfaceOrder { get { return 0; } }
 
         SpatialHashModule m_SpatialHashModule;
 
@@ -60,7 +55,7 @@ namespace Unity.Labs.EditorXR.Modules
 #endif
 
         // Local method use only -- created here to reduce garbage collection. Collections must be cleared before use
-        static readonly List<Renderer> k_Intersections = new List<Renderer>();
+        static readonly List<Renderer> k_Renderers = new List<Renderer>();
         static readonly List<SortableRenderer> k_SortedIntersections = new List<SortableRenderer>();
         static readonly List<Renderer> k_ChangedObjects = new List<Renderer>();
 
@@ -104,6 +99,7 @@ namespace Unity.Labs.EditorXR.Modules
 
         void SetupObjects()
         {
+            k_Renderers.Clear();
             var meshFilters = FindObjectsOfType<MeshFilter>();
             foreach (var meshFilter in meshFilters)
             {
@@ -112,9 +108,9 @@ namespace Unity.Labs.EditorXR.Modules
                     if (shouldExcludeObject != null && shouldExcludeObject(meshFilter.gameObject))
                         continue;
 
-                    var render = meshFilter.GetComponent<Renderer>();
-                    if (render)
-                        m_SpatialHashModule.AddRenderer(render);
+                    var renderer = meshFilter.GetComponent<Renderer>();
+                    if (renderer)
+                        k_Renderers.Add(renderer);
                 }
             }
 
@@ -126,9 +122,11 @@ namespace Unity.Labs.EditorXR.Modules
                     if (shouldExcludeObject != null && shouldExcludeObject(skinnedMeshRenderer.gameObject))
                         continue;
 
-                    m_SpatialHashModule.AddRenderer(skinnedMeshRenderer);
+                    k_Renderers.Add(skinnedMeshRenderer);
                 }
             }
+
+            m_SpatialHashModule.AddRenderers(k_Renderers);
         }
 
         IEnumerator UpdateDynamicObjects()
@@ -200,17 +198,17 @@ namespace Unity.Labs.EditorXR.Modules
                 if (testerTransform.hasChanged)
                 {
                     var intersectionFound = false;
-                    k_Intersections.Clear();
+                    k_Renderers.Clear();
                     var testerCollider = tester.collider;
-                    if (m_SpatialHashContainer.GetIntersections(k_Intersections, testerCollider.bounds))
+                    if (m_SpatialHashContainer.GetIntersections(k_Renderers, testerCollider.bounds))
                     {
                         var testerBounds = testerCollider.bounds;
                         var testerBoundsCenter = testerBounds.center;
 
                         k_SortedIntersections.Clear();
-                        for (int j = 0; j < k_Intersections.Count; j++)
+                        for (int j = 0; j < k_Renderers.Count; j++)
                         {
-                            var obj = k_Intersections[j];
+                            var obj = k_Renderers[j];
 
                             // Ignore destroyed objects
                             if (!obj)
@@ -341,12 +339,12 @@ namespace Unity.Labs.EditorXR.Modules
             hit = new RaycastHit();
             var result = false;
             var distance = Mathf.Infinity;
-            k_Intersections.Clear();
-            if (m_SpatialHashContainer.GetIntersections(k_Intersections, ray, maxDistance))
+            k_Renderers.Clear();
+            if (m_SpatialHashContainer.GetIntersections(k_Renderers, ray, maxDistance))
             {
-                for (int i = 0; i < k_Intersections.Count; i++)
+                for (int i = 0; i < k_Renderers.Count; i++)
                 {
-                    var renderer = k_Intersections[i];
+                    var renderer = k_Renderers[i];
                     if (ignoreList != null && ignoreList.Contains(renderer.gameObject))
                         continue;
 
@@ -378,12 +376,12 @@ namespace Unity.Labs.EditorXR.Modules
         public bool CheckBounds(Bounds bounds, List<GameObject> objects, List<GameObject> ignoreList = null)
         {
             var result = false;
-            k_Intersections.Clear();
-            if (m_SpatialHashContainer.GetIntersections(k_Intersections, bounds))
+            k_Renderers.Clear();
+            if (m_SpatialHashContainer.GetIntersections(k_Renderers, bounds))
             {
-                for (var i = 0; i < k_Intersections.Count; i++)
+                for (var i = 0; i < k_Renderers.Count; i++)
                 {
-                    var renderer = k_Intersections[i];
+                    var renderer = k_Renderers[i];
                     if (ignoreList != null && ignoreList.Contains(renderer.gameObject))
                         continue;
 
@@ -405,13 +403,13 @@ namespace Unity.Labs.EditorXR.Modules
         public bool CheckSphere(Vector3 center, float radius, List<GameObject> objects, List<GameObject> ignoreList = null)
         {
             var result = false;
-            k_Intersections.Clear();
+            k_Renderers.Clear();
             var bounds = new Bounds(center, radius * 2 * Vector3.one);
-            if (m_SpatialHashContainer.GetIntersections(k_Intersections, bounds))
+            if (m_SpatialHashContainer.GetIntersections(k_Renderers, bounds))
             {
-                for (var i = 0; i < k_Intersections.Count; i++)
+                for (var i = 0; i < k_Renderers.Count; i++)
                 {
-                    var renderer = k_Intersections[i];
+                    var renderer = k_Renderers[i];
                     if (ignoreList != null && ignoreList.Contains(renderer.gameObject))
                         continue;
 
@@ -441,8 +439,6 @@ namespace Unity.Labs.EditorXR.Modules
             playerBounds.extents += m_PlayerBoundsMargin;
             return objectBounds.ContainsCompletely(playerBounds);
         }
-
-        public void DisconnectInterface(object target, object userData = null) { }
 
         public void LoadProvider() { }
 
