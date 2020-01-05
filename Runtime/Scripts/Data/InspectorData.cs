@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Unity.Labs.ListView;
+using UnityEditor;
 
-namespace UnityEditor.Experimental.EditorVR.Data
+namespace Unity.Labs.EditorXR.Data
 {
     class InspectorData : NestedListViewItemData<InspectorData, int>
     {

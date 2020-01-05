@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using Unity.Labs.EditorXR.Interfaces;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Attribute used to tag items (tools, actions, etc) that can be added to VR menus

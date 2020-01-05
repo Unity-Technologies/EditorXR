@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Workspaces/Workspace Text"
+﻿Shader "EditorXR/Workspaces/Workspace Text"
 {
 	Properties
 	{

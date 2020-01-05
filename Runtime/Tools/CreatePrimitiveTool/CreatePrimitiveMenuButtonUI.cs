@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Tools
+namespace Unity.Labs.EditorXR.Tools
 {
-    public sealed class CreatePrimitiveMenuButtonUI : MonoBehaviour
+    sealed class CreatePrimitiveMenuButtonUI : MonoBehaviour
     {
 #pragma warning disable 649
         [SerializeField]

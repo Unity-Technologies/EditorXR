@@ -7,15 +7,16 @@ namespace Unity.Labs.EditorXR.Interfaces
     /// </summary>
     public interface IProvidesViewerScale : IFunctionalityProvider
     {
-      /// <summary>
-      /// Returns the scale of the viewer object
-      /// </summary>
-      float GetViewerScale();
+        /// <summary>
+        /// Get the scale of the viewer object
+        /// </summary>
+        /// <returns>The viewer scale</returns>
+        float GetViewerScale();
 
-      /// <summary>
-      /// Set the scale of the viewer object
-      /// </summary>
-      /// <param name="scale">Uniform scale value in world space</param>
-      void SetViewerScale(float scale);
+        /// <summary>
+        /// Set the scale of the viewer object
+        /// </summary>
+        /// <param name="scale">Uniform scale value in world space</param>
+        void SetViewerScale(float scale);
     }
 }

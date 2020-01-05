@@ -1,4 +1,6 @@
-namespace UnityEditor.Experimental.EditorVR.UI
+using UnityEditor;
+
+namespace Unity.Labs.EditorXR.UI
 {
     [CustomEditor(typeof(NumericInputField))]
     [CanEditMultipleObjects]

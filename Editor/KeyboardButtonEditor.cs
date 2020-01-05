@@ -1,8 +1,9 @@
 using System;
 using System.Text.RegularExpressions;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     [CustomEditor(typeof(KeyboardButton))]
     sealed class KeyboardButtonEditor : Editor
@@ -153,7 +154,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
         {
             var inputString = ((char)input).ToString();
 
-            // For valid keycodes, use the string version of those for 
+            // For valid keycodes, use the string version of those for
             if (Enum.IsDefined(typeof(KeyCode), input))
                 inputString = ((KeyCode)input).ToString();
 

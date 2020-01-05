@@ -1,4 +1,4 @@
-Shader "EditorVR/Annotation/Line"
+Shader "EditorXR/Annotation/Line"
  {
 	Properties
 	{

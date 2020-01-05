@@ -1,82 +1,230 @@
 fileFormatVersion: 2
 guid: 303f9d32292c8d444aa4375f4f57be3a
 ModelImporter:
-  serializedVersion: 23
-  fileIDToRecycleName:
-    100000: //RootNode
-    100002: RadialMenuFrameSegment.001
-    100004: RadialMenuSlotInset.001
-    100006: RadialMenuSlotMask.002
-    100008: ButtonFaceMask
-    100010: ButtonFrame
-    100012: ButtonInset
-    100014: PinnedToolButtonFaceMask
-    100016: PinnedToolButtonFrame
-    100018: PinnedToolButtonInset
-    100020: PinnedToolCloseButtonFaceMask
-    100022: PinnedToolCloseButtonInset
-    100024: PinnedToolSecondaryButtonFaceMask
-    100026: PinnedToolSecondaryButtonInset
-    400000: //RootNode
-    400002: RadialMenuFrameSegment.001
-    400004: RadialMenuSlotInset.001
-    400006: RadialMenuSlotMask.002
-    400008: ButtonFaceMask
-    400010: ButtonFrame
-    400012: ButtonInset
-    400014: PinnedToolButtonFaceMask
-    400016: PinnedToolButtonFrame
-    400018: PinnedToolButtonInset
-    400020: PinnedToolCloseButtonFaceMask
-    400022: PinnedToolCloseButtonInset
-    400024: PinnedToolSecondaryButtonFaceMask
-    400026: PinnedToolSecondaryButtonInset
-    2300000: RadialMenuFrameSegment.001
-    2300002: RadialMenuSlotInset.001
-    2300004: RadialMenuSlotMask.002
-    2300006: ButtonFaceMask
-    2300008: ButtonFrame
-    2300010: ButtonInset
-    2300012: PinnedToolButtonFaceMask
-    2300014: PinnedToolButtonFrame
-    2300016: PinnedToolButtonInset
-    2300018: PinnedToolCloseButtonFaceMask
-    2300020: PinnedToolCloseButtonInset
-    3300000: RadialMenuFrameSegment.001
-    3300002: RadialMenuSlotInset.001
-    3300004: RadialMenuSlotMask.002
-    3300006: ButtonFaceMask
-    3300008: ButtonFrame
-    3300010: ButtonInset
-    3300012: PinnedToolButtonFaceMask
-    3300014: PinnedToolButtonFrame
-    3300016: PinnedToolButtonInset
-    3300018: PinnedToolCloseButtonFaceMask
-    3300020: PinnedToolCloseButtonInset
-    4300000: RadialMenuFrameSegment.001
-    4300002: RadialMenuSlotInset.001
-    4300004: RadialMenuSlotMask.002
-    4300006: ButtonFrame
-    4300008: ButtonInset
-    4300010: ButtonFaceMask
-    4300012: PinnedToolButtonFrame
-    4300014: PinnedToolButtonInset
-    4300016: PinnedToolButtonFaceMask
-    4300018: PinnedToolCloseButtonFaceMask
-    4300020: PinnedToolCloseButtonInset
-    4300022: PinnedToolSecondaryButtonFaceMask
-    4300024: PinnedToolSecondaryButtonInset
-    9500000: //RootNode
-    11100000: //RootNode
-    13700000: RadialMenuSlotMask.002
-    13700002: PinnedToolButtonFaceMask
-    13700004: PinnedToolCloseButtonFaceMask
-    13700006: PinnedToolButtonFrame
-    13700008: PinnedToolButtonInset
-    13700010: PinnedToolCloseButtonInset
-    13700012: PinnedToolSecondaryButtonFaceMask
-    13700014: PinnedToolSecondaryButtonInset
-    2186277476908879412: ImportLogs
+  serializedVersion: 25
+  internalIDToNameTable:
+  - first:
+      1: 100000
+    second: //RootNode
+  - first:
+      1: 100002
+    second: RadialMenuFrameSegment.001
+  - first:
+      1: 100004
+    second: RadialMenuSlotInset.001
+  - first:
+      1: 100006
+    second: RadialMenuSlotMask.002
+  - first:
+      1: 100008
+    second: ButtonFaceMask
+  - first:
+      1: 100010
+    second: ButtonFrame
+  - first:
+      1: 100012
+    second: ButtonInset
+  - first:
+      1: 100014
+    second: PinnedToolButtonFaceMask
+  - first:
+      1: 100016
+    second: PinnedToolButtonFrame
+  - first:
+      1: 100018
+    second: PinnedToolButtonInset
+  - first:
+      1: 100020
+    second: PinnedToolCloseButtonFaceMask
+  - first:
+      1: 100022
+    second: PinnedToolCloseButtonInset
+  - first:
+      1: 100024
+    second: PinnedToolSecondaryButtonFaceMask
+  - first:
+      1: 100026
+    second: PinnedToolSecondaryButtonInset
+  - first:
+      4: 400000
+    second: //RootNode
+  - first:
+      4: 400002
+    second: RadialMenuFrameSegment.001
+  - first:
+      4: 400004
+    second: RadialMenuSlotInset.001
+  - first:
+      4: 400006
+    second: RadialMenuSlotMask.002
+  - first:
+      4: 400008
+    second: ButtonFaceMask
+  - first:
+      4: 400010
+    second: ButtonFrame
+  - first:
+      4: 400012
+    second: ButtonInset
+  - first:
+      4: 400014
+    second: PinnedToolButtonFaceMask
+  - first:
+      4: 400016
+    second: PinnedToolButtonFrame
+  - first:
+      4: 400018
+    second: PinnedToolButtonInset
+  - first:
+      4: 400020
+    second: PinnedToolCloseButtonFaceMask
+  - first:
+      4: 400022
+    second: PinnedToolCloseButtonInset
+  - first:
+      4: 400024
+    second: PinnedToolSecondaryButtonFaceMask
+  - first:
+      4: 400026
+    second: PinnedToolSecondaryButtonInset
+  - first:
+      23: 2300000
+    second: RadialMenuFrameSegment.001
+  - first:
+      23: 2300002
+    second: RadialMenuSlotInset.001
+  - first:
+      23: 2300004
+    second: RadialMenuSlotMask.002
+  - first:
+      23: 2300006
+    second: ButtonFaceMask
+  - first:
+      23: 2300008
+    second: ButtonFrame
+  - first:
+      23: 2300010
+    second: ButtonInset
+  - first:
+      23: 2300012
+    second: PinnedToolButtonFaceMask
+  - first:
+      23: 2300014
+    second: PinnedToolButtonFrame
+  - first:
+      23: 2300016
+    second: PinnedToolButtonInset
+  - first:
+      23: 2300018
+    second: PinnedToolCloseButtonFaceMask
+  - first:
+      23: 2300020
+    second: PinnedToolCloseButtonInset
+  - first:
+      33: 3300000
+    second: RadialMenuFrameSegment.001
+  - first:
+      33: 3300002
+    second: RadialMenuSlotInset.001
+  - first:
+      33: 3300004
+    second: RadialMenuSlotMask.002
+  - first:
+      33: 3300006
+    second: ButtonFaceMask
+  - first:
+      33: 3300008
+    second: ButtonFrame
+  - first:
+      33: 3300010
+    second: ButtonInset
+  - first:
+      33: 3300012
+    second: PinnedToolButtonFaceMask
+  - first:
+      33: 3300014
+    second: PinnedToolButtonFrame
+  - first:
+      33: 3300016
+    second: PinnedToolButtonInset
+  - first:
+      33: 3300018
+    second: PinnedToolCloseButtonFaceMask
+  - first:
+      33: 3300020
+    second: PinnedToolCloseButtonInset
+  - first:
+      43: 4300000
+    second: RadialMenuFrameSegment.001
+  - first:
+      43: 4300002
+    second: RadialMenuSlotInset.001
+  - first:
+      43: 4300004
+    second: RadialMenuSlotMask.002
+  - first:
+      43: 4300006
+    second: ButtonFrame
+  - first:
+      43: 4300008
+    second: ButtonInset
+  - first:
+      43: 4300010
+    second: ButtonFaceMask
+  - first:
+      43: 4300012
+    second: PinnedToolButtonFrame
+  - first:
+      43: 4300014
+    second: PinnedToolButtonInset
+  - first:
+      43: 4300016
+    second: PinnedToolButtonFaceMask
+  - first:
+      43: 4300018
+    second: PinnedToolCloseButtonFaceMask
+  - first:
+      43: 4300020
+    second: PinnedToolCloseButtonInset
+  - first:
+      43: 4300022
+    second: PinnedToolSecondaryButtonFaceMask
+  - first:
+      43: 4300024
+    second: PinnedToolSecondaryButtonInset
+  - first:
+      95: 9500000
+    second: //RootNode
+  - first:
+      111: 11100000
+    second: //RootNode
+  - first:
+      137: 13700000
+    second: RadialMenuSlotMask.002
+  - first:
+      137: 13700002
+    second: PinnedToolButtonFaceMask
+  - first:
+      137: 13700004
+    second: PinnedToolCloseButtonFaceMask
+  - first:
+      137: 13700006
+    second: PinnedToolButtonFrame
+  - first:
+      137: 13700008
+    second: PinnedToolButtonInset
+  - first:
+      137: 13700010
+    second: PinnedToolCloseButtonInset
+  - first:
+      137: 13700012
+    second: PinnedToolSecondaryButtonFaceMask
+  - first:
+      137: 13700014
+    second: PinnedToolSecondaryButtonInset
+  - first:
+      41386430: 2186277476908879412
+    second: ImportLogs
   externalObjects: {}
   materials:
     importMaterials: 0
@@ -119,30 +267,32 @@ ModelImporter:
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
-    optimizeMeshForGPU: 1
     keepQuads: 0
     weldVertices: 1
     preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    meshOptimizationFlags: -1
     indexFormat: 1
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
     secondaryUVPackMargin: 4
     useFileScale: 1
-    previousCalculatedGlobalScale: 1
-    hasPreviousCalculatedGlobalScale: 0
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
     tangentImportMode: 2
     normalCalculationMode: 0
-    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 1
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
+  referencedClips: []
   importAnimation: 1
   copyAvatar: 0
   humanDescription:
-    serializedVersion: 2
+    serializedVersion: 3
     human: []
     skeleton: []
     armTwist: 0.5
@@ -152,6 +302,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
+    globalScale: 1
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0

@@ -10,6 +10,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesGetPreviewOrigin
+    /// </summary>
     public static class UsesGetPreviewOriginMethods
     {
         /// <summary>

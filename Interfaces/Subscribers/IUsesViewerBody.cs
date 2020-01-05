@@ -10,13 +10,17 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesViewerBody
+    /// </summary>
     public static class UsesViewerBodyMethods
     {
         /// <summary>
-        /// Returns whether the specified transform is over the viewer's shoulders and behind the head
+        /// Check whether the specified transform is over the viewer's shoulders and behind the head
         /// </summary>
         /// <param name="user">The functionality user</param>
         /// <param name="rayOrigin">The rayOrigin to test</param>
+        /// <returns>Whether the specified transform is over the viewer's shoulders and behind the head</returns>
         public static bool IsOverShoulder(this IUsesViewerBody user, Transform rayOrigin)
         {
 #if FI_AUTOFILL
@@ -27,10 +31,11 @@ namespace Unity.Labs.EditorXR.Interfaces
         }
 
         /// <summary>
-        /// Returns whether the specified transform is over the viewer's head
+        /// Check whether the specified transform is over the viewer's head
         /// </summary>
         /// <param name="user">The functionality user</param>
         /// <param name="rayOrigin">The rayOrigin to test</param>
+        /// <returns>Whether the specified transform is over the viewer's head</returns>
         public static bool IsAboveHead(this IUsesViewerBody user, Transform rayOrigin)
         {
 #if FI_AUTOFILL

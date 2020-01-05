@@ -1,7 +1,6 @@
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
     /// Declares a class as a system-level menu
@@ -28,6 +27,9 @@ namespace UnityEditor.Experimental.EditorVR
         /// </summary>
         Bounds localBounds { get; }
 
+        /// <summary>
+        /// The priority of this menu for deciding which menu should be visible if multiple menus overlap
+        /// </summary>
         int priority { get; }
     }
 }

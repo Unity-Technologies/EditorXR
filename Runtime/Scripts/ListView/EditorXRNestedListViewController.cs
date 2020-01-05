@@ -1,10 +1,10 @@
-﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ListView;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     abstract class EditorXRNestedListViewController<TData, TItem, TIndex> : NestedListViewController<TData, TItem, TIndex>,
         IInstantiateUI, IUsesConnectInterfaces, IUsesControlHaptics, IRayToNode

@@ -2,23 +2,24 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Helpers;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Proxies;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.SpatialHash.Interfaces;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Tools
+namespace Unity.Labs.EditorXR.Tools
 {
     [MainMenuItem("Annotation", "Create", "Draw in 3D")]
     [SpatialMenuItem("Annotation", "Tools", "Draw in 3D")]
-    public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesRayVisibilitySettings,
+    class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesRayVisibilitySettings,
         IInstantiateUI, IUsesInstantiateMenuUI, IUsesMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
         IUsesIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISerializePreferences, ILinkedObject,
         IUsesNode, IUsesRequestFeedback, IUsesConnectInterfaces, IUsesSelectTool
@@ -347,7 +348,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             var go = new GameObject(string.Format(k_AnnotationFormatString, m_AnnotationHolder.childCount));
 #if UNITY_EDITOR
-            Undo.RegisterCreatedObjectUndo(go, "Annotation");
+            UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Annotation");
 #endif
             var goTrans = go.transform;
             goTrans.SetParent(m_AnnotationHolder);
@@ -558,7 +559,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             this.AddToSpatialHash(go);
 
 #if UNITY_EDITOR
-            Undo.IncrementCurrentGroup();
+            UnityEditor.Undo.IncrementCurrentGroup();
 #endif
 
             if (AnnotationFinished != null)

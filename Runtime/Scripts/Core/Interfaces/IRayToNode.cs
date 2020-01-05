@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     /// <summary>
     /// Provide the ability to request a corresponding node for a ray origin

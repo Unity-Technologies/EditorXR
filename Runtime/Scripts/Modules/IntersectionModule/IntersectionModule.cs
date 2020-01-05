@@ -2,12 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.SpatialHash;
 using Unity.Labs.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.Labs.EditorXR.Modules
 {
     public sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
         IUsesGameObjectLocking, IUsesGetVRPlayerObjects, IProvidesSceneRaycast,
@@ -33,9 +34,7 @@ namespace Unity.Labs.EditorXR
         readonly Dictionary<IntersectionTester, DirectIntersection> m_IntersectedObjects = new Dictionary<IntersectionTester, DirectIntersection>();
         readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
         readonly Dictionary<Transform, RayIntersection> m_RaycastGameObjects = new Dictionary<Transform, RayIntersection>(); // Stores which gameobject the proxies' ray origins are pointing at
-        readonly Dictionary<Transform, bool> m_RayoriginEnabled = new Dictionary<Transform, bool>();
-
-        readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
+        readonly Dictionary<Transform, bool> m_RayOriginEnabled = new Dictionary<Transform, bool>();
         Coroutine m_UpdateCoroutine;
 
         SpatialHashContainer m_SpatialHashContainer;
@@ -44,8 +43,6 @@ namespace Unity.Labs.EditorXR
         public bool ready { get { return m_SpatialHashContainer != null; } }
 
         public List<IntersectionTester> testers { get { return m_Testers; } }
-
-        public Dictionary<Type, IEnumerable> allObjects { get { return m_SpatialHashContainer == null ? null : m_SpatialHashContainer.allObjects; } }
 
         public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
 
@@ -63,9 +60,9 @@ namespace Unity.Labs.EditorXR
 #endif
 
         // Local method use only -- created here to reduce garbage collection. Collections must be cleared before use
-        readonly List<Renderer> m_Intersections = new List<Renderer>();
-        readonly List<SortableRenderer> m_SortedIntersections = new List<SortableRenderer>();
-        static readonly HashSet<Renderer> k_Renderers = new HashSet<Renderer>();
+        static readonly List<Renderer> k_Intersections = new List<Renderer>();
+        static readonly List<SortableRenderer> k_SortedIntersections = new List<SortableRenderer>();
+        static readonly List<Renderer> k_ChangedObjects = new List<Renderer>();
 
         struct SortableRenderer
         {
@@ -97,7 +94,7 @@ namespace Unity.Labs.EditorXR
             m_IntersectedObjects.Clear();
             m_Testers.Clear();
             m_RaycastGameObjects.Clear();
-            m_RayoriginEnabled.Clear();
+            m_RayOriginEnabled.Clear();
 
             shouldExcludeObject = go => go.transform.IsChildOf(moduleParent.transform);
 
@@ -117,7 +114,7 @@ namespace Unity.Labs.EditorXR
 
                     var render = meshFilter.GetComponent<Renderer>();
                     if (render)
-                        m_SpatialHashContainer.AddObject(render, render.bounds);
+                        m_SpatialHashModule.AddRenderer(render);
                 }
             }
 
@@ -129,7 +126,7 @@ namespace Unity.Labs.EditorXR
                     if (shouldExcludeObject != null && shouldExcludeObject(skinnedMeshRenderer.gameObject))
                         continue;
 
-                    m_SpatialHashContainer.AddObject(skinnedMeshRenderer, skinnedMeshRenderer.bounds);
+                    m_SpatialHashModule.AddRenderer(skinnedMeshRenderer);
                 }
             }
         }
@@ -138,34 +135,27 @@ namespace Unity.Labs.EditorXR
         {
             while (true)
             {
-                m_ChangedObjects.Clear();
+                k_ChangedObjects.Clear();
 
                 // TODO AE 9/21/16: Hook updates of new objects that are created
-                k_Renderers.Clear();
-                m_SpatialHashContainer.GetObjects(k_Renderers);
-                foreach (var obj in k_Renderers)
+                var allObjects = m_SpatialHashContainer.GetObjects<Renderer>();
+                foreach (var obj in allObjects)
                 {
                     if (!obj)
                     {
-                        m_ChangedObjects.Add(obj);
+                        k_ChangedObjects.Add(obj);
                         continue;
                     }
 
                     if (obj.transform.hasChanged)
                     {
-                        m_ChangedObjects.Add(obj);
+                        k_ChangedObjects.Add(obj);
                         obj.transform.hasChanged = false;
                     }
                 }
 
-                foreach (var changedObject in m_ChangedObjects)
-                {
-                    m_SpatialHashContainer.RemoveObject(changedObject);
-
-                    if (changedObject)
-                        m_SpatialHashContainer.AddObject(changedObject, changedObject.bounds);
-                }
-
+                m_SpatialHashModule.RemoveObjects(k_ChangedObjects);
+                m_SpatialHashModule.AddRenderers(k_ChangedObjects);
                 m_SpatialHashContainer.Trim();
 
                 yield return null;
@@ -210,17 +200,17 @@ namespace Unity.Labs.EditorXR
                 if (testerTransform.hasChanged)
                 {
                     var intersectionFound = false;
-                    m_Intersections.Clear();
+                    k_Intersections.Clear();
                     var testerCollider = tester.collider;
-                    if (m_SpatialHashContainer.GetIntersections(m_Intersections, testerCollider.bounds))
+                    if (m_SpatialHashContainer.GetIntersections(k_Intersections, testerCollider.bounds))
                     {
                         var testerBounds = testerCollider.bounds;
                         var testerBoundsCenter = testerBounds.center;
 
-                        m_SortedIntersections.Clear();
-                        for (int j = 0; j < m_Intersections.Count; j++)
+                        k_SortedIntersections.Clear();
+                        for (int j = 0; j < k_Intersections.Count; j++)
                         {
-                            var obj = m_Intersections[j];
+                            var obj = k_Intersections[j];
 
                             // Ignore destroyed objects
                             if (!obj)
@@ -243,7 +233,7 @@ namespace Unity.Labs.EditorXR
                             if (ContainsVRPlayerCompletely(go))
                                 continue;
 
-                            m_SortedIntersections.Add(new SortableRenderer
+                            k_SortedIntersections.Add(new SortableRenderer
                             {
                                 renderer = obj,
                                 distance = (obj.bounds.center - testerBoundsCenter).magnitude
@@ -251,15 +241,15 @@ namespace Unity.Labs.EditorXR
                         }
 
                         //Sort list to try and hit closer object first
-                        m_SortedIntersections.Sort((a, b) => a.distance.CompareTo(b.distance));
+                        k_SortedIntersections.Sort((a, b) => a.distance.CompareTo(b.distance));
 
-                        if (m_SortedIntersections.Count > k_MaxTestsPerTester)
+                        if (k_SortedIntersections.Count > k_MaxTestsPerTester)
                             continue;
 
-                        for (int j = 0; j < m_SortedIntersections.Count; j++)
+                        for (int j = 0; j < k_SortedIntersections.Count; j++)
                         {
                             Vector3 contactPoint;
-                            var renderer = m_SortedIntersections[j].renderer;
+                            var renderer = k_SortedIntersections[j].renderer;
                             if (IntersectionUtils.TestObject(m_CollisionTester, renderer, tester, out contactPoint))
                             {
                                 intersectionFound = true;
@@ -323,20 +313,20 @@ namespace Unity.Labs.EditorXR
 
         public void SetRayOriginEnabled(Transform rayOrigin, bool enabled)
         {
-            m_RayoriginEnabled[rayOrigin] = enabled;
+            m_RayOriginEnabled[rayOrigin] = enabled;
         }
 
         public void UpdateRaycast(Transform rayOrigin, float distance)
         {
-            if (!m_RayoriginEnabled.ContainsKey(rayOrigin))
-                m_RayoriginEnabled[rayOrigin] = true;
+            if (!m_RayOriginEnabled.ContainsKey(rayOrigin))
+                m_RayOriginEnabled[rayOrigin] = true;
 
             GameObject go;
             RaycastHit hit;
             Raycast(new Ray(rayOrigin.position, rayOrigin.forward), out hit, out go, distance);
 
             // TODO: check enabled before doing raycast
-            if (!m_RayoriginEnabled[rayOrigin])
+            if (!m_RayOriginEnabled[rayOrigin])
             {
                 go = null;
                 hit.distance = 0;
@@ -351,12 +341,12 @@ namespace Unity.Labs.EditorXR
             hit = new RaycastHit();
             var result = false;
             var distance = Mathf.Infinity;
-            m_Intersections.Clear();
-            if (m_SpatialHashContainer.GetIntersections(m_Intersections, ray, maxDistance))
+            k_Intersections.Clear();
+            if (m_SpatialHashContainer.GetIntersections(k_Intersections, ray, maxDistance))
             {
-                for (int i = 0; i < m_Intersections.Count; i++)
+                for (int i = 0; i < k_Intersections.Count; i++)
                 {
-                    var renderer = m_Intersections[i];
+                    var renderer = k_Intersections[i];
                     if (ignoreList != null && ignoreList.Contains(renderer.gameObject))
                         continue;
 
@@ -388,12 +378,12 @@ namespace Unity.Labs.EditorXR
         public bool CheckBounds(Bounds bounds, List<GameObject> objects, List<GameObject> ignoreList = null)
         {
             var result = false;
-            m_Intersections.Clear();
-            if (m_SpatialHashContainer.GetIntersections(m_Intersections, bounds))
+            k_Intersections.Clear();
+            if (m_SpatialHashContainer.GetIntersections(k_Intersections, bounds))
             {
-                for (var i = 0; i < m_Intersections.Count; i++)
+                for (var i = 0; i < k_Intersections.Count; i++)
                 {
-                    var renderer = m_Intersections[i];
+                    var renderer = k_Intersections[i];
                     if (ignoreList != null && ignoreList.Contains(renderer.gameObject))
                         continue;
 
@@ -415,13 +405,13 @@ namespace Unity.Labs.EditorXR
         public bool CheckSphere(Vector3 center, float radius, List<GameObject> objects, List<GameObject> ignoreList = null)
         {
             var result = false;
-            m_Intersections.Clear();
+            k_Intersections.Clear();
             var bounds = new Bounds(center, radius * 2 * Vector3.one);
-            if (m_SpatialHashContainer.GetIntersections(m_Intersections, bounds))
+            if (m_SpatialHashContainer.GetIntersections(k_Intersections, bounds))
             {
-                for (var i = 0; i < m_Intersections.Count; i++)
+                for (var i = 0; i < k_Intersections.Count; i++)
                 {
-                    var renderer = m_Intersections[i];
+                    var renderer = k_Intersections[i];
                     if (ignoreList != null && ignoreList.Contains(renderer.gameObject))
                         continue;
 

@@ -10,6 +10,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesIsHoveringOverUI
+    /// </summary>
     public static class UsesIsHoveringOverUIMethods
     {
         /// <summary>

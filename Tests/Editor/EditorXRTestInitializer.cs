@@ -1,10 +1,11 @@
-﻿using NUnit.Framework;
-using UnityEditor.Experimental.EditorVR.Core;
+using NUnit.Framework;
+using Unity.Labs.EditorXR.Core;
+using UnityEditor;
 
-namespace UnityEditor.Experimental.EditorVR.Tests.Core
+namespace Unity.Labs.EditorXR.Tests.Core
 {
     [SetUpFixture]
-    public class EditorVRTestInitializer
+    public class EditorXRTestInitializer
     {
         EditingContextManagerSettings projectSettingsBackup;
         EditingContextManagerSettings userSettingsBackup;
@@ -15,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
             projectSettingsBackup = EditingContextManager.LoadProjectSettings();
             userSettingsBackup = EditingContextManager.LoadUserSettings();
 
-            EditingContextManager.ShowEditorVR();
+            EditingContextManager.ShowEditorXR();
         }
 
         [OneTimeTearDown]
@@ -24,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
             EditingContextManager.SaveProjectSettings(projectSettingsBackup);
             EditingContextManager.SaveUserSettings(userSettingsBackup);
 
-            EditorApplication.delayCall += () => { EditorWindow.GetWindow<VRView>("EditorVR", false).Close(); };
+            EditorApplication.delayCall += () => { EditorWindow.GetWindow<VRView>("EditorXR", false).Close(); };
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// Adds Node information to IUsesRayOrigin to determine which hand the tool is attached to

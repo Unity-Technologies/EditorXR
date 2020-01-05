@@ -1,4 +1,6 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+using Unity.Labs.EditorXR.Interfaces;
+
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// An alternate menu that shows on device proxies

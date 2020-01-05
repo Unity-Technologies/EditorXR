@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Interfaces
@@ -12,6 +11,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesAddRaycastSource
+    /// </summary>
     static class UsesAddRaycastSourceMethods
     {
         public static void AddRaycastSource(this IUsesAddRaycastSource user, IProxy proxy, Node node, Transform rayOrigin, Func<IRaycastSource, bool> validationCallback = null)

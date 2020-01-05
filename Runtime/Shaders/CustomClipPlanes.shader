@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Custom/Custom Clip Planes"
+﻿Shader "EditorXR/Custom/Custom Clip Planes"
 {
 	Properties
 	{

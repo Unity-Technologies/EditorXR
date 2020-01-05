@@ -1,7 +1,7 @@
-﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Utilities
+namespace Unity.Labs.EditorXR.Utilities
 {
     /// <summary>
     /// Extended math related utilities (named MathUtilsExt to not collide with MathUtils)

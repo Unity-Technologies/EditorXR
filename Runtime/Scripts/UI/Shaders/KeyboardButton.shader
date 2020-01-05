@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Keyboard/Button"
+﻿Shader "EditorXR/Keyboard/Button"
 {
 	Properties
 	{

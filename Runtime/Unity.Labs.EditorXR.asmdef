@@ -2,7 +2,7 @@
     "name": "Unity.Labs.EditorXR",
     "references": [
         "input-prototype",
-        "VRLR",
+        "Unity.Labs.XRLineRenderer",
         "Unity.TextMeshPro",
         "PolyToolkit",
         "Unity.Labs.Utils",

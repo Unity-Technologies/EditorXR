@@ -2,9 +2,9 @@ using System;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Tools
+namespace Unity.Labs.EditorXR.Tools
 {
-    public class ColorPickerSquareUI : Selectable, IDragHandler, IBeginDragHandler, IEndDragHandler
+    class ColorPickerSquareUI : Selectable, IDragHandler, IBeginDragHandler, IEndDragHandler
     {
         bool m_AllowDragEvents;
 

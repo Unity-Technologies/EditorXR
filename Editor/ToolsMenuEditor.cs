@@ -1,17 +1,20 @@
-﻿using UnityEditor;
-using UnityEditor.Experimental.EditorVR.Menus;
+using Unity.Labs.EditorXR.Menus;
+using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(ToolsMenu))]
-public class ToolsMenuEditor : Editor
+namespace Unity.Labs.EditorXR
 {
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(ToolsMenu))]
+    class ToolsMenuEditor : Editor
     {
-        base.OnInspectorGUI();
-
-        if (GUILayout.Button("FakeActivate"))
+        public override void OnInspectorGUI()
         {
-            ((ToolsMenu)target).FakeActivate();
+            base.OnInspectorGUI();
+
+            if (GUILayout.Button("FakeActivate"))
+            {
+                ((ToolsMenu)target).FakeActivate();
+            }
         }
     }
 }

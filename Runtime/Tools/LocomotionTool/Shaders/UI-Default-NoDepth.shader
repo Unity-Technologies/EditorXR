@@ -1,4 +1,4 @@
-Shader "EditorVR/UI/Default-NoDepthTest"
+Shader "EditorXR/UI/Default-NoDepthTest"
 {
 	Properties
 	{

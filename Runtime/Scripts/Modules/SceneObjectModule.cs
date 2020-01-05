@@ -1,14 +1,15 @@
-﻿using System.Collections;
+using System.Collections;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.SpatialHash.Interfaces;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     sealed class SceneObjectModule : IModule, IProvidesPlaceSceneObject,
         IProvidesPlaceSceneObjects, IProvidesDeleteSceneObject, IUsesSpatialHash
@@ -97,7 +98,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             this.AddToSpatialHash(go);
 
 #if UNITY_EDITOR
-            Undo.IncrementCurrentGroup();
+            UnityEditor.Undo.IncrementCurrentGroup();
 #endif
         }
 
@@ -194,7 +195,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             Selection.objects = objects;
 
 #if UNITY_EDITOR
-            Undo.IncrementCurrentGroup();
+            UnityEditor.Undo.IncrementCurrentGroup();
 #endif
         }
 

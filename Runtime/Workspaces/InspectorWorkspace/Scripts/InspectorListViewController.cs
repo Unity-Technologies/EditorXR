@@ -1,14 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Data;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.UI;
 using Unity.Labs.ListView;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.UI;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
 #if UNITY_EDITOR
     sealed class InspectorListViewController : EditorXRNestedListViewController<InspectorData, InspectorListItem, int>, IUsesGameObjectLocking, IUsesStencilRef

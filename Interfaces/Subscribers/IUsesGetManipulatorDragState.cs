@@ -7,6 +7,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     /// </summary>
     public interface IUsesGetManipulatorDragState : IFunctionalitySubscriber<IProvidesGetManipulatorDragState> { }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesGetManipulatorDragState
+    /// </summary>
     public static class UsesGetManipulatorDragStateMethods
     {
         /// <summary>

@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.IO;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.XR;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     sealed class HapticsModule : ScriptableSettings<HapticsModule>, IDelayedInitializationModule, IProvidesControlHaptics
     {

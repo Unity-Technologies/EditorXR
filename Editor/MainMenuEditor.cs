@@ -1,11 +1,12 @@
-﻿using Unity.Labs.EditorXR.Interfaces;
-using UnityEditor.Experimental.EditorVR.Menus;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Menus;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace Unity.Labs.EditorXR.UI
 {
     [CustomEditor(typeof(MainMenu))]
-    public class MainMenuEditor : Editor
+    class MainMenuEditor : Editor
     {
         public override void OnInspectorGUI()
         {

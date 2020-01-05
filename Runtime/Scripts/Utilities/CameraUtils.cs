@@ -1,11 +1,11 @@
-﻿using UnityEditor.Experimental.EditorVR.Core;
+using Unity.Labs.EditorXR.Core;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
-namespace UnityEditor.Experimental.EditorVR.Utilities
+namespace Unity.Labs.EditorXR.Utilities
 {
     /// <summary>
-    /// Camera related EditorVR utilities
+    /// Camera related EditorXR utilities
     /// </summary>
     static class CameraUtils
     {

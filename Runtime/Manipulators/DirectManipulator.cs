@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Handles;
 using Unity.Labs.EditorXR.Interfaces;
-using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Manipulators
+namespace Unity.Labs.EditorXR.Manipulators
 {
     sealed class DirectManipulator : MonoBehaviour, IManipulator
     {

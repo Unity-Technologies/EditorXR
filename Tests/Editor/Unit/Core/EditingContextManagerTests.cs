@@ -1,13 +1,14 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Tools;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Tools;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Tests.Core
+namespace Unity.Labs.EditorXR.Tests.Core
 {
     [TestFixture]
     public class EditingContextManagerTests
@@ -55,10 +56,10 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         [Test]
         public void Initializes_ISetEditingContextMethods()
         {
-            Assert.IsNotNull(ISetEditingContextMethods.getAvailableEditingContexts);
-            Assert.IsNotNull(ISetEditingContextMethods.getPreviousEditingContexts);
-            Assert.IsNotNull(ISetEditingContextMethods.setEditingContext);
-            Assert.IsNotNull(ISetEditingContextMethods.restorePreviousEditingContext);
+            Assert.IsNotNull(SetEditingContextMethods.getAvailableEditingContexts);
+            Assert.IsNotNull(SetEditingContextMethods.getPreviousEditingContexts);
+            Assert.IsNotNull(SetEditingContextMethods.setEditingContext);
+            Assert.IsNotNull(SetEditingContextMethods.restorePreviousEditingContext);
         }
 
         [Test]

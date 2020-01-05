@@ -1,10 +1,11 @@
-﻿using System;
-using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.UI;
+using System;
+using Unity.Labs.EditorXR.Data;
+using Unity.Labs.EditorXR.Handles;
+using Unity.Labs.EditorXR.UI;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     sealed class InspectorNumberItem : InspectorPropertyItem
     {

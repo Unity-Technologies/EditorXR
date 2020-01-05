@@ -12,6 +12,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesDirectSelection
+    /// </summary>
     public static class UsesDirectSelectionMethods
     {
         /// <summary>

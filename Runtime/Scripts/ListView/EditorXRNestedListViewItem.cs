@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using Unity.Labs.ListView;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     abstract class EditorXRNestedListViewItem<TData, TIndex> : EditorXRListViewItem<TData, TIndex>, INestedListViewItem<TData, TIndex>
         where TData : INestedListViewItemData<TData, TIndex>

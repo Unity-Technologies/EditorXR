@@ -10,6 +10,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesSetDefaultRayColor
+    /// </summary>
     public static class UsesSetDefaultRayColorMethods
     {
         /// <summary>

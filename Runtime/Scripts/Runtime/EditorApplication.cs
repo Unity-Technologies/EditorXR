@@ -1,8 +1,8 @@
-﻿#if !UNITY_EDITOR
+#if !UNITY_EDITOR
 using System;
 
 // Not fully implemented yet; Exists only to allow compilation
-public class EditorApplication 
+class EditorApplication
 {
     public static Action delayCall;
 }

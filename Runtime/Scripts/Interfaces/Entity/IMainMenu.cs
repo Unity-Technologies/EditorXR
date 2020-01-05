@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
     /// The main menu that can be shown on device proxies
@@ -23,12 +23,12 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// The types which provide a settings menu
         /// </summary>
-        Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { set; }
+        Dictionary<Tuple<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { set; }
 
         /// <summary>
         /// The types which provide a settings menu item
         /// </summary>
-        Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { set; }
+        Dictionary<Tuple<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { set; }
 
         /// <summary>
         /// The ray origin that spawned the menu and will be used for node-specific operations (e.g. selecting a tool)

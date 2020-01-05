@@ -1,9 +1,8 @@
-﻿#if UNITY_5_6_OR_NEWER
-using UnityEngine;
 using NUnit.Framework;
-using UnityEditor.Experimental.EditorVR.Helpers;
+using Unity.Labs.EditorXR.Helpers;
+using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
+namespace Unity.Labs.EditorXR.Tests.Utilities
 {
     [TestFixture]
     public class GradientPairTests
@@ -54,4 +53,3 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
         public void Cleanup() { }
     }
 }
-#endif

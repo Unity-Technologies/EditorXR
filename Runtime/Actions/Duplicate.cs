@@ -1,11 +1,12 @@
-﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.SpatialHash.Interfaces;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Actions
+namespace Unity.Labs.EditorXR
 {
     [ActionMenuItem("Duplicate", ActionMenuItemAttribute.DefaultActionSectionName, 3)]
     [SpatialMenuItem("Duplicate", "Actions", "Duplicate the selected object at the currently focused position")]
@@ -29,9 +30,11 @@ namespace UnityEditor.Experimental.EditorVR.Actions
                 clone.hideFlags = HideFlags.None;
                 var cloneTransform = clone.transform;
                 var cameraTransform = CameraUtils.GetMainCamera().transform;
-                var viewDirection = cloneTransform.position - cameraTransform.position;
-                cloneTransform.position = cameraTransform.TransformPoint(Vector3.forward * viewDirection.magnitude / this.GetViewerScale())
-                    + cloneTransform.position - bounds.center;
+                var position = cloneTransform.position;
+                var viewDirection = position - cameraTransform.position;
+                position = cameraTransform.TransformPoint(Vector3.forward * viewDirection.magnitude / this.GetViewerScale())
+                    + position - bounds.center;
+                cloneTransform.position = position;
                 this.AddToSpatialHash(clone);
             }
         }

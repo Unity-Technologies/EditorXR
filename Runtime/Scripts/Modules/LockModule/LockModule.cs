@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     sealed class LockModule : ScriptableSettings<LockModule>, IModuleDependency<EditorXRMenuModule>, IActions,
         ISelectionChanged, IProvidesGameObjectLocking
@@ -65,7 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (!go)
                 return false;
 
-            // EditorVR objects (i.e. PlayerHead) may get HideAndDontSave, which includes NotEditable, but should not count as locked
+            // EditorXR objects (i.e. PlayerHead) may get HideAndDontSave, which includes NotEditable, but should not count as locked
             var moduleParent = ModuleLoaderCore.instance.GetModuleParent();
             if (go.transform.IsChildOf(moduleParent.transform))
                 return false;

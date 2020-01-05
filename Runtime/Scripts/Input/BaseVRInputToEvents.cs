@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.XR;
 
-namespace UnityEditor.Experimental.EditorVR.Input
+namespace Unity.Labs.EditorXR.Input
 {
     abstract class BaseVRInputToEvents : BaseInputToEvents
     {
@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Input
             VRInputDevice.VRControl.Action2,
             VRInputDevice.VRControl.LeftStickButton
         };
-		
+
 		public void Update()
         {
             var deviceActive = false;

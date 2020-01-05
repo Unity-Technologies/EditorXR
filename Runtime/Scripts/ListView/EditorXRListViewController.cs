@@ -1,12 +1,12 @@
-﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ListView;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
-    public abstract class EditorXRListViewController<TData, TItem, TIndex> : ListViewController<TData, TItem, TIndex>,
+    abstract class EditorXRListViewController<TData, TItem, TIndex> : ListViewController<TData, TItem, TIndex>,
         IInstantiateUI, IUsesConnectInterfaces, IUsesControlHaptics, IRayToNode, IUsesFunctionalityInjection
         where TData : class, IListViewItemData<TIndex>
         where TItem : EditorXRListViewItem<TData, TIndex>

@@ -6,7 +6,7 @@ using UnityEngine;
 using PolyToolkit;
 #endif
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     class PolyGridViewController : EditorXRListViewController<PolyGridAsset, PolyGridItem, string>, IUsesPoly
     {

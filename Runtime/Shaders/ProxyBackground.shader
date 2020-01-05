@@ -1,5 +1,5 @@
 ﻿// Custom shader used to write depth behind semi-transparent proxy materials, fixing transparency sorting visual issues
-Shader "EditorVR/Utilities/Semitransparent Proxy Background"
+Shader "EditorXR/Utilities/Semitransparent Proxy Background"
 {
 	Properties
 	{

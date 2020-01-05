@@ -1,18 +1,19 @@
-﻿using System.Collections;
+using System.Collections;
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.XR;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
-    public class HintLine : MonoBehaviour
+    class HintLine : MonoBehaviour
     {
         const string k_ShaderLineRadiusPropertyName = "_lineRadius";
 
 #pragma warning disable 649
         [SerializeField]
-        VRLineRenderer m_ScrollLineRenderer;
+        XRLineRenderer m_ScrollLineRenderer;
 
         [SerializeField]
         Color m_VisibleColor = Color.white;
@@ -31,7 +32,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         /// <summary>
         /// Set the width of the line visuals
         /// </summary>
-        public float LineWidth { set { m_ScrollLineRenderer.SetWidth(value, value); } }
+        public float LineWidth
+        {
+            set
+            {
+                m_ScrollLineRenderer.widthStart = value;
+                m_ScrollLineRenderer.widthEnd = value;
+            }
+        }
 
         /// <summary>
         /// Set the start & end positions for the line visuals
@@ -42,7 +50,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             m_ScrollLineRenderer.SetVertexCount(4);
             m_ScrollLineRenderer.useWorldSpace = true;
-            m_ScrollLineRenderer.SetWidth(0f, 0f);
+            m_ScrollLineRenderer.widthStart = 0f;
+            m_ScrollLineRenderer.widthEnd = 0f;
             m_HintLineMaterial = MaterialUtils.GetMaterialClone(m_MeshRenderer);
         }
 
@@ -72,7 +81,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(m_PulseDuration / kTargetDuration);
                 var newColor = Color.Lerp(currentColor, m_PulseColor, shapedDuration);
-                m_ScrollLineRenderer.SetColors(newColor, newColor);
+                m_ScrollLineRenderer.colorStart = newColor;
+                m_ScrollLineRenderer.colorEnd = newColor;
                 m_PulseDuration += Time.unscaledDeltaTime * 5;
                 m_HintLineMaterial.SetVector(k_ShaderLineRadiusPropertyName, Vector3.Lerp(currentVector3ShaderLineRadius, maxShaderLineRadius, shapedDuration));
                 yield return null;
@@ -82,13 +92,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(m_PulseDuration / kTargetDuration);
                 var newColor = Color.Lerp(m_VisibleColor, m_PulseColor, shapedDuration);
-                m_ScrollLineRenderer.SetColors(newColor, newColor);
+                m_ScrollLineRenderer.colorStart = newColor;
+                m_ScrollLineRenderer.colorEnd = newColor;
                 m_PulseDuration -= Time.unscaledDeltaTime * 1.5f;
                 m_HintLineMaterial.SetVector(k_ShaderLineRadiusPropertyName, Vector3.Lerp(minShaderLineRadius, maxShaderLineRadius, shapedDuration));
                 yield return null;
             }
 
-            m_ScrollLineRenderer.SetColors(m_VisibleColor, m_VisibleColor);
+            m_ScrollLineRenderer.colorStart = m_VisibleColor;
+            m_ScrollLineRenderer.colorEnd = m_VisibleColor;
             m_PulseDuration = 0f;
         }
     }

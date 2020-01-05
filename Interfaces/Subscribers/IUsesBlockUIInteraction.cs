@@ -6,10 +6,11 @@ namespace Unity.Labs.EditorXR.Interfaces
     /// <summary>
     /// Gives decorated class the ability block all UI interaction for a given rayOrigin
     /// </summary>
-    public interface IUsesBlockUIInteraction : IFunctionalitySubscriber<IProvidesBlockUIInteraction>
-    {
-    }
+    public interface IUsesBlockUIInteraction : IFunctionalitySubscriber<IProvidesBlockUIInteraction> { }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesBlockUIInteraction
+    /// </summary>
     public static class UsesBlockUIInteractionMethods
     {
         /// <summary>

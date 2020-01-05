@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using System.Collections.Generic;
+using Unity.Labs.EditorXR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     class VisibilityDetector : MonoBehaviour
     {

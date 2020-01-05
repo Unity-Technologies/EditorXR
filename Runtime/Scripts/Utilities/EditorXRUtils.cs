@@ -1,11 +1,12 @@
-﻿using System;
+using System;
 using Unity.Labs.Utils;
+using UnityEditor;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
-namespace UnityEditor.Experimental.EditorVR.Utilities
+namespace Unity.Labs.EditorXR.Utilities
 {
-    public static class EditorXRUtils
+    static class EditorXRUtils
     {
         static HideFlags s_HideFlags = HideFlags.DontSaveInEditor;
 

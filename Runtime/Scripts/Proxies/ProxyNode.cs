@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Proxies
+namespace Unity.Labs.EditorXR.Proxies
 {
     using VisibilityControlType = ProxyAffordanceMap.VisibilityControlType;
     using VRControl = VRInputDevice.VRControl;
@@ -83,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 Color m_CurrentColor;
 
                 readonly Dictionary<int, VisibilityState> m_AffordanceVisibilityStates = new Dictionary<int, VisibilityState>();
-                readonly Dictionary<KeyValuePair<Material, string>, VisibilityState> m_VisibilityStates = new Dictionary<KeyValuePair<Material, string>, VisibilityState>();
+                readonly Dictionary<Tuple<Material, string>, VisibilityState> m_VisibilityStates = new Dictionary<Tuple<Material, string>, VisibilityState>();
 
                 public void AddAffordance(Material material, VRControl control, Renderer renderer,
                     AffordanceTooltip[] tooltips, AffordanceVisibilityDefinition definition)
@@ -149,11 +149,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         case VisibilityControlType.AlphaProperty:
                             if (visibilityState == null)
                             {
-                                var kvp = new KeyValuePair<Material, string>(material, definition.alphaProperty);
-                                if (!m_VisibilityStates.TryGetValue(kvp, out visibilityState))
+                                var tuple = new Tuple<Material, string>(material, definition.alphaProperty);
+                                if (!m_VisibilityStates.TryGetValue(tuple, out visibilityState))
                                 {
                                     visibilityState = new VisibilityState(renderer, null, definition, material);
-                                    m_VisibilityStates[kvp] = visibilityState;
+                                    m_VisibilityStates[tuple] = visibilityState;
                                 }
                             }
 
@@ -165,11 +165,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         case VisibilityControlType.ColorProperty:
                             if (visibilityState == null)
                             {
-                                var kvp = new KeyValuePair<Material, string>(material, definition.alphaProperty);
-                                if (!m_VisibilityStates.TryGetValue(kvp, out visibilityState))
+                                var tuple = new Tuple<Material, string>(material, definition.alphaProperty);
+                                if (!m_VisibilityStates.TryGetValue(tuple, out visibilityState))
                                 {
                                     visibilityState = new VisibilityState(renderer, null, definition, material);
-                                    m_VisibilityStates[kvp] = visibilityState;
+                                    m_VisibilityStates[tuple] = visibilityState;
                                 }
                             }
 
@@ -521,7 +521,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             AffordanceVisibilityDefinition bodyVisibility = null;
             foreach (var tuple in m_BodyData)
             {
-                if (tuple.secondElement.GetVisibility())
+                if (tuple.Item2.GetVisibility())
                 {
                     bodyVisibility = m_AffordanceMap.bodyVisibilityDefinition;
                     break;
@@ -537,7 +537,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             foreach (var tuple in m_BodyData)
             {
-                tuple.secondElement.Update(tuple.firstElement, time, m_FadeInDuration, m_FadeOutDuration, this);
+                tuple.Item2.Update(tuple.Item1, time, m_FadeInDuration, m_FadeOutDuration, this);
             }
         }
 
@@ -552,7 +552,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             foreach (var tuple in m_BodyData)
             {
-                UnityObjectUtils.Destroy(tuple.firstElement);
+                UnityObjectUtils.Destroy(tuple.Item1);
             }
         }
 
@@ -646,7 +646,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             {
                 foreach (var tuple in m_BodyData)
                 {
-                    tuple.secondElement.SetVisibility(true, changedRequest.duration);
+                    tuple.Item2.SetVisibility(true, changedRequest.duration);
                 }
                 return;
             }

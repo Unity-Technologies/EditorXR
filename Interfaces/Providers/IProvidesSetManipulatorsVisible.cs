@@ -1,5 +1,4 @@
 using Unity.Labs.ModuleLoader;
-using UnityEditor;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Interfaces

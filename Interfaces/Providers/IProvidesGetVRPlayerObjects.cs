@@ -12,6 +12,7 @@ namespace Unity.Labs.EditorXR.Interfaces
         /// <summary>
         /// Returns objects that are used to represent the VR player
         /// </summary>
+        /// <returns>A list containing the VR player objects</returns>
         List<GameObject> GetVRPlayerObjects();
     }
 }

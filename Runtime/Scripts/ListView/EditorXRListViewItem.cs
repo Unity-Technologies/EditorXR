@@ -2,9 +2,9 @@ using System;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ListView;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR
 {
-    public class EditorXRListViewItem<TData, TIndex> : ListViewItem<TData, TIndex> where TData : IListViewItemData<TIndex>
+    class EditorXRListViewItem<TData, TIndex> : ListViewItem<TData, TIndex> where TData : IListViewItemData<TIndex>
     {
         public Action<Node> click { get; set; }
         public Action<Node> hoverStart { get; set; }

@@ -1,5 +1,5 @@
+using Unity.Labs.EditorXR.Core;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Core;
 
 namespace Unity.Labs.EditorXR.Interfaces
 {
@@ -10,6 +10,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesControlHaptics
+    /// </summary>
     public static class UsesControlHapticsMethods
     {
         /// <summary>

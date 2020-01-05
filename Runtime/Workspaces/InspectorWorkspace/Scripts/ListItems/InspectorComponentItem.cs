@@ -1,11 +1,12 @@
-﻿using TMPro;
+using TMPro;
+using Unity.Labs.EditorXR.Data;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using Button = UnityEditor.Experimental.EditorVR.UI.Button;
+using Button = Unity.Labs.EditorXR.UI.Button;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     sealed class InspectorComponentItem : InspectorListItem
     {
@@ -74,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 EditorUtility.SetObjectEnabled(target, value);
 
-                Undo.IncrementCurrentGroup();
+                UnityEditor.Undo.IncrementCurrentGroup();
                 serializedObject.ApplyModifiedProperties();
             }
 #endif

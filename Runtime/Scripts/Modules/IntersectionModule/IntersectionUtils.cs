@@ -1,7 +1,9 @@
+using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.EditorXR.Modules;
 using UnityEngine;
 using Unity.Labs.Utils;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.Labs.EditorXR.Utilities
 {
     static class IntersectionUtils
     {

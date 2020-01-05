@@ -2,6 +2,3 @@
 	path = Runtime/libs/input-prototype
 	url=https://github.com/Unity-Technologies/input-prototype.git
 	branch = editorvr/main
-[submodule "Runtime/libs/VRLineRenderer"]
-	path = Runtime/libs/VRLineRenderer
-	url = https://github.com/Unity-Technologies/VRLineRenderer

@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Helpers
+namespace Unity.Labs.EditorXR.Helpers
 {
     /// <summary>
     /// Gradient pair container class
@@ -19,6 +19,11 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         /// </summary>
         public Color b;
 
+        /// <summary>
+        /// Initialize a new GradientPair
+        /// </summary>
+        /// <param name="a">The first color</param>
+        /// <param name="b">The second color</param>
         public GradientPair(Color a, Color b)
         {
             this.a = a;

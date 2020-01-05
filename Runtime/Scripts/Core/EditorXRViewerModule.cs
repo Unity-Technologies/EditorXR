@@ -1,17 +1,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Helpers;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.SpatialHash;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.XR;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     class EditorXRViewerModule : ScriptableSettings<EditorXRViewerModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IInterfaceConnector,
@@ -244,10 +244,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             m_PlayerBody = EditorXRUtils.Instantiate(m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
             this.InjectFunctionalitySingle(m_PlayerBody);
-            var renderer = m_PlayerBody.GetComponent<Renderer>();
             var spatialHashModule = ModuleLoaderCore.instance.GetModule<SpatialHashModule>();
             if (spatialHashModule != null)
-                spatialHashModule.spatialHashContainer.AddObject(renderer, renderer.bounds);
+                spatialHashModule.AddRenderer(m_PlayerBody.GetComponent<Renderer>());
 
             var playerObjects = m_PlayerBody.GetComponentsInChildren<Renderer>(true);
             foreach (var playerObject in playerObjects)
@@ -394,7 +393,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Initialize()
         {
-            preserveCameraRig = EditorVR.preserveLayout;
+            preserveCameraRig = EditorXR.preserveLayout;
 
             m_VRPlayerObjects.Clear();
 

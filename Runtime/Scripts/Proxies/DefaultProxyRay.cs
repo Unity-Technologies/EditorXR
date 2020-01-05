@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.XR;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Proxies
+namespace Unity.Labs.EditorXR.Proxies
 {
     sealed class DefaultProxyRay : MonoBehaviour, IUsesViewerScale
     {
@@ -20,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 #pragma warning disable 649
         [SerializeField]
-        VRLineRenderer m_LineRenderer;
+        XRLineRenderer m_LineRenderer;
 
         [SerializeField]
         GameObject m_Tip;
@@ -91,8 +92,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             var lineRendererTransform = m_LineRenderer.transform;
             lineRendererTransform.localScale = Vector3.one * scaledLength;
-            m_LineRenderer.SetWidth(scaledWidth, scaledWidth * scaledLength);
-            m_Tip.transform.position = transform.position + transform.forward * length;
+            m_LineRenderer.widthStart = scaledWidth;
+            m_LineRenderer.widthEnd = scaledWidth * scaledLength;
+            var thisTransform = transform;
+            m_Tip.transform.position = thisTransform.position + thisTransform.forward * length;
             m_Tip.transform.localScale = scaledLength * m_TipStartScale;
         }
 
@@ -177,11 +180,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             {
                 currentDuration += Time.deltaTime;
                 currentWidth = MathUtilsExt.SmoothDamp(currentWidth, kTargetWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
-                m_LineRenderer.SetWidth(currentWidth, currentWidth);
+                m_LineRenderer.widthStart = currentWidth;
+                m_LineRenderer.widthEnd = currentWidth;
                 yield return null;
             }
 
-            m_LineRenderer.SetWidth(kTargetWidth, kTargetWidth);
+            m_LineRenderer.widthStart = kTargetWidth;
+            m_LineRenderer.widthEnd = kTargetWidth;
             m_RayVisibilityCoroutine = null;
         }
 
@@ -201,13 +206,15 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 currentDuration += Time.deltaTime;
                 currentWidth = MathUtilsExt.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
                 scaledWidth = currentWidth * viewerScale;
-                m_LineRenderer.SetWidth(scaledWidth, scaledWidth);
+                m_LineRenderer.widthStart = scaledWidth;
+                m_LineRenderer.widthEnd = scaledWidth;
                 yield return null;
             }
 
             viewerScale = this.GetViewerScale();
             scaledWidth = m_LineWidth * viewerScale;
-            m_LineRenderer.SetWidth(scaledWidth, scaledWidth);
+            m_LineRenderer.widthStart = scaledWidth;
+            m_LineRenderer.widthEnd = scaledWidth;
             m_RayVisibilityCoroutine = null;
         }
 

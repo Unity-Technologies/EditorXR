@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Workspaces/WorkspaceRenderTextureOverlay"
+﻿Shader "EditorXR/Workspaces/WorkspaceRenderTextureOverlay"
 {
 	Properties
 	{

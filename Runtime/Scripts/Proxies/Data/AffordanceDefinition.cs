@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     /// <summary>
     /// Definition containing data that represents this affordance
     /// </summary>
     [Serializable]
-    public class AffordanceDefinition
+    class AffordanceDefinition
     {
         [SerializeField]
         VRInputDevice.VRControl m_Control;

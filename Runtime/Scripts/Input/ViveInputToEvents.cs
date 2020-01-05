@@ -1,6 +1,6 @@
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR.Input
+namespace Unity.Labs.EditorXR.Input
 {
     sealed class ViveInputToEvents : BaseVRInputToEvents
     {

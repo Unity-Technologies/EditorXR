@@ -1,12 +1,13 @@
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Data;
+using Unity.Labs.EditorXR.Handles;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
 #if UNITY_EDITOR
     [MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
@@ -72,8 +73,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (Selection.activeGameObject)
                 OnSelectionChanged();
 
-            Undo.postprocessModifications += OnPostprocessModifications;
-            Undo.undoRedoPerformed += UpdateCurrentObject;
+            UnityEditor.Undo.postprocessModifications += OnPostprocessModifications;
+            UnityEditor.Undo.undoRedoPerformed += UpdateCurrentObject;
 #endif
 
             // Propagate initial bounds
@@ -372,8 +373,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #if UNITY_EDITOR
         protected override void OnDestroy()
         {
-            Undo.postprocessModifications -= OnPostprocessModifications;
-            Undo.undoRedoPerformed -= UpdateCurrentObject;
+            UnityEditor.Undo.postprocessModifications -= OnPostprocessModifications;
+            UnityEditor.Undo.undoRedoPerformed -= UpdateCurrentObject;
             EditorApplication.hierarchyChanged -= UpdateCurrentObject;
             base.OnDestroy();
         }

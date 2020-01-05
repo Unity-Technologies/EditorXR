@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Menus;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Tools
+namespace Unity.Labs.EditorXR.Tools
 {
-    public class BrushSizeUI : MonoBehaviour, IAlternateMenu
+    class BrushSizeUI : MonoBehaviour, IAlternateMenu
     {
         const float k_MinSize = 0.625f;
         const float k_MaxSize = 12.5f;
@@ -47,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             localBounds = BoundsUtils.GetBounds(transform);
 #if UNITY_EDITOR
             // We record property modifications on creation and modification of these UI elements, which will look odd when undone
-            Undo.postprocessModifications += PostProcessModifications;
+            UnityEditor.Undo.postprocessModifications += PostProcessModifications;
 #endif
             m_SliderHandleImage = m_SliderHandle.GetComponent<Image>();
         }

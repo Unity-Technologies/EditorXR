@@ -1,21 +1,22 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.EditorXR.Core;
+using Unity.Labs.EditorXR.Handles;
+using Unity.Labs.EditorXR.Helpers;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Menus;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Menus;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
+namespace Unity.Labs.EditorXR.Modules
 {
     [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
-    public sealed class SnappingModule : ScriptableSettings<SnappingModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
+    sealed class SnappingModule : ScriptableSettings<SnappingModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
         IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences, IStandardIgnoreList, IUsesSceneRaycast,
         IProvidesSnapping
     {

@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Helpers
+namespace Unity.Labs.EditorXR.Helpers
 {
-    public class PlayerBody : MonoBehaviour
+    class PlayerBody : MonoBehaviour
     {
 #pragma warning disable 649
         [SerializeField]

@@ -1,10 +1,10 @@
-﻿using System;
-using UnityEditor.Experimental.EditorVR.Modules;
+using System;
+using Unity.Labs.EditorXR.Modules;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR.Menus
+namespace Unity.Labs.EditorXR.Menus
 {
     sealed class MainMenuToggle : MainMenuSelectable, IRayEnterHandler, IRayExitHandler, IPointerClickHandler
     {

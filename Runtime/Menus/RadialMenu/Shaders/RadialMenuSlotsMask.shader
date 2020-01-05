@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/RadialMenu/RadialMenuSlotMask"
+﻿Shader "EditorXR/RadialMenu/RadialMenuSlotMask"
 {
     Properties
 	{

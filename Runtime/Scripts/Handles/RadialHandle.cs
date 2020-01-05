@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Handles
+namespace Unity.Labs.EditorXR.Handles
 {
     sealed class RadialHandle : BaseHandle
     {

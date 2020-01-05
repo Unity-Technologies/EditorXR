@@ -11,6 +11,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesSceneRaycast
+    /// </summary>
     public static class UsesSceneRaycastMethods
     {
         /// <summary>

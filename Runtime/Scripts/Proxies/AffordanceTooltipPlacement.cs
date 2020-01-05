@@ -1,8 +1,8 @@
-﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.Utils.GUI;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Proxies
+namespace Unity.Labs.EditorXR.Proxies
 {
     sealed class AffordanceTooltipPlacement : MonoBehaviour, ITooltipPlacement
     {

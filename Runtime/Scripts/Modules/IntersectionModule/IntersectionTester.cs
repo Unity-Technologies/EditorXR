@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.Labs.EditorXR.Modules
 {
     public sealed class IntersectionTester : MonoBehaviour
     {

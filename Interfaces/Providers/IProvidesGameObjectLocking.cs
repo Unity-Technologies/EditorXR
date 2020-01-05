@@ -19,6 +19,7 @@ namespace Unity.Labs.EditorXR.Interfaces
         /// Check whether a GameObject is locked
         /// </summary>
         /// <param name="go">GameObject locked status to test</param>
+        /// <returns>Whether the object is locked</returns>
         bool IsLocked(GameObject go);
     }
 }

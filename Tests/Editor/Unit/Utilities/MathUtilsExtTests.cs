@@ -1,8 +1,8 @@
-﻿using NUnit.Framework;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using NUnit.Framework;
+using Unity.Labs.EditorXR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
+namespace Unity.Labs.EditorXR.Tests.Utilities
 {
     [TestFixture]
     public class MathUtilsExtTests

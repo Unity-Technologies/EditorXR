@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Workspaces/WorkspaceBackgroundMask"
+﻿Shader "EditorXR/Workspaces/WorkspaceBackgroundMask"
 {
 	SubShader
 	{

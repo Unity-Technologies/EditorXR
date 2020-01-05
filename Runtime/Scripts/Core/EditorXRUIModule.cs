@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.EditorXR.UI;
+using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.UI;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace UnityEditor.Experimental.EditorVR.Core
+namespace Unity.Labs.EditorXR.Core
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.UIModuleBehaviorOrder)]
     class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<FunctionalityInjectionModule>,
@@ -70,7 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            IInstantiateUIMethods.instantiateUI = InstantiateUI;
+            InstantiateUIMethods.instantiateUI = InstantiateUI;
 
             var moduleLoaderCore = ModuleLoaderCore.instance;
             m_ModuleParent = moduleLoaderCore.GetModuleParent().transform;

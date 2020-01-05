@@ -2,12 +2,12 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 using System;
-using UnityEditor.Experimental.EditorVR.Extensions;
+using Unity.Labs.EditorXR.Extensions;
 using UnityEngine.EventSystems;
 
-namespace UnityEditor.Experimental.EditorVR.Tools
+namespace Unity.Labs.EditorXR.Tools
 {
-    public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
+    class ColorPickerUI : MonoBehaviour, IPointerExitHandler
     {
 #pragma warning disable 649
         [SerializeField]

@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using Button = UnityEditor.Experimental.EditorVR.UI.Button;
+using UnityEngine;
+using Button = Unity.Labs.EditorXR.UI.Button;
 
-namespace UnityEditor.Experimental.EditorVR.Workspaces
+namespace Unity.Labs.EditorXR.Workspaces
 {
     sealed class InspectorArrayHeaderItem : InspectorPropertyItem
     {

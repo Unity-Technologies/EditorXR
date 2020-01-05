@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/MainMenu/HorizontalBorderGradient"
+﻿Shader "EditorXR/MainMenu/HorizontalBorderGradient"
 {
 	Properties
 	{

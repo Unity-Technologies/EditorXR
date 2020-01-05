@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/UI/GradientButton"
+﻿Shader "EditorXR/UI/GradientButton"
 {
 	Properties
 	{

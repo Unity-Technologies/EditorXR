@@ -10,6 +10,9 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
+    /// <summary>
+    /// Extension methods for implementors of IUsesGrouping
+    /// </summary>
     public static class UsesGroupingMethods
     {
         /// <summary>
