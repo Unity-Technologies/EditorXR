@@ -97,22 +97,6 @@ namespace Unity.Labs.EditorXR.Core
                     Debug.Log("<color=orange>EditorXR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->XR Settings</color>");
 #endif
             }
-
-            // Add EVR tags and layers if they don't exist
-#if UNITY_EDITOR
-            var tags = TagManager.GetRequiredTags();
-            var layers = TagManager.GetRequiredLayers();
-
-            foreach (var tag in tags)
-            {
-                TagManager.AddTag(tag);
-            }
-
-            foreach (var layer in layers)
-            {
-                TagManager.AddLayer(layer);
-            }
-#endif
         }
 
         internal void Initialize()
