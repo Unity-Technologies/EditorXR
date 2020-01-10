@@ -359,7 +359,9 @@ namespace Unity.Labs.EditorXR.Core
             // Always render camera into a RT
             CreateCameraTargetTexture(ref m_TargetTexture, cameraRect, false);
             m_Camera.targetTexture = m_TargetTexture;
-            XRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
+            //XRSettings.showDeviceView = m_ShowDeviceView;
+            //TODO: Fix GUI scaling bug
+            XRSettings.showDeviceView = true; // Always set to true to work around GUI scaling bug
         }
 
         void OnGUI()
