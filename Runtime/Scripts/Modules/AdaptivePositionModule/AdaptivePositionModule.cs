@@ -55,7 +55,7 @@ namespace Unity.Labs.EditorXR.Modules
 
         public void OnBehaviorUpdate()
         {
-            if (m_GazeTransform != null)
+            if (m_GazeTransform == null)
                 return;
 
             if (m_AdaptivePositionElements.Count > 0)
