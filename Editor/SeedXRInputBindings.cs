@@ -557,6 +557,7 @@ namespace Unity.Labs.EditorXR.LegacyInputHelpers
                 }
             }
 
+            EditorApplication.delayCall += UnityEditor.Undo.ClearAll;
         }
 
         #region InternalProcessingCode

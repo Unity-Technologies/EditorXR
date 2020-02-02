@@ -4,6 +4,9 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.4.6-preview] - 2020-02-02
+- Fix an issue where it is possible to undo input bindings on first import, causing exceptions
+
 ## [0.4.5-preview] - 2020-02-02
 Fix bugs that came up during release testing:
 - Fix snapping menu not being interactable
