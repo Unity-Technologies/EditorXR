@@ -434,7 +434,7 @@ namespace Unity.Labs.EditorXR.Menus
                 }
 
                 var providerMenuElement = instantiatedPrefabTransform.GetComponent<SpatialMenuElement>();
-                this.ConnectInterfaces(instantiatedPrefabTransform);
+                this.InjectFunctionalitySingle(providerMenuElement);
                 providerMenuElement.Setup(homeMenuElementParent, () => { }, data.spatialMenuName, null);
                 m_CurrentlyDisplayedMenuElements.Add(providerMenuElement);
                 providerMenuElement.selected = SectionTitleButtonSelected;
@@ -481,7 +481,7 @@ namespace Unity.Labs.EditorXR.Menus
                     {
                         var instantiatedPrefab = EditorXRUtils.Instantiate(m_SubMenuElementPrefab).transform as RectTransform;
                         var providerMenuElement = instantiatedPrefab.GetComponent<SpatialMenuElement>();
-                        this.ConnectInterfaces(providerMenuElement);
+                        this.InjectFunctionalitySingle(providerMenuElement);
                         providerMenuElement.Setup(subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name, subMenuElement.tooltipText);
                         m_CurrentlyDisplayedMenuElements.Add(providerMenuElement);
                         subMenuElement.VisualElement = providerMenuElement;

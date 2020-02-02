@@ -5,8 +5,10 @@ using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.EditorXR.Modules;
 using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
+using UnityEngine;
+using UnityEngine.EventSystems;
 
-namespace UnityEngine.EventSystems
+namespace Unity.Labs.EditorXR.Modules
 {
     /// <summary>
     /// A BaseInputModule for ray-based input, based on PointerInputModule

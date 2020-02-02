@@ -92,8 +92,6 @@ namespace Unity.Labs.EditorXR.Modules
         internal Transform leftRayOrigin { private get; set; }
         internal Transform rightRayOrigin { private get; set; }
 
-        internal bool preserveWorkspaces { get; set; }
-
         internal event Action<IWorkspace> workspaceCreated;
         internal event Action<IWorkspace> workspaceDestroyed;
 
@@ -117,8 +115,6 @@ namespace Unity.Labs.EditorXR.Modules
 
         public void LoadModule()
         {
-            preserveWorkspaces = Core.EditorXR.preserveLayout;
-
             UpdateInspectorsMethods.updateInspectors = UpdateInspectors;
         }
 
@@ -135,7 +131,7 @@ namespace Unity.Labs.EditorXR.Modules
 
         public object OnSerializePreferences()
         {
-            if (!preserveWorkspaces)
+            if (!Core.EditorXR.preserveLayout)
                 return null;
 
             var preferences = new Preferences();
@@ -285,7 +281,7 @@ namespace Unity.Labs.EditorXR.Modules
 
         public void CreateSerializedWorkspaces()
         {
-            if (!preserveWorkspaces || m_Preferences == null)
+            if (!Core.EditorXR.preserveLayout || m_Preferences == null)
                 return;
 
             foreach (var workspaceLayout in m_Preferences.workspaceLayouts)

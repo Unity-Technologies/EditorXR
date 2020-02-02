@@ -329,6 +329,7 @@ namespace Unity.Labs.EditorXR.Menus
             var submenu = this.InstantiateUI(submenuPrefab);
 
             face.AddSubmenu(submenu.transform);
+            face.gameObject.SetActive(false);
 
             var submenuFace = submenu.GetComponent<SubmenuFace>();
             if (submenuFace)

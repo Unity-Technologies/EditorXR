@@ -176,10 +176,15 @@ namespace Unity.Labs.EditorXR.Menus
             target.SetActive(false);
             UnityObjectUtils.Destroy(target, .1f);
 
-            if (m_Submenus.Count > 1)
+            if (m_Submenus.Count > 0)
+            {
                 m_Submenus.Last().SetActive(true);
+            }
             else
+            {
+                gameObject.SetActive(true);
                 visible = true;
+            }
         }
 
         public void ClearSubmenus()
