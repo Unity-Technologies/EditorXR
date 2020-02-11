@@ -37,7 +37,7 @@ namespace Unity.Labs.EditorXR.Modules
         readonly Dictionary<Transform, bool> m_RayOriginEnabled = new Dictionary<Transform, bool>();
         Coroutine m_UpdateCoroutine;
 
-        SpatialHashContainer<Renderer> m_SpatialHashContainer;
+        ISpatialHashContainer<Renderer> m_SpatialHashContainer;
         MeshCollider m_CollisionTester;
 
         public Func<GameObject, bool> shouldExcludeObject { private get; set; }
