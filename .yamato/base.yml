@@ -35,7 +35,7 @@ editor:priming:{{ editor.version }}:{{ platform.os }}:
     {{ v[0] }}: {{ v[1]}}
     {% endfor %}
   commands:
-    - pip install unity-downloader-cli --upgrade --extra-index-url https://artifactory.eu-cph-1.unityops.net/api/pypi/common-python/simple
+    - pip install unity-downloader-cli --user --upgrade --extra-index-url https://artifactory.eu-cph-1.unityops.net/api/pypi/common-python/simple
     - >
       unity-downloader-cli
       -u {{ editor.version }}
@@ -65,7 +65,7 @@ editor:priming:{{ test.name }}:{{ platform.os }}:
     {{ v[0] }}: {{ v[1]}}
     {% endfor %}
   commands:
-    - pip install unity-downloader-cli --upgrade --extra-index-url https://artifactory.eu-cph-1.unityops.net/api/pypi/common-python/simple
+    - pip install unity-downloader-cli --user --upgrade --extra-index-url https://artifactory.eu-cph-1.unityops.net/api/pypi/common-python/simple
     - >
       unity-downloader-cli
       -u {{ test.path }}

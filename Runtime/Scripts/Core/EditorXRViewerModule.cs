@@ -91,12 +91,10 @@ namespace Unity.Labs.EditorXR.Core
         EditorXRDirectSelectionModule m_DirectSelectionModule;
 
         public int initializationOrder { get { return -2; } }
-        public int shutdownOrder { get { return 0; } }
+        public int shutdownOrder { get { return 2; } }
         public int connectInterfaceOrder { get { return 0; } }
 
         internal IPreviewCamera customPreviewCamera { get; private set; }
-
-        public bool preserveCameraRig { private get; set; }
 
         public bool hmdReady { get; private set; }
 
@@ -137,7 +135,7 @@ namespace Unity.Labs.EditorXR.Core
 
         public object OnSerializePreferences()
         {
-            if (!preserveCameraRig)
+            if (!EditorXR.preserveLayout)
                 return null;
 
             if (hmdReady)
@@ -169,7 +167,7 @@ namespace Unity.Labs.EditorXR.Core
 
         public void OnDeserializePreferences(object obj)
         {
-            if (!preserveCameraRig)
+            if (!EditorXR.preserveLayout)
                 return;
 
             var preferences = (Preferences)obj;
@@ -393,8 +391,6 @@ namespace Unity.Labs.EditorXR.Core
 
         public void Initialize()
         {
-            preserveCameraRig = EditorXR.preserveLayout;
-
             m_VRPlayerObjects.Clear();
 
             if (m_InitializeCamera)
@@ -413,7 +409,6 @@ namespace Unity.Labs.EditorXR.Core
             m_OriginalNearClipPlane = 0;
             m_OriginalFarClipPlane = 0;
             hmdReady = false;
-            preserveCameraRig = false;
 
             foreach (var playerObject in m_VRPlayerObjects)
             {

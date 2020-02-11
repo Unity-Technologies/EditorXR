@@ -1,13 +1,16 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-/// <summary>
-/// Provides access to all ray origins in the system
-/// </summary>
-interface IUsesRayOrigins
+namespace Unity.Labs.EditorXR
 {
     /// <summary>
-    /// A list of all ray origins provided by the system
+    /// Provides access to all ray origins in the system
     /// </summary>
-    List<Transform> otherRayOrigins { set; }
+    interface IUsesRayOrigins
+    {
+        /// <summary>
+        /// A list of all ray origins provided by the system
+        /// </summary>
+        List<Transform> otherRayOrigins { set; }
+    }
 }

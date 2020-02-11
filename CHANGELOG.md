@@ -4,6 +4,25 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.4.6-preview] - 2020-02-02
+- Fix an issue where it is possible to undo input bindings on first import, causing exceptions
+
+## [0.4.5-preview] - 2020-02-02
+Fix bugs that came up during release testing:
+- Fix snapping menu not being interactable
+- Fix NullReferenceExceptions in spatial menu
+- Fix an issue where user position was not being saved
+- Fix NullReferenceExceptions in IntersectionUtils by checking for null mesh
+
+## [0.4.4-preview] - 2020-01-31
+- Update Utilities dependency version to fix Tag Manager bug
+
+## [0.4.3-preview] - 2020-01-31
+-- Fix an issue with null check in AdaptivePositionModule--fixes spatial menu
+
+## [0.4.2-preview] - 2020-01-09
+-- Fix GUI scaling issue in VRView
+
 ## [0.4.1-preview] - 2020-01-03
 Update dependencies and finalize package manager release
 

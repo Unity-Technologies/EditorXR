@@ -306,6 +306,8 @@ namespace Unity.Labs.EditorXR.Utilities
             if (mf)
             {
                 var mesh = mf.sharedMesh;
+                if (mesh == null)
+                    return;
 
 #if !UNITY_EDITOR
                 // Player builds throw errors for non-readable meshes

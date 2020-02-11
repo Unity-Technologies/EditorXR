@@ -46,7 +46,7 @@ If you are new to EditorXR, or have a question after reading the documentation, 
 * Join our [support forum](https://forum.unity.com/forums/editorxr.126/).
 * Follow us on [Twitter](http://www.twitter.com/unity3dlabs).
 
-<a name="UsingPackageName"></a>
+<a name="UsingEditorXR"></a>
 
 # Using EditorXR
 
@@ -68,12 +68,12 @@ To use EditorXR, go to ****Windows**** > ****EditorXR**** (or press Ctrl-E on yo
 
     ![Main Menu](images/mainmenu.png)
 
-    ![Main Menu](images/mainmenu.gif)
+    [![Main Menu](images/mainmenu_02.png)](https://drive.google.com/open?id=11vLZsOFDRL949nQXzzGmQtyjaM0Y5sMZ "Main Menu")
 
     - The Main Menu is the 3D equivalent of the Unity menu bar: it allows you to access Tools, Workspaces, Settings, etc. in EditorXR.
     - To open the Main Menu on either hand, activate the Unity button with the ray from the other hand by pulling on the primary trigger.
      - Close the menu the same way: click the Hamburger button with the ray from the other hand.
-     - Swipe your thumb across the thumbad (Vive) or flick the joystick (Touch) to rotate the menus on the hand that has the menu.
+     - Swipe your thumb across the thumbpad (Vive) or flick the joystick (Touch) to rotate the menus on the hand that has the menu.
      - Scroll a window by pointing at it with the ray and using the thumbpad (Vive) or joystick (Touch) while over the menu.
      - Some menu buttons can open sub-menus (e.g. snapping settings). Click on the title text to navigate back to the parent menu.
 
@@ -86,7 +86,7 @@ To use EditorXR, go to ****Windows**** > ****EditorXR**** (or press Ctrl-E on yo
     - The radial menu appears when objects are selected, or certain actions can be taken. It is the equivalent of a 2D contextual menu.
      - The radial menu hides when there is no object selected, so to get rid of it you would deselect by pointing the ray over empty space and pulling the trigger.
 
-       ![Radial Menu](images/radialmenu.gif)
+       [![Radial Menu](images/radialmenu.png)](https://drive.google.com/open?id=1Kx5IdQZAg-QaO6yCaVshrdzQGhfmx_Ds "Radial Menu")
 
      - Available actions in order from top to bottom with the latest version of EditorXR:
        - Redo
@@ -132,12 +132,12 @@ To use EditorXR, go to ****Windows**** > ****EditorXR**** (or press Ctrl-E on yo
   - Blink Locomotion
    - Blink locomotion lets you quickly move around large spaces by pointing an arc where you want to go with the trigger. To enable Blink locomotion, navigate to the ‘Settings’ pane of the Main Menu, and under the Locomotion Settings, ensure that ‘Blink’ is enabled. To blink, use the Menu button on Vive, or the B button on Rift. On release, you’re zoomed to the new position. You can cancel blink locomotion by pointing the arc up.
 
-     ![Blink Locomotion](images/blink.gif)
+     [![Blink Locomotion](images/blink.png)](https://drive.google.com/open?id=1U5DTL22NpOjzHsHOPYD-51TA7W1oIoFh "Blink Locomotion")
 
   - Fly Locomotion
    - To enable Fly locomotion, navigate to the ‘Settings’ pane of the Main Menu, and under the Locomotion Settings, ensure that ‘Fly’ is enabled. To fly, use the Menu button on Vive, or the B button on Rift; (with button pressed) to accelerate your flight, press the trigger.
 
-     ![Fly Locomotion](images/fly.gif)
+     [![Fly Locomotion](images/fly.png)](https://drive.google.com/open?id=1Zb8o-l-hlbsZz1begplO2DbOIPyBv1eO "Fly Locomotion")
 
 * Re-Scaling the World.
 
@@ -145,7 +145,7 @@ To use EditorXR, go to ****Windows**** > ****EditorXR**** (or press Ctrl-E on yo
 
   - You can re-scale and rotate the world by holding down the secondary triggers (Oculus) or the grip buttons (Vive) on both controllers, and pulling in/out.
 
-    ![Scale](images/rescaling.gif)
+    [![Scale](images/rescaling.png)](https://drive.google.com/open?id=15fF2jnA1Hk5sU5BUsY3HW64QMczvksbb "Scale")
 
 * Selection
 
@@ -157,12 +157,12 @@ To use EditorXR, go to ****Windows**** > ****EditorXR**** (or press Ctrl-E on yo
  - Multi-Select
    - To enable multi-select: (with nothing selected) double click the grip buttons (Vive) or the secondary trigger (Oculus). A tooltip will pop-up to confirm you are in Multiselect mode.
 
-     ![Multi Select](images/multiselect.gif)
+     [![Multi Select](images/multiselect.png)](https://drive.google.com/open?id=19yteP8K1u4v4IMrr7ML2duf6thmNBQ-0 "Multi Select")
    - When multi-select is enabled, you can select multiple objects and manipulate them simultaneously. (In this context this trigger is used as a 'shift/cmd' modifier).
 
 * Block Selection
 
-  ![Block Selection](images/blockselection.gif)
+  [![Block Selection](images/blockselection.png)](https://drive.google.com/open?id=16A0iGZrq-6-RPeIQi-MxTOtOYIccG4lg "Block Selection")
 
   - There are two kinds of block selection: cuboid selection and sphere selection.  Both methods are activated by holding down the primary trigger in an open area and moving the controller to resize the selection shape.  You can switch between the two methods in the Settings Menu
     - Cuboid selection allows you to trace a cube to select any objects within arm’s reach.  The cube extents are defined from the blue selection cone at the end of your controller.
@@ -170,35 +170,35 @@ To use EditorXR, go to ****Windows**** > ****EditorXR**** (or press Ctrl-E on yo
 
 * Two-handed Scaling
 
- ![Two-handed Scaling](images/scaling.gif)
+ [![Two-handed Scaling](images/scaling.png)](https://drive.google.com/open?id=1dTvJrhIDTUg-Q-YscOUh2u5p2SEWb3zT "Two-handed Scaling")
 
   - To enable two-handed scaling: With an object directly selected, use the trigger on both controllers, and pull in/out to resize.
 
 * The Manipulator Gizmo
 
-  ![Manipulator Gizmo](images/manipulatorgizmo.gif)
+  [![Manipulator Gizmo](images/manipulatorgizmo.png)](https://drive.google.com/open?id=1hLsFEaLkgFtHVOKHGZdFhMk8_XV56Lxw "Manipulator Gizmo")
 
   - Select a plane or axis of the Manipulator Gizmo to move the object along that path, or select the free selection sphere in the center to move the object freely. The three types of movement are:
     - Plane movement
     - Axis movement
     - Free selection sphere: move the joystick (Rift) or thumbpad (Vive) back and forth along the Y-axis to move the object closer or further away.
 
-     ![Manipulator Gizmo](images/manipulator.gif)
+     [![Manipulator](images/manipulator.png)](https://drive.google.com/open?id=1TS_lV8xexB0lj5S7A513t9kdOlqml761 "Manipulator")
 
 * Snapping
 
   - Snapping can be enabled or disabled by using the section on the main menu labeled ‘Snapping’. Here, you can direct how the mode will function, i.e. snap via pivot or bounds, via direct selection or manipulator, snap to ground or surfaces, etc.
   - By enabling ‘Bounds’, objects can snap to each other by directly selecting them and stacking them on top of one another.
 
-    ![Snapping](images/snapping.gif)
+    [![Snapping](images/snapping.png)](https://drive.google.com/open?id=1TtBp0BpqKpjFnl9muBQGf9A2Ct6AoVZo "Snapping")
 
   - By enabling ‘Pivot’, objects can snap to a surface by selecting an object via the free selection sphere (center of the manipulator gizmo), and navigate the object to the desired surface.
 
-    ![Snapping](images/snapping_02.gif)
+    [![Snapping](images/snapping_02.png)](https://drive.google.com/open?id=1DL1855jlcPtcdPWCRUQ6RFQTYeK-uw-t "Snapping")
 
   - By enabling ‘Rotate object’, objects will automatically rotate to their root orientation when snapped to a surface.
 
-    ![Snapping](images/snapping_rotate.gif)
+    [![Snapping](images/snapping_rotate.png)](https://drive.google.com/open?id=16rY1Tc6tkiO7fLJiupvU3bTuHyyH2joA "Snapping")
 
   * Workspaces
 
@@ -206,19 +206,19 @@ To use EditorXR, go to ****Windows**** > ****EditorXR**** (or press Ctrl-E on yo
     - Workspaces can be moved, resized, or rotated.
     - To move or rotate: Put the selection cone inside the front face of the workspace, then select by pressing down on the secondary trigger (Rift) or the grips (Vive). Make sure you’re grabbing the face, not the scale or view UI.
 
-     ![Workspaces](images/workspacemove.gif)
+     [![Workspaces](images/workspacemove.png)](https://drive.google.com/open?id=1zbq3WXsl501Z5_Fn57lJsmIQHpbZqGMy "Workspaces")
 
     - To resize: Hold the controller near an edge until the resize arrows show, then hold down the secondary trigger (Rift) or the grip button (Vive).
 
-     ![Workspaces](images/workspacescale.gif)
+     [![Workspaces](images/workspacescale.png)](https://drive.google.com/open?id=1iGvuLmiVMN09GqqTCnjLnjzUEgDE8aCQ "Workspaces")
 
     - To close a workspace, click the [X] on the front of a workspace.
 
-     ![Workspaces](images/closeworkspace.gif)
+     [![Workspaces](images/closeworkspace.png)](https://drive.google.com/open?id=1Khn4Qh42pRjEIGkaYrR4134ORu1aa7x8 "Workspaces")
 
     - To scroll, either dip the selection cone directly in the pane, or use the ray or thumbpad.
 
-     ![Workspaces](images/workspaces_scroll.gif)
+     [![Workspaces](images/workspaces_scroll.png)](https://drive.google.com/open?id=185k8GpKKgclC-4HZzfeuIxC3B_1QWcYy "Workspaces")
 
     - Here is the list of current workspaces that come as defaults:
       - Console: View errors, warnings and other messages
@@ -234,23 +234,23 @@ To use EditorXR, go to ****Windows**** > ****EditorXR**** (or press Ctrl-E on yo
     - The MiniWorld is a workspace that shows the exact same scene you’re already in, but smaller. It’s very useful for moving large objects or rearranging a lot of life-sized objects quickly.
     - You can move objects in the MiniWorld using the selection cone (trigger). Read more about the difference between ray selection and the selection cone in the Selection section, above.
 
-     ![MiniWorld Workspace](images/miniworld_01.gif)
+     [![MiniWorld Workspace](images/miniworld_01.png)](https://drive.google.com/open?id=1R2X-J2-y2XX35Uxlv-djkIL9X65b36Ai "MiniWorld Workspace")
 
     - To move the MiniWorld view, dip your cone into the top-pane of the workspace (which initially displays the grid) and move it around using the secondary trigger (Rift) or the grip buttons (Vive).
 
-     ![MiniWorld Workspace](images/miniworld_02.gif)
+     [![MiniWorld Workspace](images/miniworld_02.png)](https://drive.google.com/open?id=1P_7Iu3NlYw-yqhGpApn5LnDzeiNEwBk5 "MiniWorld Workspace")
 
     - You can scale/rotate the MiniWorld view, similarly to world-scaling the physical scene, by dipping your controllers into the MiniWorld view and using the grip buttons (Vive) or the Secondary Trigger (Oculus) on both controllers.
 
-     ![MiniWorld Workspace](images/miniworld.gif)
+     [![MiniWorld Workspace](images/miniworld.png)](https://drive.google.com/open?id=15m4fZI5-X_pBH9dSTF8itXyt5Qd2aY6D "MiniWorld Workspace")
 
     - If you lose where you are in the MiniWorld, you can select the Reset icon to get back to the root, or the button labeled ‘Center on Player’.
 
-     ![MiniWorld Workspace](images/miniworld_reset.gif)
+     [![MiniWorld Workspace](images/miniworld_reset.png)](https://drive.google.com/open?id=14K4pHsjJcKX0wOEGMy1G-T_8x74R3Sgn "MiniWorld Workspace")
 
     - To move yourself from one point of the world to another, grab yourself in the MiniWorld and move yourself around.
 
-     ![MiniWorld Workspace](images/miniworldmoveuser.gif)
+     [![MiniWorld Workspace](images/miniworld_moveuser.png)](https://drive.google.com/open?id=1Na68QE6ShFLORR-4o5mPfxzoX5xnFfsN "MiniWorld Workspace")
 
   * Project Workspace
 
@@ -258,26 +258,26 @@ To use EditorXR, go to ****Windows**** > ****EditorXR**** (or press Ctrl-E on yo
     - The left-hand side of the view shows folders, and the right-hand side shows Assets. Prefabs and models aren’t rendered in the Project view until you hover over them. This is for performance reasons.
     - Drag objects out of the Project view to add them to the Scene. The bigger they are, the further away they instantiate from you. This is so they don’t hit you in the face.
 
-     ![Project Workspace](images/projectworkspace.gif)
+     [![Project Workspace](images/projectworkspace.png)](https://drive.google.com/open?id=1M1cpzk8I_U5sm0sort3qhKpe2HllZTN0 "Project Workspace")
 
   * Hierarchy
 
    - The Hierarchy (See Unity documentation on the Hierarchy window) shows which GameObjects are currently in your Scene. Click on an object in the Hierarchy to select the object in the Scene (Note: you may have to look around for it!).
 
-     ![Hierarchy](images/hierarchy.gif)
+     [![Hierarchy](images/hierarchy.png)](https://drive.google.com/open?id=1hlfPi7Xo-c_ykpw1utGWbUcbOeLMVd50 "Hierarchy")
 
   * The Inspector
 
    - The Inspector (See Unity documentation on the Inspector window) is used to view and edit the properties and settings of GameObjects, Assets, and other preferences and settings in the Editor.
    - When you select a GameObject in EditorXR, or from the Hierarchy Workspace, the Inspector displays the GameObject’s components, including Transform, which exposes position, rotation, and scale values.
 
-     ![The Inspector](images/inspector.gif)
+     [![The Inspector](images/inspector.png)](https://drive.google.com/open?id=1i7iWPbEUAh_Hdv5ZklRvT1m0zkzX7bTd "The Inspector")
 
   * Locked Objects
 
    - The Locked Objects workspace shows a list of all of the locked GameObjects in the scene. Locked objects are not selectable by ray in the scene. You can lock and unlock items from the hierarchy or directly from the radial menu by clicking on the lock icon.  
 
-     ![Locked Objects](images/locked.gif)
+     [![Locked Objects](images/locked.png)](https://drive.google.com/open?id=1JgfadHWtL9mwIJ0I_vc2wb2vUSV8tT9e "Locked Objects")
 
 <a name="Workflows"></a>
 
@@ -315,7 +315,7 @@ To place assets:
 
 4. To add Assets from your project to the active Scene, drag them out of the Workspace Asset grid (on the right side), and place them in the space surrounding you. This action is akin to dragging an item from the Project window into your Scene view or Hierarchy in the standard Unity editor.
 
-  ![Place](images/placement.gif)
+  [![Place](images/placement.png)](https://drive.google.com/open?id=1Oxh5uYDp5MoxwKeaTjgT_d3GBpKUi5u6 "Place")
 
 <a name="Advanced"></a>
 
@@ -331,7 +331,7 @@ This section provides more information on the following topics:
 
 * [Extending EditorXR](#fourth): explains the origin of ...
 
-<a name="first"></a>
+<a name="EditorXRRuntime"></a>
 
 ## EditorXR Runtime
 
@@ -347,7 +347,7 @@ Before entering Play Mode or making a build, there is one final step: you must c
 
  This will add support for the Script Importer functionality which many EditorXR systems rely on. This collects all of the MonoBehaviours that are instantiated during an EditorXR session and creates prefabs out of them, which will include asset references that were set in the Script Importer inspector. If you have created any new EditorXR systems you may want to ensure that you update this asset as you make changes, or tag your classes with the interfaces used within the DefaultScriptReferences class.
 
-<a name="second"></a>
+<a name="MinimalContext"></a>
 
 ## Minimal Context
 
@@ -359,7 +359,7 @@ Before entering Play Mode or making a build, there is one final step: you must c
 * Can be located in the project at :
   - Assets/EditorXR/Scripts/Core/Contexts/Minimal
 
-<a name="third"></a>
+<a name="ImageEffect&CameraSettingsCopySupport"></a>
 
 ## Image Effect & Camera Settings Copy Support
 
@@ -380,5 +380,3 @@ EditorXR has limited support for automatic copying of (post)image effects to the
    - “Copy Main Camera Image Effects to Presentation Camera”
     - This option will copy any image effects from your MainCamera to the EditorXR “presentation camera”.
       - The presentation camera is better suited for demonstrations of an EditorXR session to an audience, and can be enabled via the “Use Presentation Camera” checkbox in an active EditorXR session view window.
-
-<a name="Reference"></a>

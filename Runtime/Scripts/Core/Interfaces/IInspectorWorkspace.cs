@@ -1,6 +1,9 @@
 using UnityEngine;
 
-interface IInspectorWorkspace
+namespace Unity.Labs.EditorXR
 {
-    void UpdateInspector(GameObject obj, bool fullRebuild = false);
+    interface IInspectorWorkspace
+    {
+        void UpdateInspector(GameObject obj, bool fullRebuild = false);
+    }
 }
