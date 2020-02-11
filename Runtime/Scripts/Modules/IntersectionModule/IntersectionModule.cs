@@ -37,7 +37,7 @@ namespace Unity.Labs.EditorXR.Modules
         readonly Dictionary<Transform, bool> m_RayOriginEnabled = new Dictionary<Transform, bool>();
         Coroutine m_UpdateCoroutine;
 
-        SpatialHashContainer m_SpatialHashContainer;
+        SpatialHashContainer<Renderer> m_SpatialHashContainer;
         MeshCollider m_CollisionTester;
 
         public Func<GameObject, bool> shouldExcludeObject { private get; set; }
@@ -81,7 +81,7 @@ namespace Unity.Labs.EditorXR.Modules
             if (m_SpatialHashModule != null)
             {
                 m_SpatialHashModule.Clear();
-                m_SpatialHashContainer = m_SpatialHashModule.spatialHashContainer;
+                m_SpatialHashContainer = m_SpatialHashModule.GetOrCreateContainer<Renderer>();
             }
 
             m_IntersectedObjects.Clear();
@@ -134,7 +134,7 @@ namespace Unity.Labs.EditorXR.Modules
                 k_ChangedObjects.Clear();
 
                 // TODO AE 9/21/16: Hook updates of new objects that are created
-                var allObjects = m_SpatialHashContainer.GetObjects<Renderer>();
+                var allObjects = m_SpatialHashContainer.GetObjects();
                 foreach (var obj in allObjects)
                 {
                     if (!obj)
