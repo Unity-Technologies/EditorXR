@@ -7,7 +7,6 @@ using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.EditorXR.Workspaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.SpatialHash;
-using Unity.Labs.SpatialHash.Interfaces;
 using Unity.Labs.Utils;
 using UnityEditor;
 using UnityEngine;
@@ -15,9 +14,9 @@ using UnityEngine;
 namespace Unity.Labs.EditorXR.Core
 {
     class EditorXRMiniWorldModule : IModuleDependency<EditorXRToolModule>, IModuleDependency<EditorXRDirectSelectionModule>,
-        IModuleDependency<SpatialHashModule>, IModuleDependency<HighlightModule>, IModuleDependency<IntersectionModule>,
-        IModuleDependency<WorkspaceModule>, IModuleDependency<EditorXRRayModule>, IUsesPlaceSceneObjects, IUsesViewerScale,
-        IUsesSpatialHash, IUsesRayVisibilitySettings, IProvidesIsInMiniWorld
+        IModuleDependency<HighlightModule>, IModuleDependency<IntersectionModule>, IModuleDependency<WorkspaceModule>,
+        IModuleDependency<EditorXRRayModule>, IUsesPlaceSceneObjects, IUsesViewerScale, IUsesSpatialHash,
+        IUsesRayVisibilitySettings, IProvidesIsInMiniWorld
     {
         internal class MiniWorldRay
         {
@@ -178,7 +177,6 @@ namespace Unity.Labs.EditorXR.Core
         EditorXRToolModule m_ToolModule;
         EditorXRDirectSelectionModule m_DirectSelectionModule;
         EditorXRRayModule m_RayModule;
-        SpatialHashModule m_SpatialHashModule;
         HighlightModule m_HighlightModule;
         IntersectionModule m_IntersectionModule;
 
@@ -215,11 +213,6 @@ namespace Unity.Labs.EditorXR.Core
         public void ConnectDependency(EditorXRRayModule dependency)
         {
             m_RayModule = dependency;
-        }
-
-        public void ConnectDependency(SpatialHashModule dependency)
-        {
-            m_SpatialHashModule = dependency;
         }
 
         public void ConnectDependency(HighlightModule dependency)
@@ -560,11 +553,11 @@ namespace Unity.Labs.EditorXR.Core
         internal void OnWorkspaceCreated(IWorkspace workspace)
         {
             var miniWorldWorkspace = workspace as MiniWorldWorkspace;
-            if (!miniWorldWorkspace)
+            if (miniWorldWorkspace == null)
                 return;
 
-            miniWorldWorkspace.zoomSliderMax = m_SpatialHashModule.GetMaxBounds().size.MaxComponent()
-                / miniWorldWorkspace.contentBounds.size.MaxComponent();
+            var maxBounds = this.HasProvider<IProvidesSpatialHash>() ? this.GetAggregateBounds().size.MaxComponent() : 10f;
+            miniWorldWorkspace.zoomSliderMax = maxBounds / miniWorldWorkspace.contentBounds.size.MaxComponent();
 
             var miniWorld = miniWorldWorkspace.miniWorld;
             var worldID = m_Worlds.Count;

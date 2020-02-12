@@ -12,7 +12,7 @@ namespace Unity.Labs.EditorXR.Modules
 {
     sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
         IUsesGameObjectLocking, IUsesGetVRPlayerObjects, IProvidesSceneRaycast, IProvidesControlInputIntersection,
-        IProvidesContainsVRPlayerCompletely, IProvidesCheckSphere, IProvidesCheckBounds
+        IProvidesContainsVRPlayerCompletely, IProvidesCheckSphere, IProvidesCheckBounds, IUsesSpatialHash
     {
         class RayIntersection
         {
@@ -45,11 +45,10 @@ namespace Unity.Labs.EditorXR.Modules
         public int initializationOrder { get { return -3; } }
         public int shutdownOrder { get { return 0; } }
 
-        SpatialHashModule m_SpatialHashModule;
-
 #if !FI_AUTOFILL
         IProvidesGameObjectLocking IFunctionalitySubscriber<IProvidesGameObjectLocking>.provider { get; set; }
         IProvidesGetVRPlayerObjects IFunctionalitySubscriber<IProvidesGetVRPlayerObjects>.provider { get; set; }
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection. Collections must be cleared before use
@@ -66,7 +65,6 @@ namespace Unity.Labs.EditorXR.Modules
         public void LoadModule()
         {
             IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in LoadModule because it is destroyed on scene load
-            m_SpatialHashModule = ModuleLoaderCore.instance.GetModule<SpatialHashModule>();
         }
 
         public void UnloadModule() { }
@@ -78,10 +76,10 @@ namespace Unity.Labs.EditorXR.Modules
             collisionTesterObject.transform.SetParent(moduleParent.transform, false);
             m_CollisionTester = collisionTesterObject.AddComponent<MeshCollider>();
 
-            if (m_SpatialHashModule != null)
+            if (this.HasProvider<IProvidesSpatialHash>())
             {
-                m_SpatialHashModule.Clear();
-                m_SpatialHashContainer = m_SpatialHashModule.GetOrCreateContainer<Renderer>();
+                this.ClearSpatialHash();
+                m_SpatialHashContainer = this.GetOrCreateSpatialHashContainer<Renderer>();
             }
 
             m_IntersectedObjects.Clear();
@@ -124,7 +122,7 @@ namespace Unity.Labs.EditorXR.Modules
                 }
             }
 
-            m_SpatialHashModule.AddRenderers(k_Renderers);
+            this.AddRenderersToSpatialHash(k_Renderers);
         }
 
         IEnumerator UpdateDynamicObjects()
@@ -150,8 +148,7 @@ namespace Unity.Labs.EditorXR.Modules
                     }
                 }
 
-                m_SpatialHashModule.RemoveObjects(k_ChangedObjects);
-                m_SpatialHashModule.AddRenderers(k_ChangedObjects);
+                this.UpdateRenderersInSpatialHash(k_ChangedObjects);
                 m_SpatialHashContainer.Trim();
 
                 yield return null;
@@ -161,8 +158,8 @@ namespace Unity.Labs.EditorXR.Modules
         public void Shutdown()
         {
             EditorMonoBehaviour.instance.StopCoroutine(m_UpdateCoroutine);
-            if (m_SpatialHashModule != null)
-                m_SpatialHashModule.Clear();
+            if (this.HasProvider<IProvidesSpatialHash>())
+                this.ClearSpatialHash();
 
             if (m_CollisionTester != null)
                 UnityObjectUtils.Destroy(m_CollisionTester.gameObject);

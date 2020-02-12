@@ -17,7 +17,7 @@ namespace Unity.Labs.EditorXR.Core
         IModuleDependency<EditorXRDirectSelectionModule>, IInterfaceConnector,
         ISerializePreferences, IUsesConnectInterfaces, IDelayedInitializationModule, IModuleBehaviorCallbacks,
         IUsesFunctionalityInjection, IProvidesViewerScale, IProvidesViewerBody, IProvidesMoveCameraRig,
-        IProvidesGetVRPlayerObjects
+        IProvidesGetVRPlayerObjects, IUsesSpatialHash
     {
         [Serializable]
         class Preferences
@@ -101,6 +101,7 @@ namespace Unity.Labs.EditorXR.Core
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
 #endif
 
         public void ConnectDependency(EditorXRDirectSelectionModule dependency)
@@ -242,9 +243,8 @@ namespace Unity.Labs.EditorXR.Core
         {
             m_PlayerBody = EditorXRUtils.Instantiate(m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
             this.InjectFunctionalitySingle(m_PlayerBody);
-            var spatialHashModule = ModuleLoaderCore.instance.GetModule<SpatialHashModule>();
-            if (spatialHashModule != null)
-                spatialHashModule.AddRenderer(m_PlayerBody.GetComponent<Renderer>());
+            if (this.HasProvider<IProvidesSpatialHash>())
+                this.AddRendererToSpatialHash(m_PlayerBody.GetComponent<Renderer>());
 
             var playerObjects = m_PlayerBody.GetComponentsInChildren<Renderer>(true);
             foreach (var playerObject in playerObjects)

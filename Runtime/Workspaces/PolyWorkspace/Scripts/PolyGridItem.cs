@@ -9,7 +9,7 @@ using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.EditorXR.Proxies;
 using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
-using Unity.Labs.SpatialHash.Interfaces;
+using Unity.Labs.SpatialHash;
 using Unity.Labs.Utils;
 using UnityEngine;
 using UnityEngine.InputNew;
