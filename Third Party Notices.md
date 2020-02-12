@@ -3,7 +3,7 @@ This package contains third-party software components governed by the license(s)
 
 Component Name: UnityOctree
 
-License Type: Nition
+License Type: BSD 2-clause
 
 Copyright (c) 2014, Nition
 All rights reserved.
