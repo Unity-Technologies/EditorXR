@@ -8,6 +8,7 @@ using Unity.Labs.EditorXR.Modules;
 using Unity.Labs.EditorXR.Proxies;
 using Unity.Labs.EditorXR.Utilities;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.SpatialHash;
 using Unity.Labs.Utils;
 using UnityEditor;
 using UnityEngine;
@@ -92,8 +93,10 @@ namespace Unity.Labs.EditorXR.Core
             m_DirectSelectionModule = moduleLoaderCore.GetModule<EditorXRDirectSelectionModule>();
             m_SerializedPreferences = moduleLoaderCore.GetModule<SerializedPreferencesModule>();
             m_IntersectionModule = moduleLoaderCore.GetModule<IntersectionModule>();
-            if (m_IntersectionModule != null)
-                ignoreList = m_IntersectionModule.standardIgnoreList;
+
+            var selectionModule = moduleLoaderCore.GetModule<SelectionModule>();
+            if (selectionModule != null)
+                ignoreList = selectionModule.standardIgnoreList;
 
             m_ModuleParent = moduleLoaderCore.GetModuleParent().transform;
         }

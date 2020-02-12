@@ -11,10 +11,16 @@
         "Unity.Labs.ModuleLoader.Interfaces",
         "Unity.Labs.ModuleLoader",
         "Unity.Labs.EditorXR.Interfaces",
-        "UnityEngine.SpatialTracking"
+        "UnityEngine.SpatialTracking",
+        "Unity.Labs.SpatialHash.Public"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
 }

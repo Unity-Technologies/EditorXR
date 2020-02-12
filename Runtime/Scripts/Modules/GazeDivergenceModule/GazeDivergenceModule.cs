@@ -42,6 +42,9 @@ namespace Unity.Labs.EditorXR.Modules
 
         public void OnBehaviorUpdate()
         {
+            if (m_GazeSourceTransform == null)
+                return;
+
             var currentGazeSourceRotation = m_GazeSourceTransform.rotation;
             var gazeRotationDifference = Quaternion.Angle(currentGazeSourceRotation, m_PreviousGazeRotation);
             gazeRotationDifference *= gazeRotationDifference; // Square the difference for intended response curve/shape
@@ -76,6 +79,9 @@ namespace Unity.Labs.EditorXR.Modules
         /// <returns>True if the object is beyond the divergence threshold, False if it is within the defined range</returns>
         public bool IsAboveDivergenceThreshold(Transform objectToTest, float divergenceThreshold, bool disregardTemporalStability = true)
         {
+            if (m_GazeSourceTransform == null)
+                return false;
+
             var isAbove = false;
             if (disregardTemporalStability || gazeStable) // validate that the gaze is stable if disregarding temporal stability
             {

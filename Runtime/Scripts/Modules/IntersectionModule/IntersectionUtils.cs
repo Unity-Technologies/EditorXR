@@ -1,5 +1,5 @@
-using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Modules;
+using Unity.Labs.Utils;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Utilities

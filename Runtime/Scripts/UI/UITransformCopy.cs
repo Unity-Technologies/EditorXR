@@ -1,4 +1,4 @@
-using Unity.Labs.EditorXR.Extensions;
+using Unity.Labs.Utils;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Helpers

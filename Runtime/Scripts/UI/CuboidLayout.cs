@@ -1,5 +1,5 @@
-using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Utilities;
+using Unity.Labs.Utils;
 using UnityEngine;
 using UnityEngine.EventSystems;
 

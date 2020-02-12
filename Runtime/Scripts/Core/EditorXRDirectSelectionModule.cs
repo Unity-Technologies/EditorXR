@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Labs.EditorXR.Extensions;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.EditorXR.Modules;
 using Unity.Labs.EditorXR.Proxies;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEngine;
 
 namespace Unity.Labs.EditorXR.Core
