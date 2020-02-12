@@ -6,9 +6,10 @@
   "unityRelease": "14f1",
   "description": "Author XR in XR\nEditorXR provides a basic set of authoring tools and a framework for using and developing spatial authoring environments. This package adds the VR View to the Unity Editor, allowing users to take advantage of VR devices like Oculus Rift and HTC Vive in edit mode and work directly on their project and scenes in VR.\nIt is also possible to build EditorXR and its tools and workspaces into Player builds for use on devices like Oculus Quest or to incoroprate authoring components into end-user experiences.",
   "dependencies": {
-    "com.unity.labs.utils": "0.1.3-preview",
+    "com.unity.labs.utils": "0.1.4-preview",
     "com.unity.labs.module-loader": "0.1.3-preview",
     "com.unity.labs.list-view-framework": "1.1.1-preview",
+    "com.unity.labs.spatial-hash": "0.1.0-preview",
     "com.unity.xr.legacyinputhelpers": "2.0.6",
     "com.unity.labs.xrlinerenderer": "0.1.1-preview",
     "com.unity.timeline": "1.0.0",
