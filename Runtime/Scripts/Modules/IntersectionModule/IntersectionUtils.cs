@@ -302,8 +302,12 @@ namespace Unity.Labs.EditorXR.Utilities
 
         public static void SetupCollisionTester(MeshCollider collisionTester, Transform obj)
         {
+#if UNITY_2019_2_OR_NEWER
+            if (obj.TryGetComponent(out MeshFilter mf))
+#else
             var mf = obj.GetComponent<MeshFilter>();
             if (mf)
+#endif
             {
                 var mesh = mf.sharedMesh;
                 if (mesh == null)
@@ -328,8 +332,12 @@ namespace Unity.Labs.EditorXR.Utilities
                 return;
             }
 
+#if UNITY_2019_2_OR_NEWER
+            if (obj.TryGetComponent(out SkinnedMeshRenderer smr))
+#else
             var smr = obj.GetComponent<SkinnedMeshRenderer>();
             if (smr)
+#endif
             {
                 smr.BakeMesh(BakedMesh);
                 collisionTester.sharedMesh = BakedMesh;
