@@ -27,7 +27,7 @@ images:
     flavor: b1.large
   macos:
     type: Unity::VM::osx
-    image: buildfarm/mac:stable
+    image: package-ci/mac:stable
     flavor: m1.mac
 
 scripting_backends:
@@ -57,7 +57,7 @@ scripting_backends:
 {% endfor -%}
   commands:
   - pip install unity-downloader-cli --upgrade --extra-index-url https://artifactory.eu-cph-1.unityops.net/api/pypi/common-python/simple
-  - npm install upm-ci-utils@stable --registry https://api.bintray.com/npm/unity/unity-npm -g
+  - npm install upm-ci-utils@stable --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm -g
   - unity-downloader-cli --source-file unity_revision.txt {% for component in platform.components %}-c {{ component }} {% endfor %}--wait --published-only
   # TODO: upm-ci needs to support scripting backends
   - >
@@ -101,7 +101,7 @@ scripting_backends:
 {% endfor -%}
   commands:
     - pip install unity-downloader-cli --upgrade --extra-index-url https://artifactory.eu-cph-1.unityops.net/api/pypi/common-python/simple
-    - npm install upm-ci-utils@stable --registry https://api.bintray.com/npm/unity/unity-npm -g
+    - npm install upm-ci-utils@stable --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm -g
     - unity-downloader-cli --source-file unity_revision.txt {% for component in platform.components %}-c {{ component }} {% endfor %}--wait --published-only
     - >
       upm-ci
@@ -144,7 +144,7 @@ scripting_backends:
 {% endfor -%}
   commands:
     - pip install unity-downloader-cli --upgrade --extra-index-url https://artifactory.eu-cph-1.unityops.net/api/pypi/common-python/simple
-    - npm install upm-ci-utils@stable --registry https://api.bintray.com/npm/unity/unity-npm -g
+    - npm install upm-ci-utils@stable --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm -g
     - unity-downloader-cli --source-file unity_revision.txt {% for component in platform.components %}-c {{ component }} {% endfor %}--wait --published-only
     - >
       upm-ci
@@ -213,7 +213,7 @@ test_trigger:
     image: package-ci/win10:stable
     flavor: b1.large
   commands:
-    - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
+    - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
     - upm-ci package izon --tests-complete
   triggers:
     branches:
@@ -227,86 +227,6 @@ test_trigger:
 {% for platform in platforms %}
     - .yamato/package-test.yml#{{ test.name }}:{{ platform.os }}:{{ editor.version }}
     - .yamato/package-test.yml#{{ test.name }}:{{ platform.os }}:{{ test.type }}
-{% endfor %}
-{% endfor %}
-{% endfor %}
-
-{% for test in testables %}
-{% for editor in editors %}
-{% for platform in platforms %}
-dependency:{{ test.name }}:{{ platform.os }}:{{ editor.version }}:
-  name : "[{{ editor.version }},{{ platform.os }}] Dependency Test"
-  agent:
-    type: {{ images[platform.os].type }}
-    image: {{ images[platform.os].image }}
-    flavor: {{ images[platform.os].flavor }}
-  variables:
-{% if platform.os == "linux" -%}
-    PATH: /home/bokken/bin:/home/bokken/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/sbin:/home/bokken/.npm-global/bin
-    DISPLAY: ":0"
-{% endif -%}
-{% for v in template_environment_variables -%}
-    {{ v[0] }}: {{ v[1]}}
-{% endfor -%}
-  commands:
-    - pip install unity-downloader-cli --upgrade --extra-index-url https://artifactory.eu-cph-1.unityops.net/api/pypi/common-python/simple
-    - unity-downloader-cli --source-file unity_revision.txt {% for component in platform.components %}-c {{ component }} {% endfor %}--wait --published-only
-    - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
-    - >
-      upm-ci
-      {{ test.type }}
-      test
-      -u {{ editor.version }}
-      --type updated-dependencies-tests
-{% if test.type == "template" -%}
-      --project-path {{ test.path }}
-{% else -%}
-      --{{ test.type }}-path {{ test.path }}
-{% endif -%}
-  artifacts:
-    logs:
-      paths:
-        - "upm-ci~/test-results/**/*"
-  triggers:
-    recurring:
-      - branch: master
-        frequency: 20 * * ?
-  dependencies:
-    - .yamato/package-test.yml#pack:{{ test.name }}
-    - .yamato/base.yml#editor:priming:{{ editor.version }}:{{ platform.os }}
-{% for prebuild in extra_jobs.pre -%}
-    - {{ prebuild }}
-{% endfor -%}
-{% endfor %}
-{% endfor %}
-{% endfor %}
-
-{% for test in testables %}
-dependency:test:trigger:{{ test.name }}:
-  name: "[{{ test.name }}] Dependency Tests Trigger"
-  agent:
-    type: Unity::VM
-    image: package-ci/win10:stable
-    flavor: b1.large
-  variables:
-{% for v in template_environment_variables -%}
-    {{ v[0] }}: {{ v[1]}}
-{% endfor -%}
-  commands:
-    - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
-    - upm-ci {{ test.type }} izon -d
-  triggers:
-    recurring:
-      - branch: master
-        frequency: 22 * * ?
-  dependencies:
-    - .yamato/package-test.yml#pack:{{ test.name }}
-{% for prebuild in extra_jobs.pre -%}
-    - {{ prebuild }}
-{% endfor -%}
-{% for editor in editors %}
-{% for platform in platforms %}
-    - .yamato/package-test.yml#dependency:{{ test.name }}:{{ platform.os }}:{{ editor.version }}
 {% endfor %}
 {% endfor %}
 {% endfor %}
@@ -332,13 +252,12 @@ promotion:test:{{ test.name }}:{{ platform.os }}:{{ editor.version }}:
   commands:
     - pip install unity-downloader-cli --upgrade --extra-index-url https://artifactory.eu-cph-1.unityops.net/api/pypi/common-python/simple
     - unity-downloader-cli --source-file unity_revision.txt {% for component in platform.components %}-c {{ component }} {% endfor %}--wait --published-only
-    - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
+    - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
     - >
       upm-ci
       {{ test.type }}
       test
       -u {{ editor.version }}
-      --type updated-dependencies-tests
 {% if test.type == "template" -%}
       --project-path {{ test.path }}
 {% else -%}
@@ -366,7 +285,7 @@ promotion:test:trigger:{{ test.name }}:
     image: package-ci/win10:stable
     flavor: b1.large
   commands:
-    - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
+    - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
     - upm-ci {{ test.type }} izon -d
   dependencies:
     - .yamato/package-test.yml#pack:{{ test.name }}
