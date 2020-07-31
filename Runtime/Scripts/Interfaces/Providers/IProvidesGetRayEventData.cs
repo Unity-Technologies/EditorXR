@@ -1,8 +1,8 @@
-using Unity.Labs.EditorXR.Modules;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Modules;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Provide access to pointer event data

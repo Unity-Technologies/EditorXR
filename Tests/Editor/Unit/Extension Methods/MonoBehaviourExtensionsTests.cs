@@ -1,10 +1,10 @@
 using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Proxies;
+using Unity.EditorXR.Extensions;
+using Unity.EditorXR.Proxies;
 
-namespace Unity.Labs.EditorXR.Tests.Extensions
+namespace Unity.EditorXR.Tests.Extensions
 {
     public class MonoBehaviourExtensionsTests
     {

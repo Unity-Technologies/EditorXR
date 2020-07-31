@@ -1,8 +1,8 @@
 using NUnit.Framework;
 using UnityEngine;
-using Unity.Labs.EditorXR.Extensions;
+using Unity.EditorXR.Extensions;
 
-namespace Unity.Labs.EditorXR.Tests.Extensions
+namespace Unity.EditorXR.Tests.Extensions
 {
     [TestFixture]
     public class TransformExtensionsTests

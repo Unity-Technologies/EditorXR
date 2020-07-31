@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Helpers
+namespace Unity.EditorXR.Helpers
 {
     class PlayerBody : MonoBehaviour
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Flags to describe why a menu is hidden. Anything > 0 is hidden

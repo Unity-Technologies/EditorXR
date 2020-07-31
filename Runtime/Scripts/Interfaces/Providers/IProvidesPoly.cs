@@ -1,5 +1,5 @@
-using Unity.Labs.EditorXR.Workspaces;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Workspaces;
+using Unity.XRTools.ModuleLoader;
 
 #if INCLUDE_POLY_TOOLKIT
 using System;
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using PolyToolkit;
 #endif
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Provide access to the spatial hash

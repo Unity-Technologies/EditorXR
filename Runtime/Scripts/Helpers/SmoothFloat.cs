@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Helpers
+namespace Unity.EditorXR.Helpers
 {
     /// <summary>
     /// Calculates a 'smooth' values of a float based on history.

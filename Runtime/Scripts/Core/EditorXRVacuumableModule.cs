@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Modules;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Modules;
+using Unity.XRTools.ModuleLoader;
 
-namespace Unity.Labs.EditorXR.Core
+namespace Unity.EditorXR.Core
 {
     class EditorXRVacuumableModule : IModuleDependency<WorkspaceModule>
     {

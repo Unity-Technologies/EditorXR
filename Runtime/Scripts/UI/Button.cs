@@ -1,11 +1,11 @@
-using Unity.Labs.EditorXR.Modules;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.Utils.GUI;
+using Unity.EditorXR.Modules;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.Utils.GUI;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     /// <summary>
     /// Extension of UI.Button includes SelectionFlags to check for direct selection

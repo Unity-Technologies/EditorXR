@@ -1,8 +1,8 @@
 using System;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.ListView;
+using Unity.EditorXR.Interfaces;
+using Unity.ListViewFramework;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     class EditorXRListViewItem<TData, TIndex> : ListViewItem<TData, TIndex> where TData : IListViewItemData<TIndex>
     {

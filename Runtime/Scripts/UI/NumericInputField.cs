@@ -1,8 +1,8 @@
-using Unity.Labs.EditorXR.Utilities;
+using Unity.EditorXR.Utilities;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     sealed class NumericInputField : InputField
     {

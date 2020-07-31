@@ -1,8 +1,8 @@
-using Unity.Labs.EditorXR.Modules;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Modules;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Gives decorated class the ability to add get pointer event data  from the system

@@ -1,23 +1,23 @@
 using System;
 using System.Collections;
 using System.Threading;
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Handles;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.UI;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Extensions;
+using Unity.EditorXR.Handles;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.UI;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 
 #if INCLUDE_POLY_TOOLKIT
 using System.Collections.Generic;
 using PolyToolkit;
 #else
-using Unity.Labs.EditorXR.Core;
+using Unity.EditorXR.Core;
 using UnityEngine.InputNew;
 #endif
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
 #if INCLUDE_POLY_TOOLKIT
     [MainMenuItem("Poly", "Workspaces", "Import models from Google Poly")]

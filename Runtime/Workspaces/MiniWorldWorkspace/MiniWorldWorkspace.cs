@@ -1,21 +1,21 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Proxies;
-using Unity.Labs.EditorXR.UI;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Core;
+using Unity.EditorXR.Extensions;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Proxies;
+using Unity.EditorXR.UI;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.Utils;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
 using Button = UnityEngine.UI.Button;
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
     [MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)", typeof(MiniWorldTooltip))]
     [SpatialMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]

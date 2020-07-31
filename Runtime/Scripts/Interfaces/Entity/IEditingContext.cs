@@ -1,4 +1,4 @@
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Implement this interface to create an editing context. You can also specify your own custom

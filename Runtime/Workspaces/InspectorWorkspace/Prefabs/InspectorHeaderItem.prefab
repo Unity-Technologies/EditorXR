@@ -2439,7 +2439,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 1
-    m_TypeName: Unity.Labs.EditorXR.UI.InputField+OnChangeEvent, Unity.Labs.EditorXR,
+    m_TypeName: Unity.EditorXR.UI.InputField+OnChangeEvent, Unity.EditorXR,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114993591381409866}
   m_CharacterLimit: 0

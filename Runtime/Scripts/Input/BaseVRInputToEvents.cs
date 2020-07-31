@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.XR;
 
-namespace Unity.Labs.EditorXR.Input
+namespace Unity.EditorXR.Input
 {
     abstract class BaseVRInputToEvents : BaseInputToEvents
     {

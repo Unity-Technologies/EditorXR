@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Interfaces;
+using Unity.XRTools.Utils;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Unity.Labs.EditorXR.Tools
+namespace Unity.EditorXR.Tools
 {
     class BrushSizeUI : MonoBehaviour, IAlternateMenu
     {

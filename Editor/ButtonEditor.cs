@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     // Because Button already has a custom editor, and we need to expose SelectionFlags, we need a custom inspector
     [CustomEditor(typeof(Button))]

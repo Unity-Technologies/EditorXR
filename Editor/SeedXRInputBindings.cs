@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEditor;
 
 // Copied from UnityEditor.XR.LegacyInputHelpers
-namespace Unity.Labs.EditorXR.LegacyInputHelpers
+namespace Unity.EditorXR.LegacyInputHelpers
 {
     /// <summary>
     /// The SeedXRInputBindings class is used to populate the Input Asset with the cross platform bindings published by Unity for most XR Devices.

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Unity.Labs.ListView;
+using Unity.ListViewFramework;
 
-namespace Unity.Labs.EditorXR.Data
+namespace Unity.EditorXR.Data
 {
     sealed class FolderData : NestedListViewItemData<FolderData, int>
     {

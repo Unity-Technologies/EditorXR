@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Labs.EditorXR.Data;
-using Unity.Labs.EditorXR.UI;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Data;
+using Unity.EditorXR.UI;
+using Unity.XRTools.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
     sealed class FolderListViewController : EditorXRNestedListViewController<FolderData, FolderListItem, int>
     {
@@ -88,7 +88,7 @@ namespace Unity.Labs.EditorXR.Workspaces
 
             ClipText.SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix, m_Extents);
 
-            UpdateItem(item, order, offset, ref doneSettling);
+            UpdateItem(item, order, offset, false, ref doneSettling);
         }
 
         protected override void UpdateNestedItems(ref int order, ref float offset, ref bool doneSettling, int depth = 0)

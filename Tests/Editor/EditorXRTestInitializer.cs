@@ -1,8 +1,8 @@
 using NUnit.Framework;
-using Unity.Labs.EditorXR.Core;
+using Unity.EditorXR.Core;
 using UnityEditor;
 
-namespace Unity.Labs.EditorXR.Tests.Core
+namespace Unity.EditorXR.Tests.Core
 {
     [SetUpFixture]
     public class EditorXRTestInitializer

@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Extensions;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
     sealed class MiniWorld : MonoBehaviour, IMiniWorld
     {

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     sealed class DefaultToggleGroup : MonoBehaviour
     {

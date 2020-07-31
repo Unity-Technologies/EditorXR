@@ -1,7 +1,7 @@
-using Unity.Labs.ModuleLoader;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Provide access to checks that can test against the viewer's body

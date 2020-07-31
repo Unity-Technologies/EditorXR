@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Interfaces;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Get all open workspaces

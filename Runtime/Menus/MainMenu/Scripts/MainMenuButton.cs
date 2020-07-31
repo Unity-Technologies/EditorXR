@@ -1,12 +1,12 @@
 using System;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Modules;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Modules;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Unity.Labs.EditorXR.Menus
+namespace Unity.EditorXR.Menus
 {
     sealed class MainMenuButton : MainMenuSelectable, ITooltip, IRayEnterHandler, IRayExitHandler, IPointerClickHandler
     {

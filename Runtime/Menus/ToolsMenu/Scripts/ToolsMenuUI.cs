@@ -2,14 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Tools;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Extensions;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Tools;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Menus
+namespace Unity.EditorXR.Menus
 {
     sealed class ToolsMenuUI : MonoBehaviour, IUsesViewerScale, IInstantiateUI,
         IUsesConnectInterfaces, IUsesControlSpatialHinting, IUsesRayOrigin, IUsesStencilRef

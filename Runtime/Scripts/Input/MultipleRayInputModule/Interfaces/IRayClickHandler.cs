@@ -1,6 +1,6 @@
 using UnityEngine.EventSystems;
 
-namespace Unity.Labs.EditorXR.Modules
+namespace Unity.EditorXR.Modules
 {
     /// <summary>
     /// Decorates objects with functionality to detect RayClick events

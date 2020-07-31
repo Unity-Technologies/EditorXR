@@ -1,7 +1,7 @@
 {
-    "name": "Unity.Labs.EditorXR.Interfaces",
+    "name": "Unity.EditorXR.Interfaces",
     "references": [
-        "Unity.Labs.ModuleLoader.Interfaces",
+        "Unity.XRTools.ModuleLoader.Interfaces",
         "input-prototype"
     ],
     "optionalUnityReferences": [],

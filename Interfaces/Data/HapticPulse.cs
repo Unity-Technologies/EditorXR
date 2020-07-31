@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Core
+namespace Unity.EditorXR.Core
 {
     /// <summary>
     /// Serialized data to describe a haptic pulse

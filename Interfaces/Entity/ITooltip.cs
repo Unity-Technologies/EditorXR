@@ -1,4 +1,4 @@
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Decorates classes which can specify tool tip information

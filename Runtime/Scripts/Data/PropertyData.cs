@@ -7,7 +7,7 @@ class SerializedProperty
 }
 #endif
 
-namespace Unity.Labs.EditorXR.Data
+namespace Unity.EditorXR.Data
 {
     sealed class PropertyData : InspectorData
     {

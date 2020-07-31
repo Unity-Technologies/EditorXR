@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Interfaces;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Declares a class as being a proxy for an input device

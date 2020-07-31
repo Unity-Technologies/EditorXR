@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     [ActionMenuItem("SaveScene", "Scene")]
     sealed class SaveScene : BaseAction

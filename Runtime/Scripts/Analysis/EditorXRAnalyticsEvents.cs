@@ -2,7 +2,7 @@
 using System;
 // ReSharper disable InconsistentNaming
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     [Serializable]
     abstract class EditorEventArgs

@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     [ActionMenuItem("Cut", ActionMenuItemAttribute.DefaultActionSectionName, 4)]
     [SpatialMenuItem("Cut", "Actions", "Cut the selected object")]

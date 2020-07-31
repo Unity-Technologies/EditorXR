@@ -1,12 +1,12 @@
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Interfaces;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 #endif
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
     class PolyGridViewController : EditorXRListViewController<PolyGridAsset, PolyGridItem, string>, IUsesPoly
     {

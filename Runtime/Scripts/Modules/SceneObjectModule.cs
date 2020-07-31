@@ -1,14 +1,14 @@
 using System.Collections;
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.SpatialHash;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Core;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.SpatialHash;
+using Unity.XRTools.Utils;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Modules
+namespace Unity.EditorXR.Modules
 {
     sealed class SceneObjectModule : IModule, IProvidesPlaceSceneObject,
         IProvidesPlaceSceneObjects, IProvidesDeleteSceneObject, IUsesSpatialHash

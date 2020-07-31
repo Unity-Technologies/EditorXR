@@ -1,12 +1,12 @@
 using System.Collections;
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Extensions;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Menus
+namespace Unity.EditorXR.Menus
 {
     sealed class UndoMenuUI : MonoBehaviour, IUsesConnectInterfaces
     {

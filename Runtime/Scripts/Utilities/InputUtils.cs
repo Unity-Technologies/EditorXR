@@ -2,7 +2,7 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.InputNew;
 
-namespace Unity.Labs.EditorXR.Utilities
+namespace Unity.EditorXR.Utilities
 {
     class BindingDictionary : Dictionary<string, List<VRInputDevice.VRControl>>
     {

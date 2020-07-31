@@ -1,16 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Helpers;
-using Unity.Labs.EditorXR.Input;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Core;
+using Unity.EditorXR.Helpers;
+using Unity.EditorXR.Input;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace Unity.Labs.EditorXR.Proxies
+namespace Unity.EditorXR.Proxies
 {
     /// <summary>
     /// Which cardinal direction a proxy node is facing

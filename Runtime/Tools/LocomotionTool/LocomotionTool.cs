@@ -1,18 +1,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Proxies;
-using Unity.Labs.EditorXR.UI;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Core;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Proxies;
+using Unity.EditorXR.UI;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.Utils;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
 
-namespace Unity.Labs.EditorXR.Tools
+namespace Unity.EditorXR.Tools
 {
     sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IUsesRayVisibilitySettings,
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,

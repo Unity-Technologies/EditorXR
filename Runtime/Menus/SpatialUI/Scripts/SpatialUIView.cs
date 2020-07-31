@@ -1,9 +1,9 @@
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Core;
+using Unity.EditorXR.Interfaces;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Menus
+namespace Unity.EditorXR.Menus
 {
     /// <summary>
     /// Mandates that derived classes implement core SpatialUI implementation

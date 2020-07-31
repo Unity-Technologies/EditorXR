@@ -1,18 +1,18 @@
 {
-    "name": "Unity.Labs.EditorXR",
+    "name": "Unity.EditorXR",
     "references": [
         "input-prototype",
-        "Unity.Labs.XRLineRenderer",
+        "Unity.XRLineRenderer",
         "Unity.TextMeshPro",
         "PolyToolkit",
-        "Unity.Labs.Utils",
-        "Unity.Labs.Utils.Editor",
-        "Unity.Labs.ListViewFramework",
-        "Unity.Labs.ModuleLoader.Interfaces",
-        "Unity.Labs.ModuleLoader",
-        "Unity.Labs.EditorXR.Interfaces",
+        "Unity.XRTools.Utils",
+        "Unity.XRTools.Utils.Editor",
+        "Unity.ListViewFramework",
+        "Unity.XRTools.ModuleLoader.Interfaces",
+        "Unity.XRTools.ModuleLoader",
+        "Unity.EditorXR.Interfaces",
         "UnityEngine.SpatialTracking",
-        "Unity.Labs.SpatialHash.Public"
+        "Unity.XRTools.SpatialHash.Public"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],

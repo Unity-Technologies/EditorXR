@@ -1,8 +1,8 @@
 using System;
-using Unity.Labs.ModuleLoader;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Gives decorated class access to tool selection

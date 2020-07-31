@@ -1,9 +1,9 @@
 using System;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Modules;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Modules;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Gives decorated class ability to control/perform spatial-scrolling

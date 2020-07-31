@@ -1,10 +1,10 @@
 using System;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Interfaces;
+using Unity.XRTools.ModuleLoader;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     [ActionMenuItem("Delete", ActionMenuItemAttribute.DefaultActionSectionName, 7)]
     [SpatialMenuItem("Delete", "Actions", "Delete the selected object")]

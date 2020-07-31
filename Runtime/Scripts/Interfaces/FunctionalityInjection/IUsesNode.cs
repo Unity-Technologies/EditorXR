@@ -1,6 +1,6 @@
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Interfaces;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Adds Node information to determine which hand the tool is attached to

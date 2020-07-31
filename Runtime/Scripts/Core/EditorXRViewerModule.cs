@@ -1,17 +1,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Helpers;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Modules;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.SpatialHash;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Helpers;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Modules;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.SpatialHash;
+using Unity.XRTools.Utils;
 using UnityEngine;
 using UnityEngine.XR;
 
-namespace Unity.Labs.EditorXR.Core
+namespace Unity.EditorXR.Core
 {
     class EditorXRViewerModule : ScriptableSettings<EditorXRViewerModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IInterfaceConnector,

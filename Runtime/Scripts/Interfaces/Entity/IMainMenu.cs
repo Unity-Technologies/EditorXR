@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Interfaces;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// The main menu that can be shown on device proxies

@@ -1,9 +1,9 @@
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.Utils;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     sealed class CuboidLayout : UIBehaviour
     {

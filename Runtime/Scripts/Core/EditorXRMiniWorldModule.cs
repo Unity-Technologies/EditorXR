@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Modules;
-using Unity.Labs.EditorXR.Proxies;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.EditorXR.Workspaces;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.SpatialHash;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Modules;
+using Unity.EditorXR.Proxies;
+using Unity.EditorXR.Utilities;
+using Unity.EditorXR.Workspaces;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.SpatialHash;
+using Unity.XRTools.Utils;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Core
+namespace Unity.EditorXR.Core
 {
     class EditorXRMiniWorldModule : IModuleDependency<EditorXRToolModule>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<HighlightModule>, IModuleDependency<IntersectionModule>, IModuleDependency<WorkspaceModule>,

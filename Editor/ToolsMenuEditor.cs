@@ -1,8 +1,8 @@
-using Unity.Labs.EditorXR.Menus;
+using Unity.EditorXR.Menus;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     [CustomEditor(typeof(ToolsMenu))]
     class ToolsMenuEditor : Editor

@@ -1,15 +1,15 @@
 using System;
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Interfaces;
 using UnityEngine;
-using Unity.Labs.ListView;
+using Unity.ListViewFramework;
 
-using Unity.Labs.ModuleLoader;
+using Unity.XRTools.ModuleLoader;
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 using UnityEngine.Networking;
 #endif
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
     class PolyGridAsset : IListViewItemData<string>, IUsesWeb
     {

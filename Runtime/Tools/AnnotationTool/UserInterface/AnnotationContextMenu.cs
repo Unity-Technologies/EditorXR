@@ -1,10 +1,10 @@
 using System;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Interfaces;
+using Unity.XRTools.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Unity.Labs.EditorXR.Tools
+namespace Unity.EditorXR.Tools
 {
     sealed class AnnotationContextMenu : MonoBehaviour, IMenu
     {

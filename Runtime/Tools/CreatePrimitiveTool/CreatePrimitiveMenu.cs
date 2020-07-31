@@ -1,13 +1,13 @@
 using System;
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Menus;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Core;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Menus;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Tools
+namespace Unity.EditorXR.Tools
 {
     sealed class CreatePrimitiveMenu : MonoBehaviour, IMenu, IUsesControlHaptics, IRayToNode
     {

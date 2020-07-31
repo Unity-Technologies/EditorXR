@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Unity.Labs.EditorXR.Modules
+namespace Unity.EditorXR.Modules
 {
     sealed class TooltipUI : MonoBehaviour, IWillRender
     {

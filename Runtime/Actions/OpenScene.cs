@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     [ActionMenuItem("OpenScene", "Scene")]
     sealed class OpenScene : BaseAction

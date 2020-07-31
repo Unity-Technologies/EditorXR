@@ -1,4 +1,4 @@
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Implementors can receive IDroppables

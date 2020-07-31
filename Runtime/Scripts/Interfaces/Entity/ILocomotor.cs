@@ -1,4 +1,4 @@
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Decorates a class as a locomotion implementer that uses the camera rig

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Core
+namespace Unity.EditorXR.Core
 {
     [CreateAssetMenu(menuName = "EditorXR/Proxy Affordance Map", fileName = "NewProxyAffordanceMap.asset")]
     class ProxyAffordanceMap : ScriptableObject

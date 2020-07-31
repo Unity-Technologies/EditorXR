@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Modules;
-using Unity.Labs.EditorXR.Proxies;
+using Unity.EditorXR.Modules;
+using Unity.EditorXR.Proxies;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,7 +11,7 @@ using UnityEngine.UIElements;
 using UnityEngine.Experimental.UIElements;
 #endif
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     class ProxyFeedbackSettingsProvider : EditorXRSettingsProvider
     {

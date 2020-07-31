@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Interfaces;
+using Unity.XRTools.ModuleLoader;
 
-namespace Unity.Labs.EditorXR.Core
+namespace Unity.EditorXR.Core
 {
     [ImmortalModule]
     [ModuleOrder(ModuleOrders.InterfaceModule)]

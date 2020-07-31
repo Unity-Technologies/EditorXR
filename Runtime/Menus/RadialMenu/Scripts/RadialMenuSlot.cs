@@ -1,15 +1,15 @@
 using System;
 using System.Collections;
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Helpers;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Modules;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Extensions;
+using Unity.EditorXR.Helpers;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Modules;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Unity.Labs.EditorXR.Menus
+namespace Unity.EditorXR.Menus
 {
     sealed class RadialMenuSlot : MonoBehaviour, IUsesSetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler
     {

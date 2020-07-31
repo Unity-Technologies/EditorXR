@@ -1,15 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Handles;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ListView;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Core;
+using Unity.EditorXR.Handles;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Utilities;
+using Unity.ListViewFramework;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
     class DraggableListItem<TData, TIndex> : EditorXRListViewItem<TData, TIndex>, IUsesGetPreviewOrigin, IUsesViewerScale,
         IRayToNode where TData : IListViewItemData<TIndex>

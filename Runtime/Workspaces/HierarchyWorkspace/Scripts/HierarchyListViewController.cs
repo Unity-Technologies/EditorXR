@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Labs.EditorXR.Handles;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.UI;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Handles;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.UI;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
     sealed class HierarchyListViewController : EditorXRNestedListViewController<HierarchyData, HierarchyListItem, int>, IUsesGameObjectLocking, IUsesSetHighlight
     {
@@ -221,7 +221,7 @@ namespace Unity.Labs.EditorXR.Workspaces
             ClipText.SetMaterialClip(item.dropZoneMaterial, worldToLocalMatrix, m_Extents);
 
             m_VisibleItemHeight += itemSize.z;
-            UpdateItem(item, order, offset + m_ScrollOffset, ref doneSettling);
+            UpdateItem(item, order, offset + m_ScrollOffset, false, ref doneSettling);
 
             var extraSpace = item.extraSpace * itemSize.z;
             offset += extraSpace;

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Decorates types that can provide a sub-menu on the Settings menu. The class should also use a MainMenuItemAttribute

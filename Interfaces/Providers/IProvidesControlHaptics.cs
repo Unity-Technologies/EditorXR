@@ -1,7 +1,7 @@
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Core;
+using Unity.XRTools.ModuleLoader;
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Provides the ability to control haptic feedback

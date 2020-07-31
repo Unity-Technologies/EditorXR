@@ -1,7 +1,7 @@
 using System;
-using Unity.Labs.ModuleLoader;
+using Unity.XRTools.ModuleLoader;
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Provide the ability to create workspaces

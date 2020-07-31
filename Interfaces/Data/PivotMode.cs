@@ -1,5 +1,5 @@
 #if !UNITY_EDITOR
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Where is the tool handle placed.

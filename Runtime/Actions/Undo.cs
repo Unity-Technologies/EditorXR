@@ -1,4 +1,4 @@
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     [ActionMenuItem("Undo", ActionMenuItemAttribute.DefaultActionSectionName, 2)]
     [SpatialMenuItem("Undo", "Actions", "Undo the previous action")]

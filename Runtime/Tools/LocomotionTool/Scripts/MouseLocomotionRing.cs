@@ -1,9 +1,9 @@
 using TMPro;
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Core;
+using Unity.XRTools.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     class MouseLocomotionRing : MonoBehaviour
     {

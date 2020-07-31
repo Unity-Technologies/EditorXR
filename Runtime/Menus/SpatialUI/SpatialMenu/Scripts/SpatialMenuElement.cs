@@ -1,12 +1,12 @@
 using System;
 using TMPro;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Modules;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Modules;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Abstract class housing common SpatialMenu element functionality

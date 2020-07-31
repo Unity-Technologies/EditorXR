@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Implementors receive a filtered list of types found

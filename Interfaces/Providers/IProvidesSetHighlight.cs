@@ -1,8 +1,8 @@
 using System.Collections;
-using Unity.Labs.ModuleLoader;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Provide control of scene object highlighting

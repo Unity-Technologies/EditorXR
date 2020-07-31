@@ -1,7 +1,7 @@
 using System;
 using UnityEngine.XR;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     enum DeviceType
     {

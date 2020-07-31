@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Core;
+using Unity.EditorXR.Interfaces;
+using Unity.XRTools.ModuleLoader;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Modules
+namespace Unity.EditorXR.Modules
 {
 #if UNITY_EDITOR
     sealed class HierarchyModule : IDelayedInitializationModule, ISelectionChanged, IInterfaceConnector

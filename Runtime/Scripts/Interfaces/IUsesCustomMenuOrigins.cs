@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Provides access to transform roots for custom menus

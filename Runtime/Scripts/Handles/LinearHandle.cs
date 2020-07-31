@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Modules;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.Utils.GUI;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Modules;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.Utils.GUI;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Handles
+namespace Unity.EditorXR.Handles
 {
     sealed class LinearHandle : BaseHandle, IAxisConstraints, IUsesViewerScale
     {

@@ -1,11 +1,11 @@
-using Unity.Labs.EditorXR.Modules;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.Utils.GUI;
+using Unity.EditorXR.Modules;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.Utils.GUI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     sealed class RaySlider : Slider, ISelectionFlags
     {

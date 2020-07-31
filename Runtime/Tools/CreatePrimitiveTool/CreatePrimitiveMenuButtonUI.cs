@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Tools
+namespace Unity.EditorXR.Tools
 {
     sealed class CreatePrimitiveMenuButtonUI : MonoBehaviour
     {

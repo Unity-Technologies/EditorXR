@@ -1,9 +1,9 @@
 using System;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.Utils.GUI;
+using Unity.EditorXR.Interfaces;
+using Unity.XRTools.Utils.GUI;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Core
+namespace Unity.EditorXR.Core
 {
     /// <summary>
     /// Definition containing data utilized to change the translation/rotation of an affordance

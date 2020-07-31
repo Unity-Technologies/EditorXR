@@ -2,7 +2,7 @@ using System;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Unity.Labs.EditorXR.Tools
+namespace Unity.EditorXR.Tools
 {
     class ColorPickerSquareUI : Selectable, IDragHandler, IBeginDragHandler, IEndDragHandler
     {

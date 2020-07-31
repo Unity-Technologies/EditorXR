@@ -1,7 +1,7 @@
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Interfaces;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     /// <summary>
     /// Place on an object that receives UI events to set a tooltip on it

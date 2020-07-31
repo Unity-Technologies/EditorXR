@@ -1,9 +1,9 @@
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Menus;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Menus;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     [CustomEditor(typeof(MainMenu))]
     class MainMenuEditor : Editor

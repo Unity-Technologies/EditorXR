@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine.Analytics;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     abstract class EditorXREvent
     {

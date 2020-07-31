@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Interfaces;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Core
+namespace Unity.EditorXR.Core
 {
     class EditorXRToolsMenuModule : IModuleDependency<EditorXRRayModule>,
         IModuleDependency<EditorXRToolModule>, IModuleDependency<EditorXRMenuModule>, IProvidesPreviewInToolMenuButton

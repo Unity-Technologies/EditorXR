@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Exposes a property used to provide a hierarchy of scene objects to the object

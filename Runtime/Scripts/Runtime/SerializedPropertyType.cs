@@ -1,5 +1,5 @@
 #if !UNITY_EDITOR
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     enum SerializedPropertyType
     {

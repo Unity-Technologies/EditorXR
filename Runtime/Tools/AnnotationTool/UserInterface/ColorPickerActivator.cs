@@ -1,11 +1,11 @@
 using System;
 using System.Collections;
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Extensions;
+using Unity.EditorXR.Interfaces;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace Unity.Labs.EditorXR.Tools
+namespace Unity.EditorXR.Tools
 {
     class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
     {

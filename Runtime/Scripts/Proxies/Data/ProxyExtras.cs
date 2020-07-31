@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Interfaces;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Helpers
+namespace Unity.EditorXR.Helpers
 {
     /// <summary>
     /// Spawn additional objects around a proxy node
