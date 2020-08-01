@@ -9,9 +9,9 @@
     "com.unity.xrtools.utils": "1.0.1",
     "com.unity.xrtools.module-loader": "1.0.1",
     "com.unity.list-view-framework": "1.1.2-preview",
-    "com.unity.xrtools.spatial-hash": "0.1.0-preview",
+    "com.unity.xrtools.spatial-hash": "0.1.2-preview",
     "com.unity.xr.legacyinputhelpers": "2.0.6",
-    "com.unity.xr-line-renderer": "0.1.1-preview",
+    "com.unity.xr-line-renderer": "0.1.2-preview",
     "com.unity.timeline": "1.0.0",
     "com.unity.textmeshpro": "2.0.1"
   }
