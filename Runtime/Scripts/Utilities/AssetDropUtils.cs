@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Data;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Data;
+using Unity.XRTools.Utils;
 using UnityEngine;
 using UnityEngine.Video;
 
@@ -9,7 +9,7 @@ using UnityEngine.Video;
 using UnityEditor;
 #endif
 
-namespace Unity.Labs.EditorXR.Utilities
+namespace Unity.EditorXR.Utilities
 {
     static class AssetDropUtils
     {

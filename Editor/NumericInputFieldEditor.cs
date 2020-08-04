@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     [CustomEditor(typeof(NumericInputField))]
     [CanEditMultipleObjects]

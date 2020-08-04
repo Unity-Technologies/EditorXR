@@ -1,13 +1,13 @@
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Data;
-using Unity.Labs.EditorXR.Handles;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Data;
+using Unity.EditorXR.Handles;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
 #if UNITY_EDITOR
     [MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]

@@ -1,6 +1,6 @@
-using Unity.Labs.ModuleLoader;
+using Unity.XRTools.ModuleLoader;
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Provide the ability to request a stencil reference

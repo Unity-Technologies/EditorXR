@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     [ActionMenuItem("Copy", ActionMenuItemAttribute.DefaultActionSectionName, 5)]
     [SpatialMenuItem("Copy", "Actions", "Copy the selected object")]

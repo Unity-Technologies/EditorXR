@@ -1,11 +1,11 @@
 using System;
 using TMPro;
-using Unity.Labs.EditorXR.Data;
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Data;
+using Unity.EditorXR.Interfaces;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
     abstract class InspectorPropertyItem : InspectorListItem
     {

@@ -1,8 +1,8 @@
 using System;
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Interfaces;
 using UnityEngine.InputNew;
 
-namespace Unity.Labs.EditorXR.Proxies
+namespace Unity.EditorXR.Proxies
 {
     using VRControl = VRInputDevice.VRControl;
 

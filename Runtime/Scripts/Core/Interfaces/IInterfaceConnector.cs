@@ -1,4 +1,4 @@
-namespace Unity.Labs.EditorXR.Core
+namespace Unity.EditorXR.Core
 {
     interface IInterfaceConnector
     {

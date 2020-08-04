@@ -1,10 +1,10 @@
 using System;
-using Unity.Labs.EditorXR.Data;
-using Unity.Labs.EditorXR.UI;
+using Unity.EditorXR.Data;
+using Unity.EditorXR.UI;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
     sealed class InspectorVectorItem : InspectorPropertyItem
     {

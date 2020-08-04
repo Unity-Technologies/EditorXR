@@ -1,6 +1,6 @@
 using System;
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     /// <summary>
     /// What type of interaction is considered a selection:

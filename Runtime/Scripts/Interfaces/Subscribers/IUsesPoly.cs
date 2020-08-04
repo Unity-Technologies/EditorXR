@@ -1,13 +1,13 @@
-using Unity.Labs.ModuleLoader;
+using Unity.XRTools.ModuleLoader;
 
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 using System;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Workspaces;
+using Unity.EditorXR.Workspaces;
 #endif
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Gives decorated class access to viewer scale

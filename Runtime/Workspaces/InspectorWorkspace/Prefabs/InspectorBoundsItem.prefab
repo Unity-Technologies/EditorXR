@@ -920,7 +920,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Unity.Labs.EditorXR.UI.InputField+OnChangeEvent, Unity.Labs.EditorXR,
+    m_TypeName: Unity.EditorXR.UI.InputField+OnChangeEvent, Unity.EditorXR,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114944808814012386}
   m_CharacterLimit: 0
@@ -2152,7 +2152,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Unity.Labs.EditorXR.UI.InputField+OnChangeEvent, Unity.Labs.EditorXR,
+    m_TypeName: Unity.EditorXR.UI.InputField+OnChangeEvent, Unity.EditorXR,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114104749296456768}
   m_CharacterLimit: 0
@@ -2278,7 +2278,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Unity.Labs.EditorXR.UI.InputField+OnChangeEvent, Unity.Labs.EditorXR,
+    m_TypeName: Unity.EditorXR.UI.InputField+OnChangeEvent, Unity.EditorXR,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114692371002903084}
   m_CharacterLimit: 0
@@ -2492,7 +2492,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Unity.Labs.EditorXR.UI.InputField+OnChangeEvent, Unity.Labs.EditorXR,
+    m_TypeName: Unity.EditorXR.UI.InputField+OnChangeEvent, Unity.EditorXR,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114422673207534042}
   m_CharacterLimit: 0
@@ -3836,7 +3836,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Unity.Labs.EditorXR.UI.InputField+OnChangeEvent, Unity.Labs.EditorXR,
+    m_TypeName: Unity.EditorXR.UI.InputField+OnChangeEvent, Unity.EditorXR,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114962198023033020}
   m_CharacterLimit: 0
@@ -3962,7 +3962,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Unity.Labs.EditorXR.UI.InputField+OnChangeEvent, Unity.Labs.EditorXR,
+    m_TypeName: Unity.EditorXR.UI.InputField+OnChangeEvent, Unity.EditorXR,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114933559999214812}
   m_CharacterLimit: 0

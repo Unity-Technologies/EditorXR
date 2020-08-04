@@ -1,12 +1,12 @@
 using System;
 using System.Reflection;
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Core;
+using Unity.EditorXR.Interfaces;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace Unity.Labs.EditorXR.Menus
+namespace Unity.EditorXR.Menus
 {
     /// <summary>
     /// Mandates that derived classes implement core required SpatialUI controller functionality

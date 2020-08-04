@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 #endif
 
-namespace Unity.Labs.EditorXR.Helpers
+namespace Unity.EditorXR.Helpers
 {
 #if UNITY_EDITOR
     /// <summary>

@@ -1,6 +1,6 @@
 using UnityEngine.InputNew;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Provided to a tool for device input (e.g. position / rotation)

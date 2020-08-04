@@ -1,10 +1,10 @@
 using System;
-using Unity.Labs.Utils;
+using Unity.XRTools.Utils;
 using UnityEditor;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
-namespace Unity.Labs.EditorXR.Utilities
+namespace Unity.EditorXR.Utilities
 {
     static class EditorXRUtils
     {

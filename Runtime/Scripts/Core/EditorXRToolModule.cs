@@ -1,19 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Labs.EditorXR;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Menus;
-using Unity.Labs.EditorXR.Modules;
-using Unity.Labs.EditorXR.Tools;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.Utils;
+using Unity.EditorXR;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Menus;
+using Unity.EditorXR.Modules;
+using Unity.EditorXR.Tools;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.Utils;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace Unity.Labs.EditorXR.Core
+namespace Unity.EditorXR.Core
 {
     class ToolData
     {

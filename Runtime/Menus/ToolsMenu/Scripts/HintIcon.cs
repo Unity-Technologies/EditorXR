@@ -1,11 +1,11 @@
 using System.Collections;
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Utilities;
+using Unity.EditorXR.Extensions;
+using Unity.EditorXR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
-namespace Unity.Labs.EditorXR.Menus
+namespace Unity.EditorXR.Menus
 {
     class HintIcon : MonoBehaviour
     {

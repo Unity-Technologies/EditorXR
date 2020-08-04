@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Core
+namespace Unity.EditorXR.Core
 {
     /// <summary>
     /// Definition containing data utilized to change the visual appearance of an affordance for various actions

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Unity.Labs.ModuleLoader;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Provide access to direct selection

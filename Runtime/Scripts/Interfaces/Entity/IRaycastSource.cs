@@ -1,7 +1,7 @@
-using Unity.Labs.EditorXR.Modules;
+using Unity.EditorXR.Modules;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Declares a class as being a source for the MultipleRayInputModule

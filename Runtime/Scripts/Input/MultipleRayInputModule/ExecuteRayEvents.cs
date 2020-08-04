@@ -1,6 +1,6 @@
 using UnityEngine.EventSystems;
 
-namespace Unity.Labs.EditorXR.Modules
+namespace Unity.EditorXR.Modules
 {
     static class ExecuteRayEvents
     {

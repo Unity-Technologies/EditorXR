@@ -1,17 +1,17 @@
 using System;
 using System.Collections;
 using System.Text;
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Helpers;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.UI;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Extensions;
+using Unity.EditorXR.Helpers;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.UI;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Unity.Labs.EditorXR.Menus
+namespace Unity.EditorXR.Menus
 {
     sealed class ToolsMenuButton : MonoBehaviour, IToolsMenuButton, ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,
         IUsesFunctionalityInjection

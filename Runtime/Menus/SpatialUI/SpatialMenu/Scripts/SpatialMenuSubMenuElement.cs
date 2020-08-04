@@ -1,15 +1,15 @@
 using System;
 using System.Collections;
 using TMPro;
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Core;
+using Unity.EditorXR.Extensions;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     sealed class SpatialMenuSubMenuElement : SpatialMenuElement
     {

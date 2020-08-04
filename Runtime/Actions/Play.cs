@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     [ActionMenuItem("Play")]
     [SpatialMenuItem("Play", "Actions", "Enter Play-Mode")]

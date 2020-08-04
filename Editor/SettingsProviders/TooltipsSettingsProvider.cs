@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Interfaces;
+using Unity.XRTools.Utils;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 using UnityEngine.Experimental.UIElements;
 #endif
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     class TooltipsSettingsProvider : EditorXRSettingsProvider
     {

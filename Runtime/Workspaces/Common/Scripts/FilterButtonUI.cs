@@ -1,12 +1,12 @@
 using System;
 using TMPro;
-using Unity.Labs.EditorXR.Modules;
+using Unity.EditorXR.Modules;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using Button = Unity.Labs.EditorXR.UI.Button;
+using Button = Unity.EditorXR.UI.Button;
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
     sealed class FilterButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IRayEnterHandler
     {

@@ -1,12 +1,12 @@
 {
-    "name": "Unity.Labs.EditorXR.Editor",
+    "name": "Unity.EditorXR.Editor",
     "references": [
-        "Unity.Labs.EditorXR",
+        "Unity.EditorXR",
         "Unity.TextMeshPro",
-        "Unity.Labs.Utils",
-        "Unity.Labs.EditorXR.Interfaces",
-        "Unity.Labs.ModuleLoader.Interfaces",
-        "Unity.Labs.ModuleLoader"
+        "Unity.XRTools.Utils",
+        "Unity.EditorXR.Interfaces",
+        "Unity.XRTools.ModuleLoader.Interfaces",
+        "Unity.XRTools.ModuleLoader"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [

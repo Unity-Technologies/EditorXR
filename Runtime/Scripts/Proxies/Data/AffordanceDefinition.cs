@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace Unity.Labs.EditorXR.Core
+namespace Unity.EditorXR.Core
 {
     /// <summary>
     /// Definition containing data that represents this affordance

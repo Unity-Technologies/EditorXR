@@ -1,8 +1,8 @@
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Interfaces;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace Unity.Labs.EditorXR.Modules
+namespace Unity.EditorXR.Modules
 {
     sealed class RayEventData : PointerEventData
     {

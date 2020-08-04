@@ -1,11 +1,11 @@
 using System;
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Helpers;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Core;
+using Unity.EditorXR.Helpers;
+using Unity.EditorXR.Interfaces;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Menus
+namespace Unity.EditorXR.Menus
 {
     class SubmenuFace : MonoBehaviour, IUsesControlHaptics, IRayToNode
     {

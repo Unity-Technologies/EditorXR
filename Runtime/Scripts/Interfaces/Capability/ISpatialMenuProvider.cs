@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Decorates types that can provide a sub-menu in the SpatialUI

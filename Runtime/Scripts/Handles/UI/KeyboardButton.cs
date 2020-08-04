@@ -1,15 +1,15 @@
 using System;
 using System.Collections;
 using TMPro;
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Handles;
-using Unity.Labs.EditorXR.Helpers;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.EditorXR.Workspaces;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Extensions;
+using Unity.EditorXR.Handles;
+using Unity.EditorXR.Helpers;
+using Unity.EditorXR.Utilities;
+using Unity.EditorXR.Workspaces;
+using Unity.XRTools.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     sealed class KeyboardButton : BaseHandle
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     static class Selection
     {

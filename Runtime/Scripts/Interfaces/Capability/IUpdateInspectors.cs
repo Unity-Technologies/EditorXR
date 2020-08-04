@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
     /// <summary>
     /// Provides UpdateInspectors method used to update inspectors when their content has changed

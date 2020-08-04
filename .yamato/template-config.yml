@@ -49,7 +49,7 @@ testables:
   # type: package or project
   # publish_source: indicates if this testable should be included in publishing
   # standalone: true/false for if this testable contains runtime code or if it's only editor code
-  - name: com.unity.labs.editorxr
+  - name: com.unity.editorxr
     path: .
     type: package
     publish_source: true

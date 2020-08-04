@@ -1,7 +1,7 @@
 #if !UNITY_EDITOR
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     class SerializedObject
     {

@@ -1,11 +1,11 @@
 {
-    "name": "Unity.Labs.EditorXR.EditorTests",
+    "name": "Unity.EditorXR.EditorTests",
     "references": [
-        "Unity.Labs.EditorXR",
-        "Unity.Labs.Utils",
-        "Unity.Labs.Utils.Editor",
-        "Unity.Labs.EditorXR.Interfaces",
-        "Unity.Labs.ModuleLoader.Interfaces"
+        "Unity.EditorXR",
+        "Unity.XRTools.Utils",
+        "Unity.XRTools.Utils.Editor",
+        "Unity.EditorXR.Interfaces",
+        "Unity.XRTools.ModuleLoader.Interfaces"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

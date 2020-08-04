@@ -1,9 +1,9 @@
-using Unity.Labs.ListView;
+using Unity.ListViewFramework;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Unity.Labs.EditorXR.Data
+namespace Unity.EditorXR.Data
 {
     sealed class AssetData : IListViewItemData<int>
     {

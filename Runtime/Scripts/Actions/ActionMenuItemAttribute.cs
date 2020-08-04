@@ -1,7 +1,7 @@
 using System;
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Interfaces;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     /// <summary>
     /// Attribute used to tag Action classes in order to be added to VR menus

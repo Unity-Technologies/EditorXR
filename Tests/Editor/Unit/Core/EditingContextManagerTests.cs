@@ -2,13 +2,13 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Tools;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Core;
+using Unity.EditorXR.Tools;
+using Unity.XRTools.Utils;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Tests.Core
+namespace Unity.EditorXR.Tests.Core
 {
     [TestFixture]
     public class EditingContextManagerTests

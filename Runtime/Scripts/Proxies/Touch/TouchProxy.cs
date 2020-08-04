@@ -1,10 +1,10 @@
 using System.Collections;
-using Unity.Labs.EditorXR.Input;
-using Unity.Labs.EditorXR.Utilities;
+using Unity.EditorXR.Input;
+using Unity.EditorXR.Utilities;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Proxies
+namespace Unity.EditorXR.Proxies
 {
     sealed class TouchProxy : TwoHandedProxyBase
     {

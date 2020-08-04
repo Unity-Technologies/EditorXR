@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     [ActionMenuItem("SelectParent", ActionMenuItemAttribute.DefaultActionSectionName, 8)]
     [SpatialMenuItem("Select Parent", "Actions", "Select the parent of the currently selected object")]

@@ -1,7 +1,7 @@
-using Unity.Labs.EditorXR.Handles;
+using Unity.EditorXR.Handles;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Manipulators
+namespace Unity.EditorXR.Manipulators
 {
     sealed class ScaleManipulator : BaseManipulator
     {

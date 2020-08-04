@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Extensions
+namespace Unity.EditorXR.Extensions
 {
     static class TransformExtensions
     {

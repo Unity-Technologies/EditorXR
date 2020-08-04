@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Modules;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.ModuleLoader;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Modules;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.Utils;
 using UnityEngine;
 
 #if UNITY_EDITOR
@@ -14,7 +14,7 @@ using UnityEditor;
 using UnityEditor.Build;
 #endif
 
-namespace Unity.Labs.EditorXR.Core
+namespace Unity.EditorXR.Core
 {
 #if UNITY_EDITOR
     [RequiresTag(VRPlayerTag)]
@@ -27,8 +27,8 @@ namespace Unity.Labs.EditorXR.Core
         {
             static readonly string[] k_EditorXRAssemblies =
             {
-                "Library/ScriptAssemblies/Unity.Labs.EditorXR.dll",
-                "Library/ScriptAssemblies/Unity.Labs.EditorXR.Interfaces.dll",
+                "Library/ScriptAssemblies/Unity.EditorXR.dll",
+                "Library/ScriptAssemblies/Unity.EditorXR.Interfaces.dll",
                 "Library/ScriptAssemblies/input-prototype.dll"
             };
 

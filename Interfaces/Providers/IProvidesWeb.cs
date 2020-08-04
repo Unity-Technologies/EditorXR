@@ -1,8 +1,8 @@
 using System;
-using Unity.Labs.ModuleLoader;
+using Unity.XRTools.ModuleLoader;
 using UnityEngine.Networking;
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Provide access to web functionality

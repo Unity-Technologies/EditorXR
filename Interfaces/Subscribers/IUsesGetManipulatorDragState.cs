@@ -1,6 +1,6 @@
-using Unity.Labs.ModuleLoader;
+using Unity.XRTools.ModuleLoader;
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Gives decorated class the ability to get the current manipulator drag state

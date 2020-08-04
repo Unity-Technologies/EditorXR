@@ -1,19 +1,19 @@
 using System;
 using System.Text;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.EditorXR.Workspaces;
+using Unity.EditorXR.Utilities;
+using Unity.EditorXR.Workspaces;
 using UnityEngine;
-using Unity.Labs.Utils;
+using Unity.XRTools.Utils;
 
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Interfaces;
+using Unity.XRTools.ModuleLoader;
 #endif
 
 #if INCLUDE_POLY_TOOLKIT
-namespace Unity.Labs.EditorXR.Modules
+namespace Unity.EditorXR.Modules
 {
     class PolyModule : IDelayedInitializationModule, IUsesFunctionalityInjection, IProvidesPoly
     {

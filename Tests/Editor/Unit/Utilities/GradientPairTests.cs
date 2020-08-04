@@ -1,8 +1,8 @@
 using NUnit.Framework;
-using Unity.Labs.EditorXR.Helpers;
+using Unity.EditorXR.Helpers;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Tests.Utilities
+namespace Unity.EditorXR.Tests.Utilities
 {
     [TestFixture]
     public class GradientPairTests

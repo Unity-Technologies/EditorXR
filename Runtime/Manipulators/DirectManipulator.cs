@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Handles;
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Handles;
+using Unity.EditorXR.Interfaces;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Manipulators
+namespace Unity.EditorXR.Manipulators
 {
     sealed class DirectManipulator : MonoBehaviour, IManipulator
     {

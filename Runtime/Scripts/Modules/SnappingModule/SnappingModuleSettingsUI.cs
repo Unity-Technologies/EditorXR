@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     class SnappingModuleSettingsUI : MonoBehaviour
     {

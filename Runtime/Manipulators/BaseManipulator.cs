@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Handles;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Handles;
+using Unity.EditorXR.Interfaces;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Manipulators
+namespace Unity.EditorXR.Manipulators
 {
     class BaseManipulator : MonoBehaviour, IManipulator
     {

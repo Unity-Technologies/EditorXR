@@ -1,6 +1,6 @@
 using System;
 
-namespace Unity.Labs.EditorXR.Input
+namespace Unity.EditorXR.Input
 {
     interface IInputToEvents
     {

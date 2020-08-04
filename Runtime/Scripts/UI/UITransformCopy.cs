@@ -1,7 +1,7 @@
-using Unity.Labs.Utils;
+using Unity.XRTools.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Helpers
+namespace Unity.EditorXR.Helpers
 {
     sealed class UITransformCopy : MonoBehaviour
     {

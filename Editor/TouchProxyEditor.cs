@@ -1,8 +1,8 @@
-using Unity.Labs.EditorXR.Proxies;
+using Unity.EditorXR.Proxies;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     [CustomEditor(typeof(TouchProxy))]
     class TouchProxyEditor : Editor

@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace Unity.Labs.EditorXR.Proxies
+namespace Unity.EditorXR.Proxies
 {
     /// <summary>
     /// Affordance model; data defining a proxy affordance (button/analog/etc)

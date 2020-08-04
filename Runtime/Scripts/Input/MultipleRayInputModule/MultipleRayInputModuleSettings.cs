@@ -1,8 +1,8 @@
-using Unity.Labs.Utils;
+using Unity.XRTools.Utils;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace Unity.Labs.EditorXR.Modules
+namespace Unity.EditorXR.Modules
 {
     sealed class MultipleRayInputModuleSettings : ScriptableSettings<MultipleRayInputModuleSettings>
     {

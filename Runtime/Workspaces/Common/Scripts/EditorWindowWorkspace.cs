@@ -1,8 +1,8 @@
-using Unity.Labs.EditorXR.Handles;
-using Unity.Labs.EditorXR.Helpers;
+using Unity.EditorXR.Handles;
+using Unity.EditorXR.Helpers;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
 #if UNITY_EDITOR
     abstract class EditorWindowWorkspace : Workspace

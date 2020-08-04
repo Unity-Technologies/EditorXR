@@ -1,6 +1,6 @@
-using Unity.Labs.ModuleLoader;
+using Unity.XRTools.ModuleLoader;
 
-namespace Unity.Labs.EditorXR.Interfaces
+namespace Unity.EditorXR.Interfaces
 {
     /// <summary>
     /// Provide access to the ability to reset workspaces

@@ -1,8 +1,8 @@
-using Unity.Labs.EditorXR.Core;
+using Unity.EditorXR.Core;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
-namespace Unity.Labs.EditorXR.Utilities
+namespace Unity.EditorXR.Utilities
 {
     /// <summary>
     /// Camera related EditorXR utilities

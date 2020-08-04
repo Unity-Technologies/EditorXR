@@ -1,11 +1,11 @@
 using System.Collections;
-using Unity.Labs.EditorXR.Extensions;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.Utils;
-using Unity.Labs.XR;
+using Unity.EditorXR.Extensions;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.Rendering;
+using Unity.XRTools.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Menus
+namespace Unity.EditorXR.Menus
 {
     class HintLine : MonoBehaviour
     {

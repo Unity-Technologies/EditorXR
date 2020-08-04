@@ -1,12 +1,12 @@
 using TMPro;
-using Unity.Labs.EditorXR.Data;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Data;
+using Unity.XRTools.Utils;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using Button = Unity.Labs.EditorXR.UI.Button;
+using Button = Unity.EditorXR.UI.Button;
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
     sealed class InspectorComponentItem : InspectorListItem
     {

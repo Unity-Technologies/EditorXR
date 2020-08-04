@@ -1,7 +1,7 @@
-using Unity.Labs.EditorXR.Interfaces;
+using Unity.EditorXR.Interfaces;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Proxies
+namespace Unity.EditorXR.Proxies
 {
     sealed class AffordanceTooltip : MonoBehaviour, ITooltip, ITooltipPlacement
     {

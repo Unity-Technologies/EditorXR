@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Helpers;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Helpers;
+using Unity.XRTools.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Utilities
+namespace Unity.EditorXR.Utilities
 {
     /// <summary>
     /// Class defining the Unity brand color swatches & gradients

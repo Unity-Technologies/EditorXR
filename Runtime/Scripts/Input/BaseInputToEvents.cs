@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Input
+namespace Unity.EditorXR.Input
 {
     abstract class BaseInputToEvents : MonoBehaviour, IInputToEvents
     {

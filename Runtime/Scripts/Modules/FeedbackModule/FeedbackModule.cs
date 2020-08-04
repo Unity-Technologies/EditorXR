@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
-using Unity.Labs.EditorXR.Core;
-using Unity.Labs.EditorXR.Handles;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Core;
+using Unity.EditorXR.Handles;
+using Unity.XRTools.Utils;
 using UnityEngine;
 using UnityEngine.UI;
-using Unity.Labs.EditorXR.Interfaces;
-using Unity.Labs.ModuleLoader;
+using Unity.EditorXR.Interfaces;
+using Unity.XRTools.ModuleLoader;
 
-namespace Unity.Labs.EditorXR.Modules
+namespace Unity.EditorXR.Modules
 {
     class FeedbackModule : ScriptableSettings<FeedbackModule>, IDelayedInitializationModule, ISettingsMenuItemProvider,
         ISerializePreferences, IInterfaceConnector, IProvidesRequestFeedback

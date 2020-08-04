@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     [CustomEditor(typeof(KeyboardButton))]
     sealed class KeyboardButtonEditor : Editor

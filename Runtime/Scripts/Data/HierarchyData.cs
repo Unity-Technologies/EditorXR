@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Unity.Labs.ListView;
+using Unity.ListViewFramework;
 using UnityEditor;
 using UnityEngine;
 
@@ -38,7 +38,7 @@ class HierarchyProperty
 }
 #endif
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     sealed class HierarchyData : NestedListViewItemData<HierarchyData, int>
     {

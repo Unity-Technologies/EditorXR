@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.UI
+namespace Unity.EditorXR.UI
 {
     /// <summary>
     /// Extension of TextMeshProUGUI allows the use of a custom clipping material by providing GetModifiedMaterial override

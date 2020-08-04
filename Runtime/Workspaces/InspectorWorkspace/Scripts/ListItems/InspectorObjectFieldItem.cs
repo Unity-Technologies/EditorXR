@@ -1,11 +1,11 @@
 using System;
 using TMPro;
-using Unity.Labs.EditorXR.Data;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Data;
+using Unity.XRTools.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Unity.Labs.EditorXR.Workspaces
+namespace Unity.EditorXR.Workspaces
 {
 #if UNITY_EDITOR
     sealed class InspectorObjectFieldItem : InspectorPropertyItem

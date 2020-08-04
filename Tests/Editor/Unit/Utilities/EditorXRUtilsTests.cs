@@ -1,10 +1,10 @@
 using NUnit.Framework;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Utilities;
-using Unity.Labs.Utils;
+using Unity.EditorXR.Utilities;
+using Unity.XRTools.Utils;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR.Tests.Utilities
+namespace Unity.EditorXR.Tests.Utilities
 {
     [TestFixture]
     public class EditorXRUtilsTests

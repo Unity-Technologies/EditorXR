@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.EditorXR
+namespace Unity.EditorXR
 {
     [InitializeOnLoad]
     class LockableHierarchyGUI : ScriptableSingleton<LockableHierarchyGUI>
