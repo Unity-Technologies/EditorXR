@@ -31,7 +31,7 @@ namespace Unity.EditorXR.Modules
 
         public event Action<Transform> selected;
 
-        public int initializationOrder { get { return 0; } }
+        public int initializationOrder { get { return -5; } }
         public int shutdownOrder { get { return 0; } }
         public int connectInterfaceOrder { get { return 0; } }
 
