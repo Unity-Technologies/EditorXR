@@ -148,8 +148,11 @@ namespace Unity.EditorXR.Modules
                     }
                 }
 
-                this.UpdateRenderersInSpatialHash(k_ChangedObjects);
-                m_SpatialHashContainer.Trim();
+                if (k_ChangedObjects.Count > 0)
+                {
+                    this.UpdateRenderersInSpatialHash(k_ChangedObjects);
+                    m_SpatialHashContainer.Trim();
+                }
 
                 yield return null;
             }
