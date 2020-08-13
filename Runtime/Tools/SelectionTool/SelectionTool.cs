@@ -355,7 +355,7 @@ namespace Unity.EditorXR.Tools
 
                     // Only overwrite an existing selection if it does not contain the hovered object
                     // In the case of multi-select, only add, do not remove
-                    if (selectionTool.m_SelectionInput.select.wasJustPressed && !Selection.objects.Contains(directHoveredObject))
+                    if (selectionTool.m_SelectionInput != null && selectionTool.m_SelectionInput.select.wasJustPressed && !Selection.objects.Contains(directHoveredObject))
                         this.SelectObject(directHoveredObject, directRayOrigin, m_MultiSelect);
 
                     m_HoverGameObjects[directRayOrigin] = directHoveredObject;

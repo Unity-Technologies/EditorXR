@@ -230,6 +230,10 @@ namespace Unity.EditorXR.Core
             var eventObjects = new List<Transform>();
             foreach (var grabbedObject in grabbedObjects)
             {
+                // Avoid exceptions for destroyed objects
+                if (grabbedObject == null)
+                    continue;
+
                 objects.Remove(grabbedObject);
 
                 if (m_ViewerModule != null)

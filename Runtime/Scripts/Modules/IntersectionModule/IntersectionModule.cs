@@ -346,6 +346,10 @@ namespace Unity.EditorXR.Modules
                     if (ignoreList != null && ignoreList.Contains(renderer.gameObject))
                         continue;
 
+                    // Skip destroyed objects
+                    if (renderer == null)
+                        continue;
+
                     var transform = renderer.transform;
 
                     IntersectionUtils.SetupCollisionTester(m_CollisionTester, transform);

@@ -100,6 +100,10 @@ namespace Unity.EditorXR.Tools
                 {
                     var grabbedTransform = grabbedTransforms[i];
 
+                    // Avoid exceptions for destroyed objects
+                    if (grabbedTransform == null)
+                        continue;
+
                     var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
                     m_PositionOffsets[i] = inverseRotation * (grabbedTransform.position - pivot);
                     m_RotationOffsets[i] = inverseRotation * grabbedTransform.rotation;
@@ -252,6 +256,11 @@ namespace Unity.EditorXR.Tools
                 for (var i = 0; i < length; i++)
                 {
                     var grabbedTransform = grabbedTransforms[i];
+
+                    // Avoid exceptions for destroyed objects
+                    if (grabbedTransform == null)
+                        continue;
+
                     grabbedTransform.position = m_OriginalPositions[i];
                     grabbedTransform.rotation = m_OriginalRotations[i];
                     grabbedTransform.localScale = m_OriginalScales[i];
@@ -524,6 +533,8 @@ namespace Unity.EditorXR.Tools
                     }
 
                     var transformInput = transformTool.m_Input;
+                    if (transformInput == null)
+                        continue;
 
                     if (transformInput.select.wasJustPressed)
                     {
@@ -619,6 +630,37 @@ namespace Unity.EditorXR.Tools
                         DropHeldObjects(Node.RightHand);
                         hasRight = false;
                         consumeControl(rightInput.select);
+                    }
+                }
+
+                // Check if objects were destroyed in drop handler, or since last frame
+                if (hasLeft)
+                {
+                    // Drop all objects in left hand if any of them have been destroyed
+                    foreach (var grabbedTransform in m_LeftGrabData.grabbedTransforms)
+                    {
+                        if (grabbedTransform == null)
+                        {
+                            m_LeftGrabData.Cancel();
+                            DropHeldObjects(Node.LeftHand);
+                            hasLeft = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (hasRight)
+                {
+                    // Drop all objects in right hand if any of them have been destroyed
+                    foreach (var grabbedTransform in m_RightGrabData.grabbedTransforms)
+                    {
+                        if (grabbedTransform == null)
+                        {
+                            m_RightGrabData.Cancel();
+                            DropHeldObjects(Node.RightHand);
+                            hasRight = false;
+                            break;
+                        }
                     }
                 }
 
