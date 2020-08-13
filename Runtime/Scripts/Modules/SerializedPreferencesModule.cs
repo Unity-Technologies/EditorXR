@@ -184,6 +184,11 @@ namespace Unity.EditorXR.Modules
 
         public void DisconnectInterface(object target, object userData = null)
         {
+            var serializePreferences = target as ISerializePreferences;
+            if (serializePreferences != null)
+            {
+                m_Serializers.Remove(serializePreferences);
+            }
         }
     }
 }
