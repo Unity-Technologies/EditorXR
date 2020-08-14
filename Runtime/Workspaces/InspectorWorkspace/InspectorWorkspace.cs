@@ -65,7 +65,7 @@ namespace Unity.EditorXR.Workspaces
             var scrollHandleTransform = m_InspectorUI.scrollHandle.transform;
             scrollHandleTransform.SetParent(m_WorkspaceUI.topFaceContainer);
             scrollHandleTransform.localScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
-            scrollHandleTransform.localPosition = new Vector3(0f, -0.01f, 0f); // Offset from content for collision purposes
+            scrollHandleTransform.localPosition = new Vector3(0f, -0.012f, 0f); // Offset from content for collision purposes
 
 #if UNITY_EDITOR
             listView.arraySizeChanged += OnArraySizeChanged;
