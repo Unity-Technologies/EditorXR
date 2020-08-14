@@ -122,8 +122,9 @@ namespace Unity.EditorXR.Handles
             if (!m_LastClickTimes.TryGetValue(rayOrigin, out lastClickTime))
                 m_LastClickTimes[rayOrigin] = new DateTime();
 
-            var timeSinceLastClick = (float)(DateTime.Now - lastClickTime).TotalSeconds;
-            m_LastClickTimes[rayOrigin] = DateTime.Now;
+            var now = DateTime.UtcNow;
+            var timeSinceLastClick = (float)(now - lastClickTime).TotalSeconds;
+            m_LastClickTimes[rayOrigin] = now;
             if (UIUtils.IsDoubleClick(timeSinceLastClick))
                 OnDoubleClick(handleEventData);
 
