@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+
 #if UNITY_EDITOR_WIN
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -32,6 +34,10 @@ namespace Unity.EditorXR.Helpers
         Object m_GuiView;
         MethodInfo m_GrabPixels;
         Rect m_ScaledRect;
+
+#if UNITY_EDITOR_WIN
+        readonly List<Thread> m_CancelDialogThreads = new List<Thread>();
+#endif
 
         /// <summary>
         /// RenderTexture that represents the captured Editor Window
@@ -99,6 +105,15 @@ namespace Unity.EditorXR.Helpers
         {
             if (m_Window)
                 m_Window.Close();
+
+#if UNITY_EDITOR_WIN
+            foreach (var cancelDialogThread in m_CancelDialogThreads)
+            {
+                cancelDialogThread.Abort();
+            }
+
+            m_CancelDialogThreads.Clear();
+#endif
         }
 
         void Update()
@@ -158,13 +173,17 @@ namespace Unity.EditorXR.Helpers
             // Thread is needed because context menu blocks main thread
             if (type == EventType.MouseDown)
             {
-                new Thread(() =>
+                var thread = new Thread(() =>
                 {
                     const int HWND_BROADCAST = 0xffff;
                     const int WM_CANCELMODE = 0x001F;
                     var hwnd = new IntPtr(HWND_BROADCAST);
                     SendMessage(hwnd, WM_CANCELMODE, 0, IntPtr.Zero);
-                }).Start();
+                });
+
+                m_CancelDialogThreads.Add(thread);
+
+                thread.Start();
             }
 #endif
 
