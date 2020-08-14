@@ -31,8 +31,15 @@ namespace Unity.EditorXR.Modules
 
         public void RemoveActions(List<IAction> actions)
         {
-            m_MenuActions.Clear();
-            m_MenuActions.AddRange(m_MenuActions.Where(a => !actions.Contains(a.action)));
+            for (var i = 0; i < m_MenuActions.Count; i++)
+            {
+                var menuAction = m_MenuActions[i];
+                if (actions.Contains(menuAction.action))
+                {
+                    m_MenuActions.RemoveAt(i);
+                    i--;
+                }
+            }
         }
 
         public void LoadModule()
@@ -90,11 +97,6 @@ namespace Unity.EditorXR.Modules
             m_MenuActions.Sort((x, y) => y.priority.CompareTo(x.priority));
         }
 
-        public void AddActionsMenu(IActionsMenu actionsMenu)
-        {
-            m_ActionsMenus.Add(actionsMenu);
-        }
-
         internal void UpdateAlternateMenuActions()
         {
             foreach (var actionsMenu in m_ActionsMenus)
@@ -135,7 +137,7 @@ namespace Unity.EditorXR.Modules
             if (actionsMenu != null)
             {
                 actionsMenu.menuActions = menuActions;
-                AddActionsMenu(actionsMenu);
+                m_ActionsMenus.Add(actionsMenu);
             }
         }
 
@@ -144,8 +146,18 @@ namespace Unity.EditorXR.Modules
             var toolActions = target as IActions;
             if (toolActions != null)
             {
-                RemoveActions(toolActions.actions);
-                UpdateAlternateMenuActions();
+                var actions = toolActions.actions;
+                if (actions != null)
+                {
+                    RemoveActions(actions);
+                    UpdateAlternateMenuActions();
+                }
+            }
+
+            var actionsMenu = target as IActionsMenu;
+            if (actionsMenu != null)
+            {
+                m_ActionsMenus.Remove(actionsMenu);
             }
         }
     }

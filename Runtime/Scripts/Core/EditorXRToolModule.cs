@@ -94,8 +94,6 @@ namespace Unity.EditorXR.Core
 
         public void Shutdown()
         {
-            m_LinkedObjects.Clear();
-
             foreach (var device in deviceData)
             {
                 var mainMenu = device.mainMenu;
@@ -148,6 +146,7 @@ namespace Unity.EditorXR.Core
             }
 
             deviceData.Clear();
+            m_LinkedObjects.Clear();
         }
 
         public void ConnectInterface(object target, object userData = null)
