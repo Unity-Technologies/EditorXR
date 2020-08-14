@@ -85,6 +85,7 @@ namespace Unity.EditorXR.Workspaces
                 handle.pointerDown += OnPointerDown;
                 handle.dragging += OnDragging;
                 handle.pointerUp += OnPointerUp;
+                handle.endDrag += OnDragEnd;
 
                 handle.dropHoverStarted += OnDropHoverStarted;
                 handle.dropHoverEnded += OnDropHoverEnded;
@@ -199,7 +200,7 @@ namespace Unity.EditorXR.Workspaces
             m_HorizontalDrag = false;
         }
 
-        protected override void OnPointerDown(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+        protected override void OnDragBegin(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
         {
             var dragVector = eventData.rayOrigin.position - dragStart;
             var distance = dragVector.magnitude;

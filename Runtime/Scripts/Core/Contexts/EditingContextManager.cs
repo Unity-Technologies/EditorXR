@@ -122,7 +122,10 @@ namespace Unity.EditorXR.Core
 #if UNITY_EDITOR
             s_AutoOpened = false;
 #endif
-            UnityObjectUtils.Destroy(instance.gameObject);
+
+            if (instance != null)
+                UnityObjectUtils.Destroy(instance.gameObject);
+
             if (s_InputManager)
                 UnityObjectUtils.Destroy(s_InputManager.gameObject);
         }

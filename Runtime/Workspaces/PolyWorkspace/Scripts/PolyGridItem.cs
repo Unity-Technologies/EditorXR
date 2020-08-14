@@ -124,6 +124,7 @@ namespace Unity.EditorXR.Workspaces
                 m_Handle.pointerDown += OnPointerDown;
                 m_Handle.dragging += OnDragging;
                 m_Handle.pointerUp += OnPointerUp;
+                m_Handle.endDrag += OnDragEnd;
 
                 m_Handle.hoverStarted += OnHoverStarted;
                 m_Handle.hoverEnded += OnHoverEnded;

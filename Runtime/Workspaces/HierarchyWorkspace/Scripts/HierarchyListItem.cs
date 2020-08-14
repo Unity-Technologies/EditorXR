@@ -141,6 +141,7 @@ namespace Unity.EditorXR.Workspaces
                 m_ExpandArrow.pointerUp += ToggleExpanded;
                 m_Cube.pointerDown += OnPointerDown;
                 m_Cube.dragging += OnDragging;
+                m_Cube.endDrag += OnDragEnd;
                 m_Cube.pointerUp += OnPointerUp;
 
                 m_Cube.hoverStarted += OnHoverStarted;
@@ -299,7 +300,7 @@ namespace Unity.EditorXR.Workspaces
             ToggleExpanded();
         }
 
-        protected override void OnPointerDown(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+        protected override void OnDragBegin(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
         {
             // handle will be the backing cube, not the whole row object
             var row = handle.transform.parent;

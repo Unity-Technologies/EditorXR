@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Unity.EditorXR.Interfaces;
-using Unity.EditorXR.Modules;
 using Unity.EditorXR.Utilities;
 using Unity.XRTools.ModuleLoader;
 using UnityEngine;
@@ -44,7 +43,10 @@ namespace Unity.EditorXR.Modules
         public event Action<GameObject, RayEventData> rayHovering;
         public event Action<GameObject, RayEventData> rayExited;
         public event Action<GameObject, RayEventData> dragStarted;
+        public event Action<GameObject, RayEventData> dragging;
         public event Action<GameObject, RayEventData> dragEnded;
+        public event Action<GameObject, RayEventData> pointerUp;
+        public event Action<GameObject, RayEventData> clicked;
 
 #if !FI_AUTOFILL
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
@@ -518,6 +520,9 @@ namespace Unity.EditorXR.Modules
                     rayEvent.rawPointerPress = null;
                 }
 
+                if (dragging != null)
+                    dragging(draggedObject, rayEvent);
+
                 ExecuteEvents.Execute(draggedObject, rayEvent, ExecuteRayEvents.dragHandler);
                 ExecuteEvents.Execute(draggedObject, rayEvent, ExecuteEvents.dragHandler);
             }
@@ -525,17 +530,21 @@ namespace Unity.EditorXR.Modules
 
         protected void OnPointerUp(RayEventData rayEvent, GameObject currentOverGo)
         {
-            ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteRayEvents.pointerUpHandler);
-            ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteEvents.pointerUpHandler);
+            if (pointerUp != null && currentOverGo != null)
+                pointerUp(currentOverGo, rayEvent);
+
+            var pressedObject = rayEvent.pointerPress;
+            ExecuteEvents.Execute(pressedObject, rayEvent, ExecuteRayEvents.pointerUpHandler);
+            ExecuteEvents.Execute(pressedObject, rayEvent, ExecuteEvents.pointerUpHandler);
 
             // see if we mouse up on the same element that we clicked on...
             var pointerClickHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
 
             // PointerClick and Drop events
             var draggedObject = rayEvent.pointerDrag;
-            if (rayEvent.pointerPress == pointerClickHandler && rayEvent.eligibleForClick)
+            if (pressedObject == pointerClickHandler && rayEvent.eligibleForClick)
             {
-                ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteEvents.pointerClickHandler);
+                ExecuteEvents.Execute(pressedObject, rayEvent, ExecuteEvents.pointerClickHandler);
             }
             else if (draggedObject != null && rayEvent.dragging)
             {
@@ -546,9 +555,12 @@ namespace Unity.EditorXR.Modules
             var rayClickHandler = ExecuteEvents.GetEventHandler<IRayClickHandler>(currentOverGo);
 
             // PointerClick and Drop events
-            if (rayEvent.pointerPress == rayClickHandler && rayEvent.eligibleForClick)
+            if (pressedObject == rayClickHandler && rayEvent.eligibleForClick)
             {
-                ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteRayEvents.pointerClickHandler);
+                if (clicked != null && pressedObject != null)
+                    clicked(pressedObject, rayEvent);
+
+                ExecuteEvents.Execute(pressedObject, rayEvent, ExecuteRayEvents.pointerClickHandler);
             }
 
             rayEvent.eligibleForClick = false;

@@ -66,7 +66,7 @@ namespace Unity.EditorXR
             // Hookup input events for new items.
             item.hoverStart += OnItemHoverStart;
             item.hoverEnd += OnItemHoverEnd;
-            item.dragStart += OnItemDragStart;
+            item.dragBegin += OnItemDragStart;
             item.dragging += OnItemDragging;
             item.dragEnd += OnItemDragEnd;
             item.click += OnItemClicked;

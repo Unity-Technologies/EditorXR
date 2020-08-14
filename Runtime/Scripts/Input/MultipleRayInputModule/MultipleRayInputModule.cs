@@ -227,6 +227,8 @@ namespace Unity.EditorXR.Modules
         readonly Dictionary<Transform, IRaycastSource> m_RaycastSources = new Dictionary<Transform, IRaycastSource>();
         readonly BindingDictionary m_Controls = new BindingDictionary();
 
+        public event Action<GameObject, RayEventData> pointerDown;
+
         public Camera eventCamera
         {
             set
@@ -561,6 +563,9 @@ namespace Unity.EditorXR.Modules
 
         void EndPointerDown(RayEventData rayEvent, GameObject currentOverGo)
         {
+            if (pointerDown != null && currentOverGo != null)
+                pointerDown(currentOverGo, rayEvent);
+
             // search for the control that will receive the press
             // if we can't find a press handler set the press
             // handler to be what would receive a click.

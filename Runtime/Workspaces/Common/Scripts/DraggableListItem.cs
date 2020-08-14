@@ -42,8 +42,8 @@ namespace Unity.EditorXR.Workspaces
                 m_DragLerp = 0;
                 StartCoroutine(Magnetize());
 
-                if (dragStart != null)
-                    dragStart(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
+                if (dragBegin != null)
+                    dragBegin(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
             }
             else
             {
@@ -52,6 +52,9 @@ namespace Unity.EditorXR.Workspaces
                 m_DragObject = null;
                 m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;
             }
+
+            if (pointerDown != null)
+                pointerDown(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
         }
 
         // Smoothly interpolate grabbed object into position, instead of "popping."
@@ -70,6 +73,12 @@ namespace Unity.EditorXR.Workspaces
             OnMagnetizeEnded();
         }
 
+        protected virtual void OnDragBegin(BaseHandle handle, HandleEventData eventData, Vector3 dragStartPosition)
+        {
+            if (dragBegin != null)
+                dragBegin(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
+        }
+
         protected virtual void OnDragging(BaseHandle handle, HandleEventData eventData)
         {
             if (singleClickDrag)
@@ -78,6 +87,9 @@ namespace Unity.EditorXR.Workspaces
                 {
                     var previewOrigin = this.GetPreviewOriginForRayOrigin(eventData.rayOrigin);
                     MathUtilsExt.LerpTransform(m_DragObject, previewOrigin.position, previewOrigin.rotation, m_DragLerp);
+
+                    if (dragBegin != null)
+                        dragBegin(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
 
                     if (dragging != null)
                         dragging(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
@@ -97,18 +109,12 @@ namespace Unity.EditorXR.Workspaces
                 if (m_DragObject == null && distance > k_DragDeadZone * this.GetViewerScale())
                 {
                     m_DragObject = handle.transform;
-                    OnPointerDown(handle, eventData, directDragStart);
+                    OnDragBegin(handle, eventData, directDragStart);
                 }
 
                 if (m_DragObject)
                     OnDragging(handle, eventData, directDragStart);
             }
-        }
-
-        protected virtual void OnPointerDown(BaseHandle handle, HandleEventData eventData, Vector3 dragStartPosition)
-        {
-            if (dragStart != null)
-                dragStart(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
         }
 
         protected virtual void OnDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStartPosition)
@@ -117,12 +123,17 @@ namespace Unity.EditorXR.Workspaces
                 dragging(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
         }
 
-        protected virtual void OnPointerUp(BaseHandle handle, HandleEventData eventData)
+        protected virtual void OnDragEnd(BaseHandle handle, HandleEventData eventData)
         {
             m_DragObject = null;
-
             if (dragEnd != null)
                 dragEnd(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
+        }
+
+        protected virtual void OnPointerUp(BaseHandle handle, HandleEventData eventData)
+        {
+            if (pointerUp != null)
+                pointerUp(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
         }
 
         protected virtual void OnHoverStart(BaseHandle handle, HandleEventData eventData)

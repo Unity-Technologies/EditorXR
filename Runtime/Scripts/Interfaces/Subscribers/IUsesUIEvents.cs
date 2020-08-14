@@ -15,6 +15,30 @@ namespace Unity.EditorXR.Interfaces
     static class UseUIEventsMethods
     {
         /// <summary>
+        /// Subscribe to the pointerDown event
+        /// </summary>
+        /// <param name="user">The functionality user</param>
+        /// <param name="action">The action which will be called when the event occurs</param>
+        public static void SubscribeToPointerDown(this IUsesUIEvents user, Action<GameObject, RayEventData> action)
+        {
+#if !FI_AUTOFILL
+            user.provider.pointerDown += action;
+#endif
+        }
+
+        /// <summary>
+        /// Unsubscribe from the pointerDown event
+        /// </summary>
+        /// <param name="user">The functionality user</param>
+        /// <param name="action">The action which will be unsubscribed from the event</param>
+        public static void UnsubscribeFromPointerDown(this IUsesUIEvents user, Action<GameObject, RayEventData> action)
+        {
+#if !FI_AUTOFILL
+            user.provider.pointerDown -= action;
+#endif
+        }
+
+        /// <summary>
         /// Subscribe to the dragStarted event
         /// </summary>
         /// <param name="user">The functionality user</param>
@@ -59,6 +83,30 @@ namespace Unity.EditorXR.Interfaces
         {
 #if !FI_AUTOFILL
             user.provider.dragEnded -= action;
+#endif
+        }
+
+        /// <summary>
+        /// Subscribe to the pointerUp event
+        /// </summary>
+        /// <param name="user">The functionality user</param>
+        /// <param name="action">The action which will be called when the event occurs</param>
+        public static void SubscribeToPointerUp(this IUsesUIEvents user, Action<GameObject, RayEventData> action)
+        {
+#if !FI_AUTOFILL
+            user.provider.pointerUp += action;
+#endif
+        }
+
+        /// <summary>
+        /// Unsubscribe from the pointerUp event
+        /// </summary>
+        /// <param name="user">The functionality user</param>
+        /// <param name="action">The action which will be unsubscribed from the event</param>
+        public static void UnsubscribeFromPointerUp(this IUsesUIEvents user, Action<GameObject, RayEventData> action)
+        {
+#if !FI_AUTOFILL
+            user.provider.pointerUp -= action;
 #endif
         }
 
@@ -131,6 +179,30 @@ namespace Unity.EditorXR.Interfaces
         {
 #if !FI_AUTOFILL
             user.provider.rayHovering -= action;
+#endif
+        }
+
+        /// <summary>
+        /// Subscribe to the clicked event
+        /// </summary>
+        /// <param name="user">The functionality user</param>
+        /// <param name="action">The action which will be called when the event occurs</param>
+        public static void SubscribeToClicked(this IUsesUIEvents user, Action<GameObject, RayEventData> action)
+        {
+#if !FI_AUTOFILL
+            user.provider.clicked += action;
+#endif
+        }
+
+        /// <summary>
+        /// Unsubscribe from the clicked event
+        /// </summary>
+        /// <param name="user">The functionality user</param>
+        /// <param name="action">The action which will be unsubscribed from the event</param>
+        public static void UnsubscribeFromClicked(this IUsesUIEvents user, Action<GameObject, RayEventData> action)
+        {
+#if !FI_AUTOFILL
+            user.provider.clicked -= action;
 #endif
         }
     }
