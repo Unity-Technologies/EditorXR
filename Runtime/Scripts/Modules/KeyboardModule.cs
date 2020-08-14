@@ -11,7 +11,7 @@ using UnityEngine;
 namespace Unity.EditorXR.Modules
 {
     sealed class KeyboardModule : ScriptableSettings<KeyboardModule>, IModuleBehaviorCallbacks, IUsesRayVisibilitySettings, IForEachRayOrigin,
-        IUsesConnectInterfaces
+        IUsesConnectInterfaces, IUsesFunctionalityInjection
     {
 #pragma warning disable 649
         [SerializeField]
@@ -33,6 +33,7 @@ namespace Unity.EditorXR.Modules
 #if !FI_AUTOFILL
         IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
 #endif
 
         public void LoadModule()
@@ -54,6 +55,7 @@ namespace Unity.EditorXR.Modules
                 var smoothMotions = m_NumericKeyboard.GetComponentsInChildren<SmoothMotion>(true);
                 foreach (var smoothMotion in smoothMotions)
                 {
+                    this.InjectFunctionalitySingle(smoothMotion);
                     this.ConnectInterfaces(smoothMotion);
                 }
             }
@@ -73,6 +75,7 @@ namespace Unity.EditorXR.Modules
                 var smoothMotions = m_StandardKeyboard.GetComponentsInChildren<SmoothMotion>(true);
                 foreach (var smoothMotion in smoothMotions)
                 {
+                    this.InjectFunctionalitySingle(smoothMotion);
                     this.ConnectInterfaces(smoothMotion);
                 }
             }

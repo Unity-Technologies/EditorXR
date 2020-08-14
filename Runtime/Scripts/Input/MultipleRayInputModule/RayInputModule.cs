@@ -529,18 +529,26 @@ namespace Unity.EditorXR.Modules
             ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteEvents.pointerUpHandler);
 
             // see if we mouse up on the same element that we clicked on...
-            var pointerUpHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
+            var pointerClickHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
 
             // PointerClick and Drop events
             var draggedObject = rayEvent.pointerDrag;
-            if (rayEvent.pointerPress == pointerUpHandler && rayEvent.eligibleForClick)
+            if (rayEvent.pointerPress == pointerClickHandler && rayEvent.eligibleForClick)
             {
-                ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteRayEvents.pointerClickHandler);
                 ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteEvents.pointerClickHandler);
             }
             else if (draggedObject != null && rayEvent.dragging)
             {
                 ExecuteEvents.ExecuteHierarchy(currentOverGo, rayEvent, ExecuteEvents.dropHandler);
+            }
+
+            // see if we mouse up on the same element that we clicked on...
+            var rayClickHandler = ExecuteEvents.GetEventHandler<IRayClickHandler>(currentOverGo);
+
+            // PointerClick and Drop events
+            if (rayEvent.pointerPress == rayClickHandler && rayEvent.eligibleForClick)
+            {
+                ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteRayEvents.pointerClickHandler);
             }
 
             rayEvent.eligibleForClick = false;
