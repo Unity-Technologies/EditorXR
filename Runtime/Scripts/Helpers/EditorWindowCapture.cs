@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -34,10 +33,6 @@ namespace Unity.EditorXR.Helpers
         Object m_GuiView;
         MethodInfo m_GrabPixels;
         Rect m_ScaledRect;
-
-#if UNITY_EDITOR_WIN
-        readonly List<Thread> m_CancelDialogThreads = new List<Thread>();
-#endif
 
         /// <summary>
         /// RenderTexture that represents the captured Editor Window
@@ -105,15 +100,6 @@ namespace Unity.EditorXR.Helpers
         {
             if (m_Window)
                 m_Window.Close();
-
-#if UNITY_EDITOR_WIN
-            foreach (var cancelDialogThread in m_CancelDialogThreads)
-            {
-                cancelDialogThread.Abort();
-            }
-
-            m_CancelDialogThreads.Clear();
-#endif
         }
 
         void Update()
@@ -178,10 +164,8 @@ namespace Unity.EditorXR.Helpers
                     const int HWND_BROADCAST = 0xffff;
                     const int WM_CANCELMODE = 0x001F;
                     var hwnd = new IntPtr(HWND_BROADCAST);
-                    SendMessage(hwnd, WM_CANCELMODE, 0, IntPtr.Zero);
+                    PostMessage(hwnd, WM_CANCELMODE, 0, IntPtr.Zero);
                 });
-
-                m_CancelDialogThreads.Add(thread);
 
                 thread.Start();
             }
@@ -196,7 +180,7 @@ namespace Unity.EditorXR.Helpers
 
 #if UNITY_EDITOR_WIN
         [DllImport("User32.dll")]
-        public static extern int SendMessage(IntPtr hWnd, int uMsg, int wParam, IntPtr lParam);
+        public static extern int PostMessage(IntPtr hWnd, int uMsg, int wParam, IntPtr lParam);
 #endif
     }
 #else
