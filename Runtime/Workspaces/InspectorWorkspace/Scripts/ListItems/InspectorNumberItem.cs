@@ -148,9 +148,9 @@ namespace Unity.EditorXR.Workspaces
                 button.alternateIconVisible = true;
         }
 
-        protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
+        protected override void OnPointerUp(BaseHandle handle, HandleEventData eventData)
         {
-            base.OnDragEnded(handle, eventData);
+            base.OnPointerUp(handle, eventData);
 
 #if UNITY_EDITOR
             // Update field value in case drag value was invalid (i.e. array size < 0)

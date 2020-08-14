@@ -133,9 +133,9 @@ namespace Unity.EditorXR.Workspaces
             this.ConnectInterfaces(listView);
 
             var scrollHandle = m_HierarchyUI.scrollHandle;
-            scrollHandle.dragStarted += OnScrollDragStarted;
+            scrollHandle.pointerDown += OnScrollPointerDown;
             scrollHandle.dragging += OnScrollDragging;
-            scrollHandle.dragEnded += OnScrollDragEnded;
+            scrollHandle.pointerUp += OnScrollPointerUp;
             scrollHandle.hoverStarted += OnScrollHoverStarted;
             scrollHandle.hoverEnded += OnScrollHoverEnded;
 
@@ -184,7 +184,7 @@ namespace Unity.EditorXR.Workspaces
 #endif
         }
 
-        void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+        void OnScrollPointerDown(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
         {
             m_Scrolling = true;
 
@@ -199,7 +199,7 @@ namespace Unity.EditorXR.Workspaces
             m_HierarchyUI.listView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / this.GetViewerScale();
         }
 
-        void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+        void OnScrollPointerUp(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
         {
             m_Scrolling = false;
 

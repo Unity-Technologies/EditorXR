@@ -45,7 +45,7 @@ namespace Unity.EditorXR.Handles
             return k_SphereHandleEventData;
         }
 
-        protected override void OnHandleDragStarted(HandleEventData eventData)
+        protected override void OnHandlePointerDown(HandleEventData eventData)
         {
             var sphereEventData = (SphereHandleEventData)eventData;
 
@@ -56,7 +56,7 @@ namespace Unity.EditorXR.Handles
                 m_ScrollRate = k_InitialScrollRate;
                 m_LastPosition = GetRayPoint(eventData);
 
-                base.OnHandleDragStarted(eventData);
+                base.OnHandlePointerDown(eventData);
             }
         }
 
@@ -72,10 +72,10 @@ namespace Unity.EditorXR.Handles
             }
         }
 
-        protected override void OnHandleDragEnded(HandleEventData eventData)
+        protected override void OnHandlePointerUp(HandleEventData eventData)
         {
             if (!hasDragSource)
-                base.OnHandleDragEnded(eventData);
+                base.OnHandlePointerUp(eventData);
         }
 
         public void ChangeRadius(float delta)

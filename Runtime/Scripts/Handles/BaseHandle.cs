@@ -12,8 +12,9 @@ namespace Unity.EditorXR.Handles
     /// <summary>
     /// Base class for providing draggable handles in 3D (requires PhysicsRaycaster)
     /// </summary>
-    class BaseHandle : MonoBehaviour, ISelectionFlags, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler,
-        IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IPointerClickHandler, IDropReceiver, IDroppable
+    class BaseHandle : MonoBehaviour, ISelectionFlags, IRayPointerDownHandler, IRayBeginDragHandler, IRayDragHandler,
+        IRayEndDragHandler, IRayPointerUpHandler, IRayEnterHandler, IRayExitHandler, IRayHoverHandler,
+        IPointerClickHandler, IDropReceiver, IDroppable
     {
         protected const int k_DefaultCapacity = 2; // i.e. 2 controllers
 
@@ -43,9 +44,11 @@ namespace Unity.EditorXR.Handles
         public event Action<BaseHandle> dropHoverStarted;
         public event Action<BaseHandle> dropHoverEnded;
 
-        public event Action<BaseHandle, HandleEventData> dragStarted;
+        public event Action<BaseHandle, HandleEventData> pointerDown;
+        public event Action<BaseHandle, HandleEventData> beginDrag;
         public event Action<BaseHandle, HandleEventData> dragging;
-        public event Action<BaseHandle, HandleEventData> dragEnded;
+        public event Action<BaseHandle, HandleEventData> endDrag;
+        public event Action<BaseHandle, HandleEventData> pointerUp;
 
         public event Action<BaseHandle, PointerEventData> click;
         public event Action<BaseHandle, HandleEventData> doubleClick;
@@ -82,7 +85,8 @@ namespace Unity.EditorXR.Handles
                 foreach (var rayOrigin in sources)
                 {
                     eventData.rayOrigin = rayOrigin;
-                    OnHandleDragEnded(eventData);
+                    OnHandleEndDrag(eventData);
+                    OnHandlePointerUp(eventData); 
                 }
             }
         }
@@ -106,7 +110,7 @@ namespace Unity.EditorXR.Handles
             return m_DragSources.IndexOf(rayOrigin);
         }
 
-        public void OnBeginDrag(RayEventData eventData)
+        public void OnPointerDown(RayEventData eventData)
         {
             if (!UIUtils.IsValidEvent(eventData, selectionFlags))
                 return;
@@ -128,7 +132,13 @@ namespace Unity.EditorXR.Handles
             if (UIUtils.IsDoubleClick(timeSinceLastClick))
                 OnDoubleClick(handleEventData);
 
-            OnHandleDragStarted(handleEventData);
+            OnHandlePointerDown(handleEventData);
+        }
+
+        public void OnBeginDrag(RayEventData eventData)
+        {
+            if (m_DragSources.Count > 0)
+                OnHandleBeginDrag(GetHandleEventData(eventData));
         }
 
         public void OnDrag(RayEventData eventData)
@@ -139,8 +149,14 @@ namespace Unity.EditorXR.Handles
 
         public void OnEndDrag(RayEventData eventData)
         {
+            if (m_DragSources.Count > 0)
+                OnHandleEndDrag(GetHandleEventData(eventData));
+        }
+
+        public void OnPointerUp(RayEventData eventData)
+        {
             if (m_DragSources.Remove(eventData.rayOrigin))
-                OnHandleDragEnded(GetHandleEventData(eventData));
+                OnHandlePointerUp(GetHandleEventData(eventData));
         }
 
         public void OnRayEnter(RayEventData eventData)
@@ -214,10 +230,19 @@ namespace Unity.EditorXR.Handles
         /// <summary>
         /// Override to modify event data prior to raising event (requires calling base method at the end)
         /// </summary>
-        protected virtual void OnHandleDragStarted(HandleEventData eventData)
+        protected virtual void OnHandlePointerDown(HandleEventData eventData)
         {
-            if (dragStarted != null)
-                dragStarted(this, eventData);
+            if (pointerDown != null)
+                pointerDown(this, eventData);
+        }
+
+        /// <summary>
+        /// Override to modify event data prior to raising event (requires calling base method at the end)
+        /// </summary>
+        protected virtual void OnHandleBeginDrag(HandleEventData eventData)
+        {
+            if (beginDrag != null)
+                beginDrag(this, eventData);
         }
 
         /// <summary>
@@ -232,10 +257,19 @@ namespace Unity.EditorXR.Handles
         /// <summary>
         /// Override to modify event data prior to raising event (requires calling base method at the end)
         /// </summary>
-        protected virtual void OnHandleDragEnded(HandleEventData eventData)
+        protected virtual void OnHandleEndDrag(HandleEventData eventData)
         {
-            if (dragEnded != null)
-                dragEnded(this, eventData);
+            if (endDrag != null)
+                endDrag(this, eventData);
+        }
+
+        /// <summary>
+        /// Override to modify event data prior to raising event (requires calling base method at the end)
+        /// </summary>
+        protected virtual void OnHandlePointerUp(HandleEventData eventData)
+        {
+            if (pointerUp != null)
+                pointerUp(this, eventData);
         }
 
         /// <summary>

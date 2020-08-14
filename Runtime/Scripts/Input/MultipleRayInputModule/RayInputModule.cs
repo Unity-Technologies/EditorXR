@@ -510,6 +510,7 @@ namespace Unity.EditorXR.Modules
                 // And clear selection!
                 if (rayEvent.pointerPress != draggedObject)
                 {
+                    ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteRayEvents.pointerUpHandler);
                     ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteEvents.pointerUpHandler);
 
                     rayEvent.eligibleForClick = false;
@@ -524,6 +525,7 @@ namespace Unity.EditorXR.Modules
 
         protected void OnPointerUp(RayEventData rayEvent, GameObject currentOverGo)
         {
+            ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteRayEvents.pointerUpHandler);
             ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteEvents.pointerUpHandler);
 
             // see if we mouse up on the same element that we clicked on...
@@ -533,6 +535,7 @@ namespace Unity.EditorXR.Modules
             var draggedObject = rayEvent.pointerDrag;
             if (rayEvent.pointerPress == pointerUpHandler && rayEvent.eligibleForClick)
             {
+                ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteRayEvents.pointerClickHandler);
                 ExecuteEvents.Execute(rayEvent.pointerPress, rayEvent, ExecuteEvents.pointerClickHandler);
             }
             else if (draggedObject != null && rayEvent.dragging)

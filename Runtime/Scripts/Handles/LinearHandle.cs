@@ -107,13 +107,13 @@ namespace Unity.EditorXR.Handles
             base.OnHandleHovering(eventData);
         }
 
-        protected override void OnHandleDragStarted(HandleEventData eventData)
+        protected override void OnHandlePointerDown(HandleEventData eventData)
         {
             var linearEventData = (LinearHandleEventData)eventData;
             m_LastPositions[eventData.rayOrigin] = linearEventData.raycastHitWorldPosition;
             UpdateEventData(linearEventData);
 
-            base.OnHandleDragStarted(eventData);
+            base.OnHandlePointerDown(eventData);
         }
 
         protected override void OnHandleDragging(HandleEventData eventData)

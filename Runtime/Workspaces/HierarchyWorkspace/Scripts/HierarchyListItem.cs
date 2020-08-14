@@ -135,13 +135,13 @@ namespace Unity.EditorXR.Workspaces
                 m_LockRenderer = m_Lock.GetComponent<Renderer>();
                 m_Lock.hoverStarted += (bh, ed) => { m_HoveringLock = true; };
                 m_Lock.hoverEnded += (bh, ed) => { m_HoveringLock = false; };
-                m_Lock.dragEnded += ToggleLock;
+                m_Lock.pointerUp += ToggleLock;
 
                 m_ExpandArrowRenderer = m_ExpandArrow.GetComponent<Renderer>();
-                m_ExpandArrow.dragEnded += ToggleExpanded;
-                m_Cube.dragStarted += OnDragStarted;
+                m_ExpandArrow.pointerUp += ToggleExpanded;
+                m_Cube.pointerDown += OnPointerDown;
                 m_Cube.dragging += OnDragging;
-                m_Cube.dragEnded += OnDragEnded;
+                m_Cube.pointerUp += OnPointerUp;
 
                 m_Cube.hoverStarted += OnHoverStarted;
                 m_Cube.hoverEnded += OnHoverEnded;
@@ -299,7 +299,7 @@ namespace Unity.EditorXR.Workspaces
             ToggleExpanded();
         }
 
-        protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+        protected override void OnPointerDown(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
         {
             // handle will be the backing cube, not the whole row object
             var row = handle.transform.parent;
@@ -381,7 +381,7 @@ namespace Unity.EditorXR.Workspaces
             isStillSettling = false;
         }
 
-        protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
+        protected override void OnPointerUp(BaseHandle handle, HandleEventData eventData)
         {
             if (m_DragObject)
             {
@@ -401,7 +401,7 @@ namespace Unity.EditorXR.Workspaces
                 startSettling(OnDragEndAfterSettling);
             }
 
-            base.OnDragEnded(handle, eventData);
+            base.OnPointerUp(handle, eventData);
         }
 
         void OnDragEndRecursive(Transform rayOrigin)

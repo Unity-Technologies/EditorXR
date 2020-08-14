@@ -242,7 +242,7 @@ namespace Unity.EditorXR.UI
             m_WorkspaceButton.highlighted = false;
         }
 
-        protected override void OnHandleDragStarted(HandleEventData eventData)
+        protected override void OnHandlePointerDown(HandleEventData eventData)
         {
             if (eventData == null)
                 return;
@@ -254,7 +254,7 @@ namespace Unity.EditorXR.UI
 
             m_WorkspaceButton.highlighted = true;
 
-            base.OnHandleDragStarted(eventData);
+            base.OnHandlePointerDown(eventData);
         }
 
         protected override void OnHandleDragging(HandleEventData eventData)
@@ -270,7 +270,7 @@ namespace Unity.EditorXR.UI
             base.OnHandleDragging(eventData);
         }
 
-        protected override void OnHandleDragEnded(HandleEventData eventData)
+        protected override void OnHandlePointerUp(HandleEventData eventData)
         {
             if (eventData == null)
                 return;
@@ -280,7 +280,7 @@ namespace Unity.EditorXR.UI
             else if (Time.realtimeSinceStartup - m_PressDownTime < k_ClickTime)
                 KeyPressed();
 
-            base.OnHandleDragEnded(eventData);
+            base.OnHandlePointerUp(eventData);
         }
 
         public void OnTriggerEnter(Collider col)

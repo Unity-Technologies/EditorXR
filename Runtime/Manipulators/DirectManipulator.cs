@@ -34,9 +34,9 @@ namespace Unity.EditorXR.Manipulators
         {
             foreach (var h in m_AllHandles)
             {
-                h.dragStarted += OnHandleDragStarted;
+                h.pointerDown += OnHandlePointerDown;
                 h.dragging += OnHandleDragging;
-                h.dragEnded += OnHandleDragEnded;
+                h.pointerUp += OnHandlePointerUp;
             }
         }
 
@@ -44,13 +44,13 @@ namespace Unity.EditorXR.Manipulators
         {
             foreach (var h in m_AllHandles)
             {
-                h.dragStarted -= OnHandleDragStarted;
+                h.pointerDown -= OnHandlePointerDown;
                 h.dragging -= OnHandleDragging;
-                h.dragEnded -= OnHandleDragEnded;
+                h.pointerUp -= OnHandlePointerUp;
             }
         }
 
-        void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
+        void OnHandlePointerDown(BaseHandle handle, HandleEventData eventData)
         {
             foreach (var h in m_AllHandles)
             {
@@ -78,7 +78,7 @@ namespace Unity.EditorXR.Manipulators
             rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset, rayOrigin);
         }
 
-        void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
+        void OnHandlePointerUp(BaseHandle handle, HandleEventData eventData)
         {
             if (gameObject.activeSelf)
             {

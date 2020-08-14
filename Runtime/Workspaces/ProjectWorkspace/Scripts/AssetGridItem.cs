@@ -215,10 +215,10 @@ namespace Unity.EditorXR.Workspaces
                 // Cube material might change, so we always instance it
                 MaterialUtils.GetMaterialClone(m_Cube);
 
-                m_Handle.dragStarted += OnDragStarted;
+                m_Handle.pointerDown += OnPointerDown;
                 m_Handle.dragging += OnDragging;
                 m_Handle.dragging += OnDraggingFeedForward;
-                m_Handle.dragEnded += OnDragEnded;
+                m_Handle.pointerUp += OnPointerUp;
 
                 m_Handle.hoverStarted += OnHoverStarted;
                 m_Handle.hoverEnded += OnHoverEnded;
@@ -339,9 +339,9 @@ namespace Unity.EditorXR.Workspaces
             }
         }
 
-        protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData)
+        protected override void OnPointerDown(BaseHandle handle, HandleEventData eventData)
         {
-            base.OnDragStarted(handle, eventData);
+            base.OnPointerDown(handle, eventData);
 
             var rayOrigin = eventData.rayOrigin;
             this.AddRayVisibilitySettings(rayOrigin, this, m_IncludeRaySelectForDrop, true);
@@ -560,7 +560,7 @@ namespace Unity.EditorXR.Workspaces
             return false;
         }
 
-        protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
+        protected override void OnPointerUp(BaseHandle handle, HandleEventData eventData)
         {
             m_ObjectAssignmentChecks.Clear();
             StopHighlight(m_CachedDropSelection, eventData.rayOrigin);
@@ -587,7 +587,7 @@ namespace Unity.EditorXR.Workspaces
             }
 
             StartCoroutine(HideGrabbedObject(m_DragObject.gameObject, gridItem.m_Cube));
-            base.OnDragEnded(handle, eventData);
+            base.OnPointerUp(handle, eventData);
         }
 
         void HandleAssetDropByType(Transform rayOrigin, AssetGridItem gridItem)

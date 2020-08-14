@@ -121,9 +121,9 @@ namespace Unity.EditorXR.Workspaces
 
                 m_ImportingDefaultColor = m_TextPanel.color;
 
-                m_Handle.dragStarted += OnDragStarted;
+                m_Handle.pointerDown += OnPointerDown;
                 m_Handle.dragging += OnDragging;
-                m_Handle.dragEnded += OnDragEnded;
+                m_Handle.pointerUp += OnPointerUp;
 
                 m_Handle.hoverStarted += OnHoverStarted;
                 m_Handle.hoverEnded += OnHoverEnded;
@@ -316,11 +316,11 @@ namespace Unity.EditorXR.Workspaces
             }
         }
 
-        protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData)
+        protected override void OnPointerDown(BaseHandle handle, HandleEventData eventData)
         {
             if (data.prefab)
             {
-                base.OnDragStarted(handle, eventData);
+                base.OnPointerDown(handle, eventData);
 
                 var rayOrigin = eventData.rayOrigin;
                 this.AddRayVisibilitySettings(rayOrigin, this, false, true);
@@ -351,7 +351,7 @@ namespace Unity.EditorXR.Workspaces
             }
         }
 
-        protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
+        protected override void OnPointerUp(BaseHandle handle, HandleEventData eventData)
         {
             if (data.prefab)
             {
@@ -379,7 +379,7 @@ namespace Unity.EditorXR.Workspaces
                 m_Importing = true;
             }
 
-            base.OnDragEnded(handle, eventData);
+            base.OnPointerUp(handle, eventData);
         }
 
         void OnHoverStarted(BaseHandle handle, HandleEventData eventData)

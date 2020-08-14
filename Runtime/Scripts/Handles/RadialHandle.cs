@@ -37,7 +37,7 @@ namespace Unity.EditorXR.Handles
             return k_RadialHandleEventData;
         }
 
-        protected override void OnHandleDragStarted(HandleEventData eventData)
+        protected override void OnHandlePointerDown(HandleEventData eventData)
         {
             var rayOrigin = eventData.rayOrigin;
             var radialEventData = (RadialHandleEventData)eventData;
@@ -47,7 +47,7 @@ namespace Unity.EditorXR.Handles
 
             m_Plane.SetNormalAndPosition(forward, transform.position);
 
-            base.OnHandleDragStarted(eventData);
+            base.OnHandlePointerDown(eventData);
         }
 
         protected override void OnHandleDragging(HandleEventData eventData)

@@ -68,7 +68,7 @@ namespace Unity.EditorXR.Menus
             set { m_FaceTitle.text = value; }
         }
 
-        public bool visible { set { this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(value)); } }
+        public bool visible { set { EditorMonoBehaviour.instance.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(value)); } }
 
         void Awake()
         {
@@ -95,7 +95,7 @@ namespace Unity.EditorXR.Menus
 
         public void Reveal(float delay = 0f)
         {
-            this.RestartCoroutine(ref m_RevealCoroutine, AnimateReveal(delay));
+            EditorMonoBehaviour.instance.RestartCoroutine(ref m_RevealCoroutine, AnimateReveal(delay));
         }
 
         IEnumerator AnimateVisibility(bool show)

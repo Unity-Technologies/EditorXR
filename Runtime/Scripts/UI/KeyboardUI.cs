@@ -62,9 +62,9 @@ namespace Unity.EditorXR.UI
 
             foreach (var handle in m_DirectManipulator.GetComponentsInChildren<BaseHandle>(true))
             {
-                handle.dragStarted += OnDragStarted;
+                handle.pointerDown += OnPointerDown;
                 handle.dragging += OnDrag;
-                handle.dragEnded += OnDragEnded;
+                handle.pointerUp += OnPointerUp;
             }
 
             foreach (var button in m_Buttons)
@@ -355,7 +355,7 @@ namespace Unity.EditorXR.UI
                 transform.rotation *= deltaRotation;
         }
 
-        void OnDragStarted(BaseHandle handle, HandleEventData handleEventData)
+        void OnPointerDown(BaseHandle handle, HandleEventData handleEventData)
         {
             this.StopCoroutine(ref m_DragAfterDelayCoroutine);
             m_DragAfterDelayCoroutine = StartCoroutine(DragAfterDelay());
@@ -438,7 +438,7 @@ namespace Unity.EditorXR.UI
             }
         }
 
-        void OnDragEnded(BaseHandle handle, HandleEventData handleEventData)
+        void OnPointerUp(BaseHandle handle, HandleEventData handleEventData)
         {
             this.StopCoroutine(ref m_DragAfterDelayCoroutine);
             m_DragAfterDelayCoroutine = null;

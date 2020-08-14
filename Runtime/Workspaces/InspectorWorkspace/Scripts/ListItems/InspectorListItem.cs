@@ -82,9 +82,9 @@ namespace Unity.EditorXR.Workspaces
                 if (handle.transform.parent.GetComponentInChildren<Toggle>())
                     continue;
 
-                handle.dragStarted += OnDragStarted;
+                handle.pointerDown += OnPointerDown;
                 handle.dragging += OnDragging;
-                handle.dragEnded += OnDragEnded;
+                handle.pointerUp += OnPointerUp;
 
                 handle.dropHoverStarted += OnDropHoverStarted;
                 handle.dropHoverEnded += OnDropHoverEnded;
@@ -193,13 +193,13 @@ namespace Unity.EditorXR.Workspaces
             ReceiveDropForFieldBlock(handle.transform.parent, dropObject);
         }
 
-        protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData)
+        protected override void OnPointerDown(BaseHandle handle, HandleEventData eventData)
         {
-            base.OnDragStarted(handle, eventData);
+            base.OnPointerDown(handle, eventData);
             m_HorizontalDrag = false;
         }
 
-        protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+        protected override void OnPointerDown(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
         {
             var dragVector = eventData.rayOrigin.position - dragStart;
             var distance = dragVector.magnitude;
@@ -314,7 +314,7 @@ namespace Unity.EditorXR.Workspaces
                 m_DraggedField.SliderDrag(rayOrigin);
         }
 
-        protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
+        protected override void OnPointerUp(BaseHandle handle, HandleEventData eventData)
         {
             if (m_DraggedField)
                 m_DraggedField.EndSliderDrag(eventData.rayOrigin);
@@ -349,7 +349,7 @@ namespace Unity.EditorXR.Workspaces
                     inputField.OpenKeyboard();
             }
 
-            base.OnDragEnded(handle, eventData);
+            base.OnPointerUp(handle, eventData);
         }
 
         protected virtual object GetDropObjectForFieldBlock(Transform fieldBlock)

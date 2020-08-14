@@ -60,9 +60,9 @@ namespace Unity.EditorXR.Data
                 m_NormalColor = m_CubeRenderer.sharedMaterial.color;
                 MaterialUtils.GetMaterialClone(m_CubeRenderer);
 
-                m_ExpandArrow.dragEnded += ToggleExpanded;
-                m_Cube.dragStarted += SelectFolder;
-                m_Cube.dragEnded += ToggleExpanded;
+                m_ExpandArrow.pointerUp += ToggleExpanded;
+                m_Cube.pointerDown += SelectFolder;
+                m_Cube.pointerUp += ToggleExpanded;
 
                 m_Cube.hoverStarted += OnHoverStarted;
                 m_Cube.hoverEnded += OnHoverEnded;

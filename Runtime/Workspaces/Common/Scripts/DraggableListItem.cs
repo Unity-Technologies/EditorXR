@@ -34,7 +34,7 @@ namespace Unity.EditorXR.Workspaces
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
 #endif
 
-        protected virtual void OnDragStarted(BaseHandle handle, HandleEventData eventData)
+        protected virtual void OnPointerDown(BaseHandle handle, HandleEventData eventData)
         {
             if (singleClickDrag)
             {
@@ -97,7 +97,7 @@ namespace Unity.EditorXR.Workspaces
                 if (m_DragObject == null && distance > k_DragDeadZone * this.GetViewerScale())
                 {
                     m_DragObject = handle.transform;
-                    OnDragStarted(handle, eventData, directDragStart);
+                    OnPointerDown(handle, eventData, directDragStart);
                 }
 
                 if (m_DragObject)
@@ -105,7 +105,7 @@ namespace Unity.EditorXR.Workspaces
             }
         }
 
-        protected virtual void OnDragStarted(BaseHandle handle, HandleEventData eventData, Vector3 dragStartPosition)
+        protected virtual void OnPointerDown(BaseHandle handle, HandleEventData eventData, Vector3 dragStartPosition)
         {
             if (dragStart != null)
                 dragStart(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
@@ -117,7 +117,7 @@ namespace Unity.EditorXR.Workspaces
                 dragging(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
         }
 
-        protected virtual void OnDragEnded(BaseHandle handle, HandleEventData eventData)
+        protected virtual void OnPointerUp(BaseHandle handle, HandleEventData eventData)
         {
             m_DragObject = null;
 

@@ -40,9 +40,9 @@ namespace Unity.EditorXR.Workspaces
 
             var handle = m_CaptureWindow.GetComponent<BaseHandle>();
             handle.hovering += OnHovering;
-            handle.dragStarted += OnDragStarted;
+            handle.pointerDown += OnPointerDown;
             handle.dragging += OnDragging;
-            handle.dragEnded += OnDragEnded;
+            handle.pointerUp += OnPointerUp;
 
             m_Capture = m_CaptureWindow.GetComponent<EditorWindowCapture>();
         }
@@ -52,7 +52,7 @@ namespace Unity.EditorXR.Workspaces
             m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseMove);
         }
 
-        void OnDragStarted(BaseHandle handle, HandleEventData eventData)
+        void OnPointerDown(BaseHandle handle, HandleEventData eventData)
         {
             m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseDown);
         }
@@ -62,7 +62,7 @@ namespace Unity.EditorXR.Workspaces
             m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseDrag);
         }
 
-        void OnDragEnded(BaseHandle handle, HandleEventData eventData)
+        void OnPointerUp(BaseHandle handle, HandleEventData eventData)
         {
             m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseUp);
         }

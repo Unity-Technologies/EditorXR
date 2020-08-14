@@ -48,9 +48,9 @@ namespace Unity.EditorXR.Manipulators
                 handle.GetComponent<MeshFilter>().sharedMesh = hovering ? m_FatRadialHandleMesh : m_RadialHandleMesh;
         }
 
-        protected override void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
+        protected override void OnHandlePointerDown(BaseHandle handle, HandleEventData eventData)
         {
-            base.OnHandleDragStarted(handle, eventData);
+            base.OnHandlePointerDown(handle, eventData);
 
             if (handle.IndexOfDragSource(eventData.rayOrigin) > 0)
                 return;
@@ -84,9 +84,9 @@ namespace Unity.EditorXR.Manipulators
             }
         }
 
-        protected override void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
+        protected override void OnHandlePointerUp(BaseHandle handle, HandleEventData eventData)
         {
-            base.OnHandleDragEnded(handle, eventData);
+            base.OnHandlePointerUp(handle, eventData);
 
             if (handle.IndexOfDragSource(eventData.rayOrigin) > 0)
                 return;

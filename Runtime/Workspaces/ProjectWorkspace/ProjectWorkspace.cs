@@ -171,18 +171,18 @@ namespace Unity.EditorXR.Workspaces
                 // Scroll Handle shouldn't move on bounds change
                 handle.transform.parent = m_WorkspaceUI.sceneContainer;
 
-                handle.dragStarted += OnScrollDragStarted;
+                handle.pointerDown += OnScrollPointerDown;
                 handle.dragging += OnScrollDragging;
-                handle.dragEnded += OnScrollDragEnded;
+                handle.pointerUp += OnScrollPointerUp;
             }
 
             // Hookup highlighting calls
-            m_ProjectUI.assetScrollHandle.dragStarted += OnAssetGridDragHighlightBegin;
-            m_ProjectUI.assetScrollHandle.dragEnded += OnAssetGridDragHighlightEnd;
+            m_ProjectUI.assetScrollHandle.pointerDown += OnAssetGridDragHighlightBegin;
+            m_ProjectUI.assetScrollHandle.pointerUp += OnAssetGridDragHighlightEnd;
             m_ProjectUI.assetScrollHandle.hoverStarted += OnAssetGridHoverHighlightBegin;
             m_ProjectUI.assetScrollHandle.hoverEnded += OnAssetGridHoverHighlightEnd;
-            m_ProjectUI.folderScrollHandle.dragStarted += OnFolderPanelDragHighlightBegin;
-            m_ProjectUI.folderScrollHandle.dragEnded += OnFolderPanelDragHighlightEnd;
+            m_ProjectUI.folderScrollHandle.pointerDown += OnFolderPanelDragHighlightBegin;
+            m_ProjectUI.folderScrollHandle.pointerUp += OnFolderPanelDragHighlightEnd;
             m_ProjectUI.folderScrollHandle.hoverStarted += OnFolderPanelHoverHighlightBegin;
             m_ProjectUI.folderScrollHandle.hoverEnded += OnFolderPanelHoverHighlightEnd;
 
@@ -256,7 +256,7 @@ namespace Unity.EditorXR.Workspaces
             m_ProjectUI.assetGridView.scrollOffset = 0;
         }
 
-        void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData)
+        void OnScrollPointerDown(BaseHandle handle, HandleEventData eventData)
         {
             if (handle == m_ProjectUI.folderScrollHandle)
                 m_ProjectUI.folderListView.OnScrollStarted();
@@ -272,7 +272,7 @@ namespace Unity.EditorXR.Workspaces
                 m_ProjectUI.assetGridView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / this.GetViewerScale();
         }
 
-        void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData)
+        void OnScrollPointerUp(BaseHandle handle, HandleEventData eventData)
         {
             if (handle == m_ProjectUI.folderScrollHandle)
                 m_ProjectUI.folderListView.OnScrollEnded();

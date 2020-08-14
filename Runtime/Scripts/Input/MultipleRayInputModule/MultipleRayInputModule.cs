@@ -564,11 +564,17 @@ namespace Unity.EditorXR.Modules
             // search for the control that will receive the press
             // if we can't find a press handler set the press
             // handler to be what would receive a click.
-            var newPressed = ExecuteEvents.ExecuteHierarchy(currentOverGo, rayEvent, ExecuteEvents.pointerDownHandler);
+            var newPressed = ExecuteEvents.ExecuteHierarchy(currentOverGo, rayEvent, ExecuteRayEvents.pointerDownHandler);
+
+            if (newPressed == null)
+                newPressed = ExecuteEvents.ExecuteHierarchy(currentOverGo, rayEvent, ExecuteEvents.pointerDownHandler);
 
             // didnt find a press handler... search for a click handler
             if (newPressed == null)
                 newPressed = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
+
+            if (newPressed == null)
+                newPressed = ExecuteEvents.GetEventHandler<IRayClickHandler>(currentOverGo);
 
             var time = Time.unscaledTime;
 

@@ -48,14 +48,14 @@ namespace Unity.EditorXR.Handles
             return k_LinearHandleEventData;
         }
 
-        protected override void OnHandleDragStarted(HandleEventData eventData)
+        protected override void OnHandlePointerDown(HandleEventData eventData)
         {
             var planeEventData = eventData as PlaneHandleEventData;
             m_LastPositions[eventData.rayOrigin] = planeEventData.raycastHitWorldPosition;
 
             m_Plane.SetNormalAndPosition(transform.forward, transform.position);
 
-            base.OnHandleDragStarted(eventData);
+            base.OnHandlePointerDown(eventData);
         }
 
         protected override void OnHandleDragging(HandleEventData eventData)

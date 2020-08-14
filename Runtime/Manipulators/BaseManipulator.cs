@@ -73,9 +73,9 @@ namespace Unity.EditorXR.Manipulators
                 handle.hovering += OnHandleHovering;
                 handle.hoverEnded += OnHandleHoverEnded;
 
-                handle.dragStarted += OnHandleDragStarted;
+                handle.pointerDown += OnHandlePointerDown;
                 handle.dragging += OnHandleDragging;
-                handle.dragEnded += OnHandleDragEnded;
+                handle.pointerUp += OnHandlePointerUp;
             }
         }
 
@@ -262,7 +262,7 @@ namespace Unity.EditorXR.Manipulators
             }
         }
 
-        protected virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
+        protected virtual void OnHandlePointerDown(BaseHandle handle, HandleEventData eventData)
         {
             var rayOrigin = eventData.rayOrigin;
             if (handle.IndexOfDragSource(rayOrigin) > 0)
@@ -291,7 +291,7 @@ namespace Unity.EditorXR.Manipulators
             UpdateHandleTip(handle, eventData, true);
         }
 
-        protected virtual void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
+        protected virtual void OnHandlePointerUp(BaseHandle handle, HandleEventData eventData)
         {
             var rayOrigin = eventData.rayOrigin;
 

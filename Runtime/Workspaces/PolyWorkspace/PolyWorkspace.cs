@@ -133,9 +133,9 @@ namespace Unity.EditorXR.Workspaces
             scrollHandleTransform.localScale = k_ScrollHandleScale;
             scrollHandleTransform.localPosition = k_ScrollHandlePosition;
 
-            scrollHandle.dragStarted += OnScrollDragStarted;
+            scrollHandle.pointerDown += OnScrollPointerDown;
             scrollHandle.dragging += OnScrollDragging;
-            scrollHandle.dragEnded += OnScrollDragEnded;
+            scrollHandle.pointerUp += OnScrollPointerUp;
             m_PolyUI.scrollHandle.hoverStarted += OnScrollHoverStarted;
             m_PolyUI.scrollHandle.hoverEnded += OnScrollHoverEnded;
 
@@ -419,7 +419,7 @@ namespace Unity.EditorXR.Workspaces
             gridView.size = size;
         }
 
-        void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+        void OnScrollPointerDown(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
         {
             m_Scrolling = true;
 
@@ -434,7 +434,7 @@ namespace Unity.EditorXR.Workspaces
             m_PolyUI.gridView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / this.GetViewerScale();
         }
 
-        void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+        void OnScrollPointerUp(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
         {
             m_Scrolling = false;
 
