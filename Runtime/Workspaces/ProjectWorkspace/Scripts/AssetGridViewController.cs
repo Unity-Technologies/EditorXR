@@ -51,7 +51,10 @@ namespace Unity.EditorXR.Workspaces
                 if (m_NumPerRow == 0)
                     return 0;
 
-                var numRows = Mathf.CeilToInt(m_Data.Count / m_NumPerRow);
+                if (m_Data == null)
+                    return 0;
+
+                var numRows = Mathf.CeilToInt((float)m_Data.Count / m_NumPerRow);
                 return Mathf.Clamp(numRows, 1, int.MaxValue) * itemSize.z;
             }
         }
