@@ -1,7 +1,7 @@
 using System;
 using TMPro;
 using Unity.EditorXR.Data;
-using Unity.XRTools.Utils;
+using UnityEditor.XRTools.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 

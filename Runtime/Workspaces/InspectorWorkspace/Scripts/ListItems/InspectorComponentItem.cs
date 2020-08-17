@@ -1,7 +1,7 @@
 using TMPro;
 using Unity.EditorXR.Data;
-using Unity.XRTools.Utils;
 using UnityEditor;
+using UnityEditor.XRTools.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using Button = Unity.EditorXR.UI.Button;

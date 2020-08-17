@@ -1,6 +1,6 @@
 using TMPro;
 using Unity.EditorXR.Data;
-using Unity.XRTools.Utils;
+using UnityEditor.XRTools.Utils;
 using UnityEngine;
 
 namespace Unity.EditorXR.Workspaces

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Unity.EditorXR.Data;
-using Unity.XRTools.Utils;
 using UnityEditor;
+using UnityEditor.XRTools.Utils;
 using UnityEngine;
 
 namespace Unity.EditorXR.Workspaces

@@ -2,11 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.EditorXR.Core;
-using Unity.EditorXR.Extensions;
 using Unity.EditorXR.Interfaces;
 using Unity.XRTools.ModuleLoader;
 using Unity.XRTools.Utils;
 using UnityEditor;
+using UnityEditor.XRTools.Utils;
 using UnityEngine;
 
 namespace Unity.EditorXR.Modules
