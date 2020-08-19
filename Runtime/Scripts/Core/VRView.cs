@@ -118,7 +118,9 @@ namespace Unity.EditorXR.Core
         {
             get
             {
+#pragma warning disable 618
                 return XRDevice.GetTrackingSpaceType() == TrackingSpaceType.Stationary ? Vector3.up * HeadHeight : Vector3.zero;
+#pragma warning restore 618
             }
         }
 
@@ -502,7 +504,9 @@ namespace Unity.EditorXR.Core
 
         internal static bool GetIsUserPresent()
         {
+#pragma warning disable 618
             return XRDevice.userPresence == UserPresenceState.Present;
+#pragma warning restore 618
         }
 
         void SetGameViewsAutoRepaint(bool enabled)

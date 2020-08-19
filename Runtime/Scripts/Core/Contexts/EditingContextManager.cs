@@ -147,7 +147,9 @@ namespace Unity.EditorXR.Core
             if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying)
                 return false;
 
+#pragma warning disable 618
             return PlayerSettings.GetVirtualRealitySupported(BuildTargetGroup.Standalone);
+#pragma warning restore 618
         }
 
         [SettingsProvider]

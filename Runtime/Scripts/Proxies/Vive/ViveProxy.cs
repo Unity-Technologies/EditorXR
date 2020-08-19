@@ -24,7 +24,9 @@ namespace Unity.EditorXR.Proxies
 
         protected override void Awake()
         {
+#pragma warning disable 618
             m_IsOculus = XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
+#pragma warning restore 618
 
             if (m_IsOculus)
             {

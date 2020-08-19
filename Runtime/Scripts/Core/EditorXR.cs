@@ -93,8 +93,10 @@ namespace Unity.EditorXR.Core
                 s_IsInitialized = true;
 
 #if UNITY_EDITOR
+#pragma warning disable 618
                 if (!PlayerSettings.GetVirtualRealitySupported(BuildTargetGroup.Standalone))
                     Debug.Log("<color=orange>EditorXR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->XR Settings</color>");
+#pragma warning restore 618
 #endif
             }
         }
