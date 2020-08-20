@@ -24,7 +24,9 @@ namespace Unity.EditorXR.Proxies
 
         protected override void Awake()
         {
-#if !UNITY_2020_2_OR_NEWER
+#if UNITY_2020_2_OR_NEWER
+            m_IsOculus = true; // TODO: Use XR Management
+#else
 #pragma warning disable 618
             m_IsOculus = XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
 #pragma warning restore 618

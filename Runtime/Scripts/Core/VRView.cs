@@ -28,7 +28,9 @@ namespace Unity.EditorXR.Core
         static bool s_ExistingSceneMainCameraEnabledState;
 
 #if UNITY_EDITOR
+#if !UNITY_2020_2_OR_NEWER
         DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
+#endif
 
         // To allow for alternate previews (e.g. smoothing)
         public static Camera customPreviewCamera
