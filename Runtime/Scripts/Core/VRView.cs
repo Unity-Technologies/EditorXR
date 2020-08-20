@@ -462,10 +462,12 @@ namespace Unity.EditorXR.Core
 
             if (Event.current.type == EventType.Repaint)
             {
+#pragma warning disable 618
                 if (XRDevice.isPresent)
                     UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
                 else
                     m_Camera.Render();
+#pragma warning restore 618
 
                 GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
                 RenderTexture.active = null; // Clean up after DrawCamera

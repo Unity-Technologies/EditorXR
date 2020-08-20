@@ -1,3 +1,8 @@
+// Edit mode support requires legacy VR, which was removed in 2020.1
+#if UNITY_EDITOR && !UNITY_2020_1_OR_NEWER
+#define UNITY_EDITORXR_EDIT_MODE_SUPPORT
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,8 +15,11 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
-using UnityEngine.XR;
 using UnityObject = UnityEngine.Object;
+
+#if UNITY_EDITORXR_EDIT_MODE_SUPPORT
+using UnityEngine.XR;
+#endif
 
 namespace Unity.EditorXR.Core
 {
@@ -28,8 +36,10 @@ namespace Unity.EditorXR.Core
         internal const string settingsPath = "ProjectSettings/EditingContextManagerSettings.asset";
         internal const string userSettingsPath = "Library/EditingContextManagerSettings.asset";
 
+#if UNITY_EDITORXR_EDIT_MODE_SUPPORT
         const string k_AutoOpen = "EditorXR.EditingContextManager.AutoOpen";
         const string k_LaunchOnExitPlaymode = "EditorXR.EditingContextManager.LaunchOnExitPlaymode";
+#endif
 
         IEditingContext m_CurrentContext;
 
@@ -38,7 +48,7 @@ namespace Unity.EditorXR.Core
         static EditingContextManagerSettings s_Settings;
         static UnityObject s_DefaultContext;
 
-#if UNITY_EDITOR
+#if UNITY_EDITORXR_EDIT_MODE_SUPPORT
         static bool s_AutoOpened;
         static bool s_UserWasPresent;
         static bool s_EnableXRFailed;
@@ -74,11 +84,6 @@ namespace Unity.EditorXR.Core
             set { settings.defaultContextName = value.name; }
         }
 
-        internal IEditingContext currentContext
-        {
-            get { return m_CurrentContext; }
-        }
-
         static EditingContextManagerSettings settings
         {
             get
@@ -90,13 +95,18 @@ namespace Unity.EditorXR.Core
             }
         }
 
+        internal IEditingContext currentContext
+        {
+            get { return m_CurrentContext; }
+        }
+
+#if UNITY_EDITORXR_EDIT_MODE_SUPPORT
         static bool autoOpen
         {
             get { return EditorPrefs.GetBool(k_AutoOpen, true); }
             set { EditorPrefs.SetBool(k_AutoOpen, value); }
         }
 
-#if UNITY_EDITOR
         static EditingContextManager()
         {
             VRView.viewEnabled += OnVRViewEnabled;
@@ -119,7 +129,7 @@ namespace Unity.EditorXR.Core
 
         static void OnVRViewDisabled()
         {
-#if UNITY_EDITOR
+#if UNITY_EDITORXR_EDIT_MODE_SUPPORT
             s_AutoOpened = false;
 #endif
 
@@ -131,27 +141,6 @@ namespace Unity.EditorXR.Core
         }
 
 #if UNITY_EDITOR
-        [MenuItem("Window/EditorXR %e", false)]
-        internal static void ShowEditorXR()
-        {
-            if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying)
-                return;
-
-            // Using a utility window improves performance by saving from the overhead of DockArea.OnGUI()
-            EditorWindow.GetWindow<VRView>(true, "EditorXR", true);
-        }
-
-        [MenuItem("Window/EditorXR %e", true)]
-        static bool ShouldShowEditorXR()
-        {
-            if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying)
-                return false;
-
-#pragma warning disable 618
-            return PlayerSettings.GetVirtualRealitySupported(BuildTargetGroup.Standalone);
-#pragma warning restore 618
-        }
-
         [SettingsProvider]
         static SettingsProvider CreateSettingsProvider()
         {
@@ -166,6 +155,7 @@ namespace Unity.EditorXR.Core
                 label = "Context Manager",
                 guiHandler = (searchContext) =>
                 {
+#if UNITY_EDITORXR_EDIT_MODE_SUPPORT
                     EditorGUILayout.LabelField("Global Settings", EditorStyles.boldLabel);
 
                     using (new EditorGUILayout.HorizontalScope())
@@ -211,6 +201,9 @@ namespace Unity.EditorXR.Core
                             }
                         }
                     }
+#else
+                    EditorGUILayout.HelpBox("EditorXR in Edit Mode requires legacy VR support, which was removed in Unity 2020.1. To use EditorXR in Edit Mode, you must use Unity 2019. To use EditorXR in Play Mode, add an EditingContextManager to your scene and install an XR Plugin.", MessageType.Warning);
+#endif
 
                     var contextTypes = CollectionPool<List<Type>, Type>.GetCollection();
                     typeof(IEditingContext).GetImplementationsOfInterface(contextTypes);
@@ -231,6 +224,28 @@ namespace Unity.EditorXR.Core
             };
 
             return provider;
+        }
+
+#if UNITY_EDITORXR_EDIT_MODE_SUPPORT
+        [MenuItem("Window/EditorXR %e", false)]
+        internal static void ShowEditorXR()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying)
+                return;
+
+            // Using a utility window improves performance by saving from the overhead of DockArea.OnGUI()
+            EditorWindow.GetWindow<VRView>(true, "EditorXR", true);
+        }
+
+        [MenuItem("Window/EditorXR %e", true)]
+        static bool ShouldShowEditorXR()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying)
+                return false;
+
+#pragma warning disable 618
+            return PlayerSettings.GetVirtualRealitySupported(BuildTargetGroup.Standalone);
+#pragma warning restore 618
         }
 
         static void OnAutoOpenStateChanged()
@@ -310,9 +325,7 @@ namespace Unity.EditorXR.Core
                     EditorApplication.delayCall += ShowEditorXR;
             }
         }
-#endif
 
-#if UNITY_EDITOR
         static void OnPlayModeStateChanged(PlayModeStateChange stateChange)
         {
             if (stateChange == PlayModeStateChange.ExitingEditMode)
@@ -324,6 +337,7 @@ namespace Unity.EditorXR.Core
             }
         }
 #endif
+#endif
 
         void OnEnable()
         {
@@ -334,7 +348,7 @@ namespace Unity.EditorXR.Core
             SetEditingContextMethods.setEditingContext = SetEditingContext;
             SetEditingContextMethods.restorePreviousEditingContext = RestorePreviousContext;
 
-#if UNITY_EDITOR
+#if UNITY_EDITORXR_EDIT_MODE_SUPPORT
             if (runInEditMode)
             {
                 // Force the window to repaint every tick, since we need live updating
@@ -359,7 +373,7 @@ namespace Unity.EditorXR.Core
             {
                 OnVRViewDisabled();
             }
-#if UNITY_EDITOR
+#if UNITY_EDITORXR_EDIT_MODE_SUPPORT
             else
             {
                 EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
@@ -412,7 +426,7 @@ namespace Unity.EditorXR.Core
             if (s_AvailableContexts.Count == 0)
                 throw new Exception("You can't start EditorXR without at least one context. Try re-importing the package or use version control to restore the default context asset");
 
-#if UNITY_EDITOR
+#if UNITY_EDITORXR_EDIT_MODE_SUPPORT
             if (s_AvailableContexts.Count > 1)
                 VRView.afterOnGUI += OnVRViewGUI;
 #endif
