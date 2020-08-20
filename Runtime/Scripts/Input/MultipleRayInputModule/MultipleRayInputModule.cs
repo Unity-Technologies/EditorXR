@@ -113,14 +113,20 @@ namespace Unity.EditorXR.Modules
                 m_Owner.ProcessMove(eventData);
                 m_Owner.ProcessDrag(eventData, true);
 
+                var verticalScroll = uiActions.verticalScroll;
+                var horizontalScroll = uiActions.horizontalScroll;
+                if (eventData.dragging)
+                {
+                    consumeControl(verticalScroll);
+                    consumeControl(horizontalScroll);
+                }
+
                 // Send scroll events
                 if (currentObject)
                 {
                     var hasScrollHandler = ExecuteEvents.GetEventHandler<IScrollHandler>(currentObject);
                     if (hasScrollHandler)
                     {
-                        var verticalScroll = uiActions.verticalScroll;
-                        var horizontalScroll = uiActions.horizontalScroll;
                         var verticalScrollValue = verticalScroll.value;
                         var horizontalScrollValue = horizontalScroll.value;
                         if (!Mathf.Approximately(verticalScrollValue, 0f) || !Mathf.Approximately(horizontalScrollValue, 0f))
