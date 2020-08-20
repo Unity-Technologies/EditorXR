@@ -463,9 +463,11 @@ namespace Unity.EditorXR.Core
             if (Event.current.type == EventType.Repaint)
             {
 #pragma warning disable 618
+#if !UNITY_2020_2_OR_NEWER
                 if (XRDevice.isPresent)
                     UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
                 else
+#endif
                     m_Camera.Render();
 #pragma warning restore 618
 
@@ -506,9 +508,13 @@ namespace Unity.EditorXR.Core
 
         internal static bool GetIsUserPresent()
         {
+#if UNITY_2020_2_OR_NEWER
+            return false;
+#else
 #pragma warning disable 618
             return XRDevice.userPresence == UserPresenceState.Present;
 #pragma warning restore 618
+#endif
         }
 
         void SetGameViewsAutoRepaint(bool enabled)
@@ -544,5 +550,5 @@ namespace Unity.EditorXR.Core
             }
         }
 #endif
-    }
-}
+        }
+        }

@@ -26,6 +26,9 @@ namespace Unity.EditorXR
         /// <returns>The device type</returns>
         public static DeviceType GetDeviceType(this IUsesDeviceType @this)
         {
+#if UNITY_2020_2_OR_NEWER
+            return default;
+#else
 #pragma warning disable 618
             if (string.IsNullOrEmpty(s_XRDeviceModel))
                 s_XRDeviceModel = XRDevice.model;
@@ -33,6 +36,7 @@ namespace Unity.EditorXR
 
             return s_XRDeviceModel.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0
                 ? DeviceType.Oculus : DeviceType.Vive;
+#endif
         }
     }
 }
