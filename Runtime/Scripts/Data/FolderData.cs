@@ -36,6 +36,7 @@ namespace Unity.EditorXR.Data
             m_Depth = depth;
         }
 
+#if UNITY_EDITOR
         public static IEnumerator CreateRootFolderData(HashSet<string> assetTypes, Action<FolderData> callback)
         {
             var hp = new HierarchyProperty(HierarchyType.Assets);
@@ -126,5 +127,6 @@ namespace Unity.EditorXR.Data
 
             return new AssetData(hp.name, hp.guid, typeName);
         }
+#endif
     }
 }

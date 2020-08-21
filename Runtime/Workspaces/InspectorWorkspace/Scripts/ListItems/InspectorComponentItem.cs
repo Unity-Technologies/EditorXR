@@ -1,10 +1,13 @@
 using TMPro;
 using Unity.EditorXR.Data;
-using UnityEditor;
-using UnityEditor.XRTools.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using Button = Unity.EditorXR.UI.Button;
+
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEditor.XRTools.Utils;
+#endif
 
 namespace Unity.EditorXR.Workspaces
 {

@@ -5,9 +5,12 @@ using Unity.EditorXR.Core;
 using Unity.EditorXR.Interfaces;
 using Unity.XRTools.ModuleLoader;
 using Unity.XRTools.Utils;
+using UnityEngine;
+
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.XRTools.Utils;
-using UnityEngine;
+#endif
 
 namespace Unity.EditorXR.Modules
 {

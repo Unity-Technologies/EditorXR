@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Unity.EditorXR.Data;
+using UnityEngine;
+
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.XRTools.Utils;
-using UnityEngine;
+#endif
 
 namespace Unity.EditorXR.Workspaces
 {

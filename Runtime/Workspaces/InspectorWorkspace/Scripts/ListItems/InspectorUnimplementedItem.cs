@@ -1,7 +1,10 @@
 using TMPro;
 using Unity.EditorXR.Data;
-using UnityEditor.XRTools.Utils;
 using UnityEngine;
+
+#if UNITY_EDITOR
+using UnityEditor.XRTools.Utils;
+#endif
 
 namespace Unity.EditorXR.Workspaces
 {
