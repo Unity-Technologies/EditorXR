@@ -127,6 +127,11 @@ namespace Unity.EditorXR.Data
 
             return new AssetData(hp.name, hp.guid, typeName);
         }
+#else
+        public void SetAssetList(List<AssetData> list)
+        {
+            m_Assets = list;
+        }
 #endif
     }
 }
