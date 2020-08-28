@@ -311,7 +311,7 @@ namespace Unity.EditorXR.Workspaces
         }
     }
 #else
-    sealed class InspectorListViewController : NestedListViewController<InspectorData, InspectorListItem, int>
+    sealed class InspectorListViewController : EditorXRNestedListViewController<InspectorData, InspectorListItem, int>
     {
         [SerializeField]
         Material m_RowCubeMaterial;
