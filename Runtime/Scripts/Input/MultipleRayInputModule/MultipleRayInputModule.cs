@@ -476,6 +476,15 @@ namespace Unity.EditorXR.Modules
 
             var usedEvent = SendUpdateEventToSelectedObject();
 
+            // Position the event camera to cast physics rays
+            if (m_EventCamera != null)
+            {
+                var eventCameraTransform = m_EventCamera.transform;
+                var mainCameraTransform = m_MainCamera.transform;
+                eventCameraTransform.position = mainCameraTransform.position;
+                eventCameraTransform.rotation = mainCameraTransform.rotation;
+            }
+
             // case 1004066 - touch / mouse events should be processed before navigation events in case
             // they change the current selected gameobject and the submit button is a touch / mouse button.
 
@@ -495,12 +504,6 @@ namespace Unity.EditorXR.Modules
 
         bool ProcessTouchEvents()
         {
-            // Position the event camera to cast physics rays
-            var eventCameraTransform = m_EventCamera.transform;
-            var mainCameraTransform = m_MainCamera.transform;
-            eventCameraTransform.position = mainCameraTransform.position;
-            eventCameraTransform.rotation = mainCameraTransform.rotation;
-
             for (var i = 0; i < input.touchCount; ++i)
             {
                 var touch = input.GetTouch(i);
@@ -720,12 +723,6 @@ namespace Unity.EditorXR.Modules
         /// </summary>
         protected void ProcessMouseEvent(int id)
         {
-            // Position the event camera to cast physics rays
-            var eventCameraTransform = m_EventCamera.transform;
-            var mainCameraTransform = m_MainCamera.transform;
-            eventCameraTransform.position = mainCameraTransform.position;
-            eventCameraTransform.rotation = mainCameraTransform.rotation;
-
             var mouseData = GetMouseRayEventData(id);
             var leftButtonData = mouseData.GetButtonState(PointerEventData.InputButton.Left).eventData;
 

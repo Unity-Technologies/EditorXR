@@ -55,9 +55,10 @@ namespace Unity.EditorXR.Modules
         // Local method use only -- created here to reduce garbage collection
         RayEventData m_TempRayEvent;
 
-        protected override void Awake()
+
+        protected override void OnEnable()
         {
-            base.Awake();
+            base.OnEnable();
             m_TempRayEvent = new RayEventData(eventSystem);
         }
 

@@ -420,6 +420,9 @@ namespace Unity.EditorXR.Modules
 
         public void OnBehaviorUpdate()
         {
+            if (m_ModuleParent == null)
+                return;
+
             if (snappingEnabled)
             {
                 var camera = CameraUtils.GetMainCamera();

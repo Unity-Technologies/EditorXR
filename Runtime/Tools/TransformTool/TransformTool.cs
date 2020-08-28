@@ -445,7 +445,7 @@ namespace Unity.EditorXR.Tools
 
         public void OnSelectionChanged()
         {
-            if (!this.IsSharedUpdater(this))
+            if (!this.IsSharedUpdater(this) || !m_CurrentManipulator)
                 return;
 
             if (Selection.gameObjects.Length == 0)
