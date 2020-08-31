@@ -4,7 +4,7 @@ namespace Unity.EditorXR.Input
     {
         protected override string DeviceName
         {
-            get { return "Oculus Touch Controller"; }
+            get { return "Oculus"; }
         }
     }
 }
