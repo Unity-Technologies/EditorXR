@@ -58,7 +58,13 @@ namespace Unity.EditorXR.Modules
 
         public Color highlightColor
         {
-            get { return m_RayHighlightMaterialCopy.GetVector("_Color"); }
+            get
+            {
+                if (m_RayHighlightMaterialCopy == null)
+                    return default;
+
+                return m_RayHighlightMaterialCopy.GetVector("_Color");
+            }
             set { m_RayHighlightMaterialCopy.color = value; }
         }
 
