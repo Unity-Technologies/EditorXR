@@ -12,7 +12,8 @@
         "Unity.XRTools.ModuleLoader",
         "Unity.EditorXR.Interfaces",
         "UnityEngine.SpatialTracking",
-        "Unity.XRTools.SpatialHash.Public"
+        "Unity.XRTools.SpatialHash.Public",
+        "Unity.XRTools.SpatialHash"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],

@@ -6,6 +6,7 @@ using Unity.EditorXR.Interfaces;
 using Unity.EditorXR.Modules;
 using Unity.EditorXR.Utilities;
 using Unity.XRTools.ModuleLoader;
+using Unity.XRTools.SpatialHash.Internal;
 using Unity.XRTools.Utils;
 using UnityEngine;
 
@@ -201,6 +202,12 @@ namespace Unity.EditorXR.Core
             if (activeView)
                 activeView.Close();
 #endif
+        }
+
+        static EditorXR()
+        {
+            // Hack: Required to preserve class which is not explicitly accessed
+            new SpatialHashModule();
         }
     }
 }
