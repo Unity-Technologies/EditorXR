@@ -23,7 +23,7 @@ This version of EditorXR is compatible with the following versions of the Unity 
 
 ## Known limitations
 
-*_EditorXR version 0.4.9-preview includes the following known limitations:_*
+*_EditorXR version 0.4.10-preview includes the following known limitations:_*
 * *_Undo/redo do not record all change history yet in the Radial Menu_*
 * *_Toggles from the main menu are not yet supported (snap, locomotion type, etc)._*
 * *_Other EditorXR menus and workspaces still draw above the Spatial Menu._*

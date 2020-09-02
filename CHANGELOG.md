@@ -4,8 +4,10 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [0.4.10-preview] - 2020-08-27
+## [0.4.10-preview] - 2020-09-02
 - Update dependencies to released versions
+- Fix controller detection for Quest builds
+- Fix errors caused by SpatialHashModule being stripped in IL2CPP builds
 
 ## [0.4.9-preview] - 2020-08-21
 - Fix compile errors when making player builds
