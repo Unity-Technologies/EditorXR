@@ -1,3 +1,8 @@
+// Edit mode support requires legacy VR, which was removed in 2020.1
+#if UNITY_EDITOR && !UNITY_2020_1_OR_NEWER
+#define UNITY_EDITORXR_EDIT_MODE_SUPPORT
+#endif
+
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
@@ -47,6 +52,7 @@ namespace Unity.EditorXR.Tests.Core
             EditingContextManager.SaveProjectSettings(settings);
         }
 
+#if UNITY_EDITORXR_EDIT_MODE_SUPPORT
         [Test]
         public void Initializes_WithDefaultContext()
         {
@@ -87,6 +93,7 @@ namespace Unity.EditorXR.Tests.Core
             manager.RestorePreviousContext();
             Assert.AreEqual(beginningContext, manager.currentContext);
         }
+#endif
 
         [Test]
         public void LoadProjectSettings_IfAssetFound()
@@ -163,10 +170,15 @@ namespace Unity.EditorXR.Tests.Core
         [OneTimeTearDown]
         public void Cleanup()
         {
+#if UNITY_EDITORXR_EDIT_MODE_SUPPORT
             manager.SetEditingContext(EditingContextManager.defaultContext);
+#endif
             UnityObjectUtils.Destroy(context);
             UnityObjectUtils.Destroy(context2);
+
+#if UNITY_EDITORXR_EDIT_MODE_SUPPORT
             VRView.activeView.Close();
+#endif
         }
     }
 

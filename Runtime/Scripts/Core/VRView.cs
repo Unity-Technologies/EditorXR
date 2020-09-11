@@ -552,5 +552,5 @@ namespace Unity.EditorXR.Core
             }
         }
 #endif
-        }
-        }
+    }
+}
