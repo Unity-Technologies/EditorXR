@@ -20,6 +20,8 @@ namespace Unity.EditorXR.Data
         public string type { get; private set; }
         public GameObject preview { get; set; }
 
+        public bool selected => false;
+
         public Object asset
         {
             get { return m_Asset; }

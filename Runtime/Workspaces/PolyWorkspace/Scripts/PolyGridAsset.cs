@@ -34,6 +34,7 @@ namespace Unity.EditorXR.Workspaces
         public string template { get { return k_TemplateName; } }
 
         public string index { get; private set; }
+        public bool selected => false;
         public PolyAsset asset { get { return m_Asset; } }
         public GameObject prefab { get { return m_Prefab; } }
         public Texture2D thumbnail { get { return m_Thumbnail; } }
