@@ -18,9 +18,15 @@ namespace Unity.EditorXR.Utilities
         public static readonly Dictionary<string, List<Type>> AssignmentDependencies
             = new Dictionary<string, List<Type>>
         {
-            { "AnimationClip", new List<Type> { typeof(Animation) } },
+#if INCLUDE_AUDIO_MODULE
             { "AudioClip", new List<Type> { typeof(AudioSource) } },
+#endif
+
+#if INCLUDE_VIDEO_MODULE
             { "VideoClip", new List<Type> { typeof(VideoPlayer) } },
+#endif
+
+            { "AnimationClip", new List<Type> { typeof(Animation) } },
             { "Material", new List<Type> { typeof(Renderer) } },
             { "Shader", new List<Type> { typeof(Material) } },
             { "PhysicMaterial", new List<Type> {typeof(Collider) } }
@@ -29,15 +35,29 @@ namespace Unity.EditorXR.Utilities
         // dependency types to ignore when previewing asset assignment validity
         public static List<Type> AutoFillTypes = new List<Type>
         {
-            typeof(Animation), typeof(AudioSource), typeof(VideoPlayer)
+#if INCLUDE_AUDIO_MODULE
+            typeof(AudioSource),
+#endif
+
+#if INCLUDE_VIDEO_MODULE
+            typeof(VideoPlayer),
+#endif
+
+            typeof(Animation)
         };
 
-        const string k_AssignAudioClipUndo = "Assign Audio Clip";
-        const string k_AssignAnimationClipUndo = "Assign Animation Clip";
-        const string k_AssignVideoClipUndo = "Assign Video Clip";
         const string k_AssignFontUndo = "Assign Font";
         const string k_AssignMaterialUndo = "Assign Material";
         const string k_AssignPhysicMaterialUndo = "Assign Physic Material";
+        const string k_AssignAnimationClipUndo = "Assign Animation Clip";
+
+#if INCLUDE_AUDIO_MODULE
+        const string k_AssignAudioClipUndo = "Assign Audio Clip";
+#endif
+
+#if INCLUDE_VIDEO_MODULE
+        const string k_AssignVideoClipUndo = "Assign Video Clip";
+#endif
 
         // TODO - make all these booleans options in the settings menu
         static bool s_CreatePlayerForClips = true;
@@ -69,6 +89,7 @@ namespace Unity.EditorXR.Utilities
             AssignAnimationClip(go, data);
         }
 
+#if INCLUDE_AUDIO_MODULE
         internal static AudioSource AttachAudioClip(GameObject go, AssetData data)
         {
             var source = ComponentUtils.GetOrAddIf<AudioSource>(go, s_CreatePlayerForClips);
@@ -87,7 +108,9 @@ namespace Unity.EditorXR.Utilities
         {
             AttachAudioClip(go, data);
         }
+#endif
 
+#if INCLUDE_VIDEO_MODULE
         internal static VideoPlayer AttachVideoClip(GameObject go, AssetData data)
         {
             var player = ComponentUtils.GetOrAddIf<VideoPlayer>(go, s_CreatePlayerForClips);
@@ -106,6 +129,7 @@ namespace Unity.EditorXR.Utilities
         {
             AttachVideoClip(go, data);
         }
+#endif
 
         internal static GameObject AttachScript(GameObject go, AssetData data)
         {

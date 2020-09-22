@@ -1,9 +1,12 @@
 using System;
-using Unity.EditorXR.Interfaces;
 using UnityEngine;
 using Unity.ListViewFramework;
 
+#if INCLUDE_UNITY_WEB_REQUEST
+using Unity.EditorXR.Interfaces;
 using Unity.XRTools.ModuleLoader;
+#endif
+
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 using UnityEngine.Networking;
@@ -11,7 +14,10 @@ using UnityEngine.Networking;
 
 namespace Unity.EditorXR.Workspaces
 {
-    class PolyGridAsset : IListViewItemData<string>, IUsesWeb
+    class PolyGridAsset : IListViewItemData<string>
+#if INCLUDE_UNITY_WEB_REQUEST
+        , IUsesWeb
+#endif
     {
         const int k_MaxPreviewComplexity = 2500;
         static readonly string k_TemplateName = "PolyGridItem";
@@ -41,7 +47,7 @@ namespace Unity.EditorXR.Workspaces
         public bool initialized { get { return m_Initialized; } }
         public long complexity { get { return m_Complexity; } }
 
-#if !FI_AUTOFILL
+#if INCLUDE_UNITY_WEB_REQUEST
         IProvidesWeb IFunctionalitySubscriber<IProvidesWeb>.provider { get; set; }
 #endif
 

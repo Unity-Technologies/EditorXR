@@ -599,15 +599,25 @@ namespace Unity.EditorXR.Workspaces
                 case AssetData.ModelTypeString:
                     PlaceModelOrPrefab(gridItem.transform, data);
                     break;
+
+#if INCLUDE_ANIMATION_MODULE
                 case "AnimationClip":
                     SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignAnimationClipAction);
                     break;
+#endif
+
+#if INCLUDE_AUDIO_MODULE
                 case "AudioClip":
                     SelectAndPlace(rayOrigin, data, AssetDropUtils.AudioClipAction);
                     break;
+#endif
+
+#if INCLUDE_VIDEO_MODULE
                 case "VideoClip":
                     SelectAndPlace(rayOrigin, data, AssetDropUtils.VideoClipAction);
                     break;
+#endif
+
                 case "Font":
                     SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignFontAction);
                     break;

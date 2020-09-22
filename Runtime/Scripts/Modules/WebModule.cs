@@ -1,3 +1,4 @@
+#if INCLUDE_UNITY_WEB_REQUEST
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -199,3 +200,4 @@ namespace Unity.EditorXR.Modules
         public void UnloadProvider() { }
     }
 }
+#endif

@@ -15,7 +15,6 @@
         "Unity.XRTools.SpatialHash.Public",
         "Unity.XRTools.SpatialHash"
     ],
-    "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
@@ -23,5 +22,22 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": []
+    "versionDefines": [
+        {
+            "name": "com.unity.modules.unitywebrequest",
+            "expression": "1.0.0",
+            "define": "INCLUDE_UNITY_WEB_REQUEST"
+        },
+        {
+            "name": "com.unity.modules.video",
+            "expression": "1.0.0",
+            "define": "INCLUDE_VIDEO_MODULE"
+        },
+        {
+            "name": "com.unity.modules.audio",
+            "expression": "1.0.0",
+            "define": "INCLUDE_AUDIO_MODULE"
+        }
+    ],
+    "noEngineReferences": false
 }

@@ -1,3 +1,4 @@
+#if INCLUDE_UNITY_WEB_REQUEST
 using System;
 using Unity.XRTools.ModuleLoader;
 using UnityEngine.Networking;
@@ -58,3 +59,4 @@ namespace Unity.EditorXR.Interfaces
         }
     }
 }
+#endif

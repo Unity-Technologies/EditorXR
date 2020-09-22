@@ -19,7 +19,7 @@ using UnityEngine.InputNew;
 
 namespace Unity.EditorXR.Workspaces
 {
-#if INCLUDE_POLY_TOOLKIT
+#if INCLUDE_POLY_TOOLKIT && INCLUDE_UNITY_WEB_REQUEST
     [MainMenuItem("Poly", "Workspaces", "Import models from Google Poly")]
     [SpatialMenuItem("Poly", "Workspaces", "Import models from Google Poly")]
     sealed class PolyWorkspace : Workspace, ISerializeWorkspace
