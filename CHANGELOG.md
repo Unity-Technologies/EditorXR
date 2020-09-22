@@ -4,6 +4,8 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.4.13-preview] - 1212-12-12
+
 ## [0.4.12-preview] - 2020-09-22
 ### Added
 - Version defines and package dependencies for built-in modules
