@@ -5,7 +5,7 @@ using Unity.EditorXR.Extensions;
 namespace Unity.EditorXR.Tests.Extensions
 {
     [TestFixture]
-    public class TransformExtensionsTests
+    class TransformExtensionsTests
     {
         GameObject go;
         float delta = 0.00000001f;

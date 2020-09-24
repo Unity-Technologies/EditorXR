@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Unity.EditorXR.Tests.Utilities
 {
     [TestFixture]
-    public class GradientPairTests
+    class GradientPairTests
     {
         Color m_ColorA;
         Color m_ColorB;

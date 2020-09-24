@@ -6,7 +6,7 @@ using Unity.EditorXR.Proxies;
 
 namespace Unity.EditorXR.Tests.Extensions
 {
-    public class MonoBehaviourExtensionsTests
+    class MonoBehaviourExtensionsTests
     {
         MonoBehaviour mb;
         int coIndex = 0;

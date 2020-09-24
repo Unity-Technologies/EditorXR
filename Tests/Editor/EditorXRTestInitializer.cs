@@ -10,7 +10,7 @@ using UnityEditor;
 namespace Unity.EditorXR.Tests.Core
 {
     [SetUpFixture]
-    public class EditorXRTestInitializer
+    class EditorXRTestInitializer
     {
         EditingContextManagerSettings projectSettingsBackup;
         EditingContextManagerSettings userSettingsBackup;

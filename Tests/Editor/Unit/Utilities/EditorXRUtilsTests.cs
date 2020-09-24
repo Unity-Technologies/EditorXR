@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Unity.EditorXR.Tests.Utilities
 {
     [TestFixture]
-    public class EditorXRUtilsTests
+    class EditorXRUtilsTests
     {
         GameObject m_GO, m_Parent, m_Other;
         List<GameObject> m_ToCleanupAfterEach = new List<GameObject>();

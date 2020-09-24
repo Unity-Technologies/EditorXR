@@ -16,7 +16,7 @@ using UnityEngine;
 namespace Unity.EditorXR.Tests.Core
 {
     [TestFixture]
-    public class EditingContextManagerTests
+    class EditingContextManagerTests
     {
         GameObject go;
         EditorXRContext context, context2;

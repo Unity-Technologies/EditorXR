@@ -23,7 +23,7 @@ This version of EditorXR is compatible with the following versions of the Unity 
 
 ## Known limitations
 
-*_EditorXR version 0.4.10-preview includes the following known limitations:_*
+*_EditorXR version 0.4.13-preview includes the following known limitations:_*
 * *_Undo/redo do not record all change history yet in the Radial Menu_*
 * *_Toggles from the main menu are not yet supported (snap, locomotion type, etc)._*
 * *_Other EditorXR menus and workspaces still draw above the Spatial Menu._*
@@ -45,8 +45,6 @@ If you are new to EditorXR, or have a question after reading the documentation, 
 
 * Join our [support forum](https://forum.unity.com/forums/editorxr.126/).
 * Follow us on [Twitter](http://www.twitter.com/unity3dlabs).
-
-<a name="UsingEditorXR"></a>
 
 # Using EditorXR
 
@@ -279,8 +277,6 @@ To use EditorXR, go to ****Windows**** > ****EditorXR**** (or press Ctrl-E on yo
 
      [![Locked Objects](images/locked.png)](https://drive.google.com/open?id=1JgfadHWtL9mwIJ0I_vc2wb2vUSV8tT9e "Locked Objects")
 
-<a name="Workflows"></a>
-
 # EditorXR workflows
 
 To create assets:
@@ -317,21 +313,17 @@ To place assets:
 
   [![Place](images/placement.png)](https://drive.google.com/open?id=1Oxh5uYDp5MoxwKeaTjgT_d3GBpKUi5u6 "Place")
 
-<a name="Advanced"></a>
-
 # Advanced topics
 
 This section provides more information on the following topics:
 
-* [EditorXR Runtime](#first): explains the use of EditorXR in Play Mode and included in Player builds.
+* [EditorXR Runtime](#editorxr-runtime): explains the use of EditorXR in Play Mode and included in Player builds.
 
-* [Minimal Context](#second): explains the origin of ...
+* [Minimal Context](#minimal-context): explains the origin of ...
 
-* [Image Effect and Camera Settings Copy Support](#third): explains the origin of ...
+* [Image Effect and Camera Settings Copy Support](#image-effect-and-camera-settings-copy-support): explains the origin of ...
 
-* [Extending EditorXR](#fourth): explains the origin of ...
-
-<a name="EditorXRRuntime"></a>
+* [Extending EditorXR](#extending-editorxr): explains the origin of ...
 
 ## EditorXR Runtime
 
@@ -347,8 +339,6 @@ Before entering Play Mode or making a build, there is one final step: you must c
 
  This will add support for the Script Importer functionality which many EditorXR systems rely on. This collects all of the MonoBehaviours that are instantiated during an EditorXR session and creates prefabs out of them, which will include asset references that were set in the Script Importer inspector. If you have created any new EditorXR systems you may want to ensure that you update this asset as you make changes, or tag your classes with the interfaces used within the DefaultScriptReferences class.
 
-<a name="MinimalContext"></a>
-
 ## Minimal Context
 
 * Ideal for lightweight client builds not requiring much of the EditorXR UI
@@ -358,8 +348,6 @@ Before entering Play Mode or making a build, there is one final step: you must c
   - Edit / Project Settings / EditorXR / Default Editing Context
 * Can be located in the project at :
   - Assets/EditorXR/Scripts/Core/Contexts/Minimal
-
-<a name="ImageEffect&CameraSettingsCopySupport"></a>
 
 ## Image Effect & Camera Settings Copy Support
 

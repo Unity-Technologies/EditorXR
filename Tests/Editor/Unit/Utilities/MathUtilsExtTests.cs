@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Unity.EditorXR.Tests.Utilities
 {
     [TestFixture]
-    public class MathUtilsExtTests
+    class MathUtilsExtTests
     {
         [OneTimeSetUp]
         public void Setup() { }
