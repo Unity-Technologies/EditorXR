@@ -1,6 +1,9 @@
 # EditorXR
 Author XR in XR
 
+## Getting Started
+For setup and usage instructions, refer to the [documentation](Documentation~/com.unity.editorxr.md)
+
 Dependencies:
 - `com.unity.xrtools.module-loader`
 - `com.unity.xrtools.utils`

@@ -10,6 +10,12 @@ This package is available as a preview, so it is not ready for production use. T
 
 To install this package, follow the instructions in the [Package Manager documentation](https://docs.unity3d.com/Manual/upm-ui-install.html).
 
+EditorXR is available via Unity Package Manager, but is not discoverable. There are four ways to install:
+- Click the `+` drop-down in the Package Manager UI, choose `Add package from git URL…` and type in `com.unity.editorxr`. After a few seconds (sometimes you have to click another part of the Editor), the package will begin importing.
+- Follow the same process but use `git@github.com:Unity-Technologies/EditorXR.git` to clone the package from Github.
+- Add `"com.unity.editorxr": "0.4.12-preview"` to the `dependencies` list in `Packages/manifest.json`.
+- Clone the package from Github manually into the `Packages` folder of your project (this will let you edit the files).
+
 In addition, you need to to set up your default VR platform.
 
  - First open Edit > Project Settings > Player.
